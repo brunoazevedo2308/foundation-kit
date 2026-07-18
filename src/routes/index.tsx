@@ -1,24 +1,54 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "DP Suite — Dynamic Positioning Governance" },
+      {
+        name: "description",
+        content:
+          "DP Suite: governança e conformidade para operações de Dynamic Positioning.",
+      },
+      { property: "og:title", content: "DP Suite" },
+      {
+        property: "og:description",
+        content:
+          "Plataforma SaaS de governança para operações de Dynamic Positioning.",
+      },
+      { property: "og:type", content: "website" },
+    ],
+  }),
+  component: Landing,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function Landing() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <main className="min-h-screen bg-background text-foreground">
+      <div className="mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center px-6 py-24 text-center">
+        <span className="mb-6 inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+          TT-001 · Foundation
+        </span>
+        <h1 className="text-balance text-5xl font-semibold tracking-tight sm:text-6xl">
+          DP Suite
+        </h1>
+        <p className="mt-4 max-w-xl text-pretty text-lg text-muted-foreground">
+          Governança e conformidade para operações de Dynamic Positioning.
+          Fundação técnica inicializada — pronto para receber as próximas
+          entregas.
+        </p>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <Button size="lg" disabled>
+            Em breve
+          </Button>
+          <Button size="lg" variant="outline" disabled>
+            Documentação
+          </Button>
+        </div>
+        <p className="mt-16 text-xs uppercase tracking-widest text-muted-foreground">
+          Stack: TypeScript · React · Tailwind · shadcn/ui · TanStack Start
+        </p>
+      </div>
+    </main>
   );
 }
