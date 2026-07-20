@@ -36,3 +36,4 @@ sequentially; never skip or reorder.
 | - | ------------------------------------------------ | -------- | ------------------------------------------------------ |
 | 1 | `20260720073636_init_organizations_profiles.sql` | TT-003.1 | `organizations`, `profiles` (RLS on, no policies yet)  |
 | 2 | `20260720074347_add_clients_vessels.sql`         | TT-003.2 | `clients`, `vessels` (RLS on, no policies yet)         |
+| 3 | `20260720075000_add_actions.sql`                  | TT-003.3 | `actions` (RLS on, no policies yet)                    |
