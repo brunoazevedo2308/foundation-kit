@@ -39,7 +39,7 @@ session for `auth.uid()` / `public.current_organization_id()`.
 
 ## Catalog
 
-| Test file                              | Task     | Covers                                                                 |
-| -------------------------------------- | -------- | ---------------------------------------------------------------------- |
-| `tt004_organization_isolation.sql`     | TT-004.3 | SELECT/INSERT/UPDATE isolation, cross-org integrity on `actions`, no DELETE for `authenticated`, `audit_events` immutability |
-| `tt005_auth_profile_status.sql`        | TT-005   | `record_profile_login()` returns status; `last_login_at` set only for active profiles; soft-deleted → inactive; unauthenticated call raises |
+| Test file                          | Task     | Covers                                                                                                                                      |
+| ---------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tt004_organization_isolation.sql` | TT-004.3 | SELECT/INSERT/UPDATE isolation, cross-org integrity on `actions`, no DELETE for `authenticated`, `audit_events` immutability                |
+| `tt005_auth_profile_status.sql`    | TT-005   | `record_profile_login()` returns status; `last_login_at` set only for active profiles; soft-deleted → inactive; unauthenticated call raises |

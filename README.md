@@ -18,7 +18,7 @@ Plataforma SaaS de governança e conformidade para operações de Dynamic Positi
   `inactive` ou `blocked` após o último login é desconectada e redirecionada
   para `/login` antes de qualquer conteúdo protegido ser exibido.
 - **Ciclo de vida do perfil**: enum `profile_status` = `active | inactive |
-  blocked`. Perfis ausentes ou soft-deleted são reportados como `blocked` (não
+blocked`. Perfis ausentes ou soft-deleted são reportados como `blocked` (não
   visíveis sob a RLS existente), sem introduzir um quarto valor no enum.
 - **RPC `public.record_profile_login()`**: `SECURITY INVOKER`, `search_path`
   fixo, `EXECUTE` restrito a `authenticated`. Roda sob os privilégios do

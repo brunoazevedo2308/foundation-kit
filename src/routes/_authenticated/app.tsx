@@ -50,9 +50,7 @@ function AuthenticatedHome() {
             <dd className="mt-1 font-medium text-foreground">{displayName}</dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-widest text-muted-foreground">
-              Organização
-            </dt>
+            <dt className="text-xs uppercase tracking-widest text-muted-foreground">Organização</dt>
             <dd className="mt-1 font-medium text-foreground">{organizationName}</dd>
           </div>
           <div className="sm:col-span-2">
