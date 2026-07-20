@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { env, isSupabaseConfigured } from "@/lib/env";
 
 export const Route = createFileRoute("/")({
   head: () => ({
