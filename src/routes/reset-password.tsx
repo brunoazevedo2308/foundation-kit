@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,9 +63,9 @@ function ResetPasswordPage() {
       await updatePassword(password);
       // Force a clean sign-in with the new password.
       await signOut();
-      await router.navigate({ to: "/auth" });
+      await router.navigate({ to: "/login" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Falha ao atualizar a senha.");
+      setError(err instanceof Error ? err.message : "Não foi possível atualizar a senha.");
     } finally {
       setLoading(false);
     }
@@ -118,6 +118,12 @@ function ResetPasswordPage() {
             {loading ? "Salvando..." : "Salvar nova senha"}
           </Button>
         </form>
+
+        <div className="mt-6 text-center text-xs text-muted-foreground">
+          <Link to="/login" className="underline-offset-4 hover:underline">
+            Voltar para o login
+          </Link>
+        </div>
       </div>
     </main>
   );
