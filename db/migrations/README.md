@@ -42,3 +42,4 @@ sequentially; never skip or reorder.
 | 6 | `20260720080500_harden_function_search_paths.sql` | TT-003.6 | Harden `search_path` on `set_updated_at()` and `prevent_audit_event_mutation()` |
 | 7 | `20260720081000_rls_read_isolation.sql`           | TT-004.1 | `current_organization_id()` + SELECT policies scoping reads to caller's org |
 | 8 | `20260720081500_rls_write_isolation.sql`          | TT-004.2 | INSERT/UPDATE policies + cross-org integrity triggers (no DELETE)           |
+| 9 | `20260720082000_move_rls_helper_private.sql`      | TT-004.2.1 | Move `current_organization_id()` to `private` schema (out of PostgREST API) |
