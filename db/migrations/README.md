@@ -39,3 +39,4 @@ sequentially; never skip or reorder.
 | 3 | `20260720075000_add_actions.sql`                  | TT-003.3 | `actions` (RLS on, no policies yet)                    |
 | 4 | `20260720075500_add_deliverables.sql`             | TT-003.4 | `deliverables` (RLS on, no policies yet)               |
 | 5 | `20260720080000_add_collab_and_audit.sql`         | TT-003.5 | `user_vessels`, `evidences`, `comments`, `attachments`, `notifications`, `audit_events` (RLS on, no policies yet) |
+| 6 | `20260720080500_harden_function_search_paths.sql` | TT-003.6 | Harden `search_path` on `set_updated_at()` and `prevent_audit_event_mutation()` |
