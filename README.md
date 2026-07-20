@@ -2,7 +2,28 @@
 
 Plataforma SaaS de governança e conformidade para operações de Dynamic Positioning.
 
-> Estado atual: fundação técnica (TT-001) + configuração de ambientes Development e Staging (TT-002). Sem funcionalidades de negócio, autenticação ou banco de dados nesta etapa.
+> Estado atual: fundação técnica (TT-001), ambientes Development e Staging (TT-002), schema versionado com RLS e integridade cross-organization (TT-003 e TT-004), autenticação e sessão via Supabase (TT-005).
+
+## Autenticação e sessão (TT-005)
+
+- **Provedor**: Supabase Auth com e-mail + senha (chave publishable no cliente).
+- **Rotas públicas**: `/auth` (login + recuperação de senha) e `/reset-password`
+  (define nova senha a partir do link recebido por e-mail).
+- **Rotas protegidas**: qualquer arquivo em `src/routes/_authenticated/` — o
+  layout `_authenticated/route.tsx` roda `ssr: false` e verifica
+  `supabase.auth.getUser()` antes de qualquer child. Não autenticados são
+  redirecionados para `/auth`.
+- **Validação de status do perfil**: após um `signInWithPassword` bem-sucedido,
+  o cliente chama a RPC `public.record_profile_login()`. A RPC retorna o
+  `profile_status` (`active` / `pending` / `inactive`); somente `active` avança
+  para a área autenticada, os demais recebem `signOut()` e mensagem de bloqueio.
+- **Último login**: `record_profile_login()` carimba `profiles.last_login_at`
+  apenas quando o perfil é `active` e não está soft-deleted.
+- **Sincronização de sessão**: um único `supabase.auth.onAuthStateChange` em
+  `src/routes/__root.tsx` invalida o router e a cache do React Query em
+  `SIGNED_IN` / `SIGNED_OUT` / `USER_UPDATED`.
+- **Testes**: `db/tests/tt005_auth_profile_status.sql` valida a RPC
+  transacionalmente (roll-back garantido).
 
 ## Stack
 

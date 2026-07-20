@@ -44,6 +44,7 @@ sequentially; never skip or reorder.
 | 8 | `20260720081500_rls_write_isolation.sql`          | TT-004.2 | INSERT/UPDATE policies + cross-org integrity triggers (no DELETE)           |
 | 9 | `20260720082000_move_rls_helper_private.sql`      | TT-004.2.1 | Move `current_organization_id()` to `private` schema (out of PostgREST API) |
 | 10 | `20260720082500_fix_cross_org_trigger_bypass.sql` | TT-004.2.2 | Cross-org triggers as SECURITY DEFINER; `assert_same_org` rejects NULL; EXECUTE restricted to `service_role` |
+| 11 | `20260720083000_add_profile_status_and_last_login.sql` | TT-005 | `profile_status` enum + `profiles.status` / `profiles.last_login_at` + `public.record_profile_login()` RPC |
 
 ## Tests
 
