@@ -30,3 +30,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Env files — never commit real credentials
+.env
+.env.local
+.env.*.local
+.env.development
+.env.staging
+.env.production
