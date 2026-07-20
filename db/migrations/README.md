@@ -29,6 +29,10 @@ SQL Editor (Development only).
 
 ## Index
 
-| Migration                                        | Task     | Summary                                |
-| ------------------------------------------------ | -------- | -------------------------------------- |
-| `20260720073636_init_organizations_profiles.sql` | TT-003.1 | `organizations`, `profiles` (RLS on, no policies yet) |
+Migrations are applied in filename (timestamp) order. Always run them
+sequentially; never skip or reorder.
+
+| # | Migration                                        | Task     | Summary                                                |
+| - | ------------------------------------------------ | -------- | ------------------------------------------------------ |
+| 1 | `20260720073636_init_organizations_profiles.sql` | TT-003.1 | `organizations`, `profiles` (RLS on, no policies yet)  |
+| 2 | `20260720074347_add_clients_vessels.sql`         | TT-003.2 | `clients`, `vessels` (RLS on, no policies yet)         |
