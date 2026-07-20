@@ -8,14 +8,12 @@ export const Route = createFileRoute("/")({
       { title: "DP Suite — Dynamic Positioning Governance" },
       {
         name: "description",
-        content:
-          "DP Suite: governança e conformidade para operações de Dynamic Positioning.",
+        content: "DP Suite: governança e conformidade para operações de Dynamic Positioning.",
       },
       { property: "og:title", content: "DP Suite" },
       {
         property: "og:description",
-        content:
-          "Plataforma SaaS de governança para operações de Dynamic Positioning.",
+        content: "Plataforma SaaS de governança para operações de Dynamic Positioning.",
       },
       { property: "og:type", content: "website" },
     ],
@@ -30,13 +28,10 @@ function Landing() {
         <span className="mb-6 inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
           TT-001 · Foundation
         </span>
-        <h1 className="text-balance text-5xl font-semibold tracking-tight sm:text-6xl">
-          DP Suite
-        </h1>
+        <h1 className="text-balance text-5xl font-semibold tracking-tight sm:text-6xl">DP Suite</h1>
         <p className="mt-4 max-w-xl text-pretty text-lg text-muted-foreground">
-          Governança e conformidade para operações de Dynamic Positioning.
-          Fundação técnica inicializada — pronto para receber as próximas
-          entregas.
+          Governança e conformidade para operações de Dynamic Positioning. Fundação técnica
+          inicializada — pronto para receber as próximas entregas.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <Button size="lg" disabled>

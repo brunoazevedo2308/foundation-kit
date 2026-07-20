@@ -17,11 +17,11 @@ TypeScript · React 19 · TanStack Start · Tailwind CSS v4 · shadcn/ui · Supa
 
 Todas as variáveis são carregadas via `import.meta.env` e validadas em `src/lib/env.ts`.
 
-| Variável                        | Obrigatória             | Descrição                                                      |
-| ------------------------------- | ----------------------- | -------------------------------------------------------------- |
-| `VITE_APP_ENV`                  | sim                     | `development` \| `staging` \| `production`                     |
-| `VITE_SUPABASE_URL`             | quando o backend existe | URL do projeto Supabase do ambiente                            |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | quando o backend existe | Chave **publishable** (anon). Nunca use `service_role` aqui.   |
+| Variável                        | Obrigatória             | Descrição                                                    |
+| ------------------------------- | ----------------------- | ------------------------------------------------------------ |
+| `VITE_APP_ENV`                  | sim                     | `development` \| `staging` \| `production`                   |
+| `VITE_SUPABASE_URL`             | quando o backend existe | URL do projeto Supabase do ambiente                          |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | quando o backend existe | Chave **publishable** (anon). Nunca use `service_role` aqui. |
 
 Um template está em [`.env.example`](./.env.example). Copie para `.env.local`
 (git-ignored) para desenvolvimento local. **Valores reais nunca são

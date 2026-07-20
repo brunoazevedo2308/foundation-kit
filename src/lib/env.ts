@@ -13,8 +13,16 @@ export type AppEnv = z.infer<typeof AppEnvSchema>;
 
 const EnvSchema = z.object({
   VITE_APP_ENV: AppEnvSchema.default("development"),
-  VITE_SUPABASE_URL: z.string().url().optional().or(z.literal("").transform(() => undefined)),
-  VITE_SUPABASE_PUBLISHABLE_KEY: z.string().min(1).optional().or(z.literal("").transform(() => undefined)),
+  VITE_SUPABASE_URL: z
+    .string()
+    .url()
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  VITE_SUPABASE_PUBLISHABLE_KEY: z
+    .string()
+    .min(1)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
 });
 
 const raw = {
@@ -40,6 +48,4 @@ export const env = {
 } as const;
 
 /** True when both Supabase URL and publishable key are configured. */
-export const isSupabaseConfigured: boolean = Boolean(
-  env.supabaseUrl && env.supabasePublishableKey,
-);
+export const isSupabaseConfigured: boolean = Boolean(env.supabaseUrl && env.supabasePublishableKey);

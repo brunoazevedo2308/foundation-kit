@@ -86,8 +86,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "DP Suite" },
       {
         property: "og:description",
-        content:
-          "Plataforma SaaS de governança para operações de Dynamic Positioning.",
+        content: "Plataforma SaaS de governança para operações de Dynamic Positioning.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
