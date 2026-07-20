@@ -352,13 +352,13 @@ declare
   v_event uuid;
   v_raised boolean;
 begin
-  insert into public.audit_events (organization_id, actor_user_id, action, entity_type, entity_id)
-  values (v_org_a, v_user_a, 'tt004.test', 'test', gen_random_uuid())
+  insert into public.audit_events (organization_id, actor_user_id, entity_type, entity_id, event_type)
+  values (v_org_a, v_user_a, 'test', gen_random_uuid(), 'tt004.test')
   returning id into v_event;
 
   v_raised := false;
   begin
-    update public.audit_events set action = 'tampered' where id = v_event;
+    update public.audit_events set event_type = 'tampered' where id = v_event;
   exception when others then v_raised := true; end;
   if not v_raised then perform pg_temp.fail('audit_events accepted UPDATE'); end if;
 
