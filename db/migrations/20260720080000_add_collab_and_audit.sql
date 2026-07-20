@@ -178,7 +178,30 @@ CREATE INDEX audit_events_entity_idx             ON public.audit_events (entity_
 CREATE INDEX audit_events_created_at_desc_idx    ON public.audit_events (created_at DESC);
 
 -- Immutable table: no updated_at trigger, no deleted_at column.
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.audit_events TO authenticated;
-GRANT ALL ON public.audit_events TO service_role;
+-- Enforce immutability at the database level: only INSERT and SELECT are allowed.
+-- UPDATE and DELETE are blocked by triggers even for privileged roles that
+-- may have inherited such rights, so the audit log cannot be tampered with.
+
+CREATE OR REPLACE FUNCTION public.prevent_audit_event_mutation()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RAISE EXCEPTION 'audit_events is immutable: % is not allowed', TG_OP
+    USING ERRCODE = 'insufficient_privilege';
+END;
+$$;
+
+CREATE TRIGGER audit_events_prevent_update
+  BEFORE UPDATE ON public.audit_events
+  FOR EACH ROW EXECUTE FUNCTION public.prevent_audit_event_mutation();
+
+CREATE TRIGGER audit_events_prevent_delete
+  BEFORE DELETE ON public.audit_events
+  FOR EACH ROW EXECUTE FUNCTION public.prevent_audit_event_mutation();
+
+GRANT SELECT, INSERT ON public.audit_events TO authenticated;
+GRANT SELECT, INSERT ON public.audit_events TO service_role;
 
 ALTER TABLE public.audit_events ENABLE ROW LEVEL SECURITY;
+
