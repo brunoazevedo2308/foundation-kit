@@ -155,7 +155,9 @@ end
 $$;
 
 -- ---------------------------------------------------------------------------
--- Case 5: status='active' in metadata → profile created active.
+-- Case 5a: profile_status='active' (preferred key) → profile created active.
+-- Case 5b: legacy `status`='active' (fallback key)  → profile created active.
+-- Case 5c: profile_status wins over status when both are present.
 -- ---------------------------------------------------------------------------
 do $$
 declare
@@ -163,19 +165,46 @@ declare
   _uid uuid;
   _status public.profile_status;
 begin
+  -- 5a: preferred key `profile_status`.
   _uid := pg_temp.new_auth_user(
-    'tt005a-case5@example.test',
-    jsonb_build_object('organization_id', _org::text, 'status', 'active', 'full_name', 'Grace Hopper')
+    'tt005a-case5a@example.test',
+    jsonb_build_object('organization_id', _org::text, 'profile_status', 'active', 'full_name', 'Grace Hopper')
   );
   select status into _status from public.profiles where id = _uid;
   if _status is distinct from 'active'::public.profile_status then
-    perform pg_temp.fail('case 5: explicit status=active should be honored, got ' || coalesce(_status::text, 'NULL'));
+    perform pg_temp.fail('case 5a: profile_status=active must be honored, got ' || coalesce(_status::text, 'NULL'));
+  end if;
+
+  -- 5b: legacy fallback key `status`.
+  _uid := pg_temp.new_auth_user(
+    'tt005a-case5b@example.test',
+    jsonb_build_object('organization_id', _org::text, 'status', 'active')
+  );
+  select status into _status from public.profiles where id = _uid;
+  if _status is distinct from 'active'::public.profile_status then
+    perform pg_temp.fail('case 5b: legacy status=active fallback must be honored, got ' || coalesce(_status::text, 'NULL'));
+  end if;
+
+  -- 5c: precedence — profile_status wins when both keys are present.
+  _uid := pg_temp.new_auth_user(
+    'tt005a-case5c@example.test',
+    jsonb_build_object(
+      'organization_id', _org::text,
+      'profile_status',  'active',
+      'status',          'inactive'
+    )
+  );
+  select status into _status from public.profiles where id = _uid;
+  if _status is distinct from 'active'::public.profile_status then
+    perform pg_temp.fail('case 5c: profile_status must take precedence over status, got ' || coalesce(_status::text, 'NULL'));
   end if;
 end
 $$;
 
 -- ---------------------------------------------------------------------------
--- Case 6: metadata.status='blocked' (or any unsafe value) → fallback to inactive.
+-- Case 6: unsafe values on either key → fallback to inactive.
+-- Covers both `profile_status` and legacy `status`, and 'blocked' cannot be
+-- forced from metadata.
 -- ---------------------------------------------------------------------------
 do $$
 declare
@@ -184,12 +213,21 @@ declare
   _status public.profile_status;
 begin
   _uid := pg_temp.new_auth_user(
-    'tt005a-case6@example.test',
+    'tt005a-case6a@example.test',
+    jsonb_build_object('organization_id', _org::text, 'profile_status', 'blocked')
+  );
+  select status into _status from public.profiles where id = _uid;
+  if _status is distinct from 'inactive'::public.profile_status then
+    perform pg_temp.fail('case 6a: profile_status=blocked must fall back to inactive, got ' || coalesce(_status::text, 'NULL'));
+  end if;
+
+  _uid := pg_temp.new_auth_user(
+    'tt005a-case6b@example.test',
     jsonb_build_object('organization_id', _org::text, 'status', 'blocked')
   );
   select status into _status from public.profiles where id = _uid;
   if _status is distinct from 'inactive'::public.profile_status then
-    perform pg_temp.fail('case 6: unsafe status values must fall back to inactive, got ' || coalesce(_status::text, 'NULL'));
+    perform pg_temp.fail('case 6b: legacy status=blocked must fall back to inactive, got ' || coalesce(_status::text, 'NULL'));
   end if;
 end
 $$;
