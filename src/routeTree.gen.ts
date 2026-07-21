@@ -14,6 +14,7 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AccessBlockedRouteImport } from './routes/access-blocked'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedVesselsRouteImport } from './routes/_authenticated/vessels'
@@ -27,6 +28,7 @@ import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/ap
 import { Route as AuthenticatedActionsRouteImport } from './routes/_authenticated/actions'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as AuthenticatedActionsActionIdRouteImport } from './routes/_authenticated/actions.$actionId'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -52,6 +54,11 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccessBlockedRoute = AccessBlockedRouteImport.update({
+  id: '/access-blocked',
+  path: '/access-blocked',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -121,6 +128,12 @@ const Char91DotmcpChar93ListToolsRoute =
     path: '/.mcp/list-tools',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedActionsActionIdRoute =
+  AuthenticatedActionsActionIdRouteImport.update({
+    id: '/$actionId',
+    path: '/$actionId',
+    getParentRoute: () => AuthenticatedActionsRoute,
+  } as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -130,6 +143,7 @@ const Char91DotmcpChar93InvokeToolToolRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/access-blocked': typeof AccessBlockedRoute
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
@@ -137,7 +151,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/actions': typeof AuthenticatedActionsRoute
+  '/actions': typeof AuthenticatedActionsRouteWithChildren
   '/app': typeof AuthenticatedAppRoute
   '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -147,9 +161,11 @@ export interface FileRoutesByFullPath {
   '/users': typeof AuthenticatedUsersRoute
   '/vessels': typeof AuthenticatedVesselsRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/actions/$actionId': typeof AuthenticatedActionsActionIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/access-blocked': typeof AccessBlockedRoute
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
@@ -157,7 +173,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/actions': typeof AuthenticatedActionsRoute
+  '/actions': typeof AuthenticatedActionsRouteWithChildren
   '/app': typeof AuthenticatedAppRoute
   '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -167,11 +183,13 @@ export interface FileRoutesByTo {
   '/users': typeof AuthenticatedUsersRoute
   '/vessels': typeof AuthenticatedVesselsRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/actions/$actionId': typeof AuthenticatedActionsActionIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/access-blocked': typeof AccessBlockedRoute
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
@@ -179,7 +197,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/_authenticated/actions': typeof AuthenticatedActionsRoute
+  '/_authenticated/actions': typeof AuthenticatedActionsRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -189,11 +207,13 @@ export interface FileRoutesById {
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/vessels': typeof AuthenticatedVesselsRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/_authenticated/actions/$actionId': typeof AuthenticatedActionsActionIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/access-blocked'
     | '/auth'
     | '/forgot-password'
     | '/login'
@@ -211,9 +231,11 @@ export interface FileRouteTypes {
     | '/users'
     | '/vessels'
     | '/.mcp/invoke-tool/$tool'
+    | '/actions/$actionId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/access-blocked'
     | '/auth'
     | '/forgot-password'
     | '/login'
@@ -231,10 +253,12 @@ export interface FileRouteTypes {
     | '/users'
     | '/vessels'
     | '/.mcp/invoke-tool/$tool'
+    | '/actions/$actionId'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/access-blocked'
     | '/auth'
     | '/forgot-password'
     | '/login'
@@ -252,11 +276,13 @@ export interface FileRouteTypes {
     | '/_authenticated/users'
     | '/_authenticated/vessels'
     | '/.mcp/invoke-tool/$tool'
+    | '/_authenticated/actions/$actionId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AccessBlockedRoute: typeof AccessBlockedRoute
   AuthRoute: typeof AuthRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
@@ -302,6 +328,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/access-blocked': {
+      id: '/access-blocked'
+      path: '/access-blocked'
+      fullPath: '/access-blocked'
+      preLoaderRoute: typeof AccessBlockedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -395,6 +428,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/actions/$actionId': {
+      id: '/_authenticated/actions/$actionId'
+      path: '/$actionId'
+      fullPath: '/actions/$actionId'
+      preLoaderRoute: typeof AuthenticatedActionsActionIdRouteImport
+      parentRoute: typeof AuthenticatedActionsRoute
+    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -405,8 +445,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedActionsRouteChildren {
+  AuthenticatedActionsActionIdRoute: typeof AuthenticatedActionsActionIdRoute
+}
+
+const AuthenticatedActionsRouteChildren: AuthenticatedActionsRouteChildren = {
+  AuthenticatedActionsActionIdRoute: AuthenticatedActionsActionIdRoute,
+}
+
+const AuthenticatedActionsRouteWithChildren =
+  AuthenticatedActionsRoute._addFileChildren(AuthenticatedActionsRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedActionsRoute: typeof AuthenticatedActionsRoute
+  AuthenticatedActionsRoute: typeof AuthenticatedActionsRouteWithChildren
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -418,7 +469,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedActionsRoute: AuthenticatedActionsRoute,
+  AuthenticatedActionsRoute: AuthenticatedActionsRouteWithChildren,
   AuthenticatedAppRoute: AuthenticatedAppRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -435,6 +486,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AccessBlockedRoute: AccessBlockedRoute,
   AuthRoute: AuthRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
