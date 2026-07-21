@@ -33,7 +33,10 @@ jobs:
         run: bun run build
 
       - name: Typecheck
-        run: bun run typecheck
+        shell: bash
+        run: |
+          set -o pipefail
+          bun run typecheck 2>&1 | tee /tmp/typecheck.log
 
       - name: Lint
         run: bun run lint
