@@ -99,8 +99,31 @@ export async function fetchProfileStatus(userId: string): Promise<ProfileStatus>
     .select("status")
     .eq("id", userId)
     .maybeSingle();
-  if (error || !data) return "blocked";
-  return data.status as ProfileStatus;
+  if (error) {
+    emitEvent({
+      event_name: "backend.request.failure",
+      context: { operation: "profiles.select_status", supabase_error: sanitize(error) },
+      user_id: userId,
+    });
+    return "blocked";
+  }
+  if (!data) {
+    emitEvent({
+      event_name: "auth.profile.blocked",
+      context: { reason: "profile_missing_or_soft_deleted" },
+      user_id: userId,
+    });
+    return "blocked";
+  }
+  const status = data.status as ProfileStatus;
+  if (status !== "active") {
+    emitEvent({
+      event_name: "auth.profile.blocked",
+      context: { reason: "profile_status", status },
+      user_id: userId,
+    });
+  }
+  return status;
 }
 
 export type AppRole = "system_admin" | "organization_admin" | "member";
