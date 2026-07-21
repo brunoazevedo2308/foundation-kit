@@ -30,13 +30,15 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build and generate routes
-        run: bun run build
+        run: bun run build > /tmp/build.log 2>&1 || (cat /tmp/build.log && exit 1)
 
       - name: Typecheck
         shell: bash
         run: |
-          set -o pipefail
-          bun run typecheck 2>&1 | tee /tmp/typecheck.log
+          if ! bun run typecheck > /tmp/typecheck.log 2>&1; then
+            cat /tmp/typecheck.log
+            exit 1
+          fi
 
       - name: Lint
         run: bun run lint
