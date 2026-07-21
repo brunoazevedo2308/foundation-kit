@@ -3,6 +3,7 @@ import { AppShell } from "@/components/app-shell";
 import { LoadingPage, NotFoundPage } from "@/components/status-pages";
 import { fetchProfileHeader, fetchProfileStatus } from "@/lib/auth";
 import { buildLoginRedirectSearch } from "@/lib/return-path";
+import { emitEvent, reportError, sanitize } from "@/lib/observability";
 import { supabase } from "@/lib/supabase";
 
 /**
