@@ -76,12 +76,17 @@ describe("validateEvidenceFile", () => {
     ).not.toThrow();
   });
   it("rejects empty files", () => {
-    expect(() => validateEvidenceFile({ name: "a.pdf", size: 0, type: "application/pdf" }))
-      .toThrow(EvidenceStorageError);
+    expect(() => validateEvidenceFile({ name: "a.pdf", size: 0, type: "application/pdf" })).toThrow(
+      EvidenceStorageError,
+    );
   });
   it("rejects oversize files", () => {
     try {
-      validateEvidenceFile({ name: "a.pdf", size: EVIDENCE_MAX_BYTES + 1, type: "application/pdf" });
+      validateEvidenceFile({
+        name: "a.pdf",
+        size: EVIDENCE_MAX_BYTES + 1,
+        type: "application/pdf",
+      });
       throw new Error("expected throw");
     } catch (e) {
       expect(e).toBeInstanceOf(EvidenceStorageError);

@@ -46,7 +46,7 @@ O upload é **metadata-first**:
    perfil ativo).
 3. `POST` do objeto para o bucket (RLS revalida a mesma cadeia).
 4. Se o passo 3 falhar, o módulo executa `UPDATE ... SET deleted_at =
-   now()` na linha inserida no passo 2, liberando o índice único de
+now()` na linha inserida no passo 2, liberando o índice único de
    versão para uma nova tentativa e evitando metadata órfão.
 
 Se a limpeza compensatória (passo 4) também falhar, o módulo devolve
