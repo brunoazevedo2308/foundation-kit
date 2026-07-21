@@ -21,7 +21,7 @@ Fluxo administrativo para criação de organizações clientes no DP Suite.
 3. O frontend chama **exclusivamente** a RPC remota, com a assinatura
    nominal e ordem exatas:
    `public.create_organization(_legal_name, _display_name, _country_code,
-    _primary_email, _status, _default_language, _timezone, _date_format)`.
+ _primary_email, _status, _default_language, _timezone, _date_format)`.
    Nenhum caminho da UI faz `insert` direto em `public.organizations`.
 4. A RPC retorna a linha completa de `public.organizations` (SETOF). O
    frontend extrai `id`, `name`, `slug` e `status` para exibir a confirmação.
@@ -52,12 +52,12 @@ genérica ao usuário.
 
 ## Mapeamento de erros
 
-| Origem                        | Categoria     | Mensagem PT-BR                                                              |
-| ----------------------------- | ------------- | ---------------------------------------------------------------------------- |
-| `42501` / "System Admin"      | `denied`      | "Somente System Admin ativo pode criar organizações."                        |
-| `23505` (qualquer constraint) | `conflict`    | "Conflito ao gravar a organização. Tente novamente."                         |
-| `23514` / `22P02`             | `validation`  | "Dados inválidos. Revise os campos e tente novamente."                       |
-| qualquer outro                | `unknown`     | "Não foi possível criar a organização agora. Tente novamente em instantes." |
+| Origem                        | Categoria    | Mensagem PT-BR                                                              |
+| ----------------------------- | ------------ | --------------------------------------------------------------------------- |
+| `42501` / "System Admin"      | `denied`     | "Somente System Admin ativo pode criar organizações."                       |
+| `23505` (qualquer constraint) | `conflict`   | "Conflito ao gravar a organização. Tente novamente."                        |
+| `23514` / `22P02`             | `validation` | "Dados inválidos. Revise os campos e tente novamente."                      |
+| qualquer outro                | `unknown`    | "Não foi possível criar a organização agora. Tente novamente em instantes." |
 
 O detalhe cru do PostgREST **nunca** é exibido: o texto pré-aprovado do
 usuário evita enumeração e vazamento de constraints.
