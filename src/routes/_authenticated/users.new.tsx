@@ -130,7 +130,10 @@ function NewUserPage() {
           title="Convite enviado"
           description="O usuário receberá um e-mail para concluir o acesso."
         />
-        <div className="max-w-2xl rounded-lg border border-emerald-500/40 bg-emerald-500/5 p-6" role="status">
+        <div
+          className="max-w-2xl rounded-lg border border-emerald-500/40 bg-emerald-500/5 p-6"
+          role="status"
+        >
           <div className="flex items-start gap-3">
             <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-600" aria-hidden />
             <div>
@@ -230,7 +233,10 @@ function NewUserPage() {
         </div>
 
         {formError ? (
-          <p role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <p
+            role="alert"
+            className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          >
             {formError}
           </p>
         ) : null}
@@ -239,7 +245,10 @@ function NewUserPage() {
           <Button asChild variant="ghost">
             <Link to="/users">Cancelar</Link>
           </Button>
-          <Button type="submit" disabled={submitting || loadingOrganizations || organizations.length === 0}>
+          <Button
+            type="submit"
+            disabled={submitting || loadingOrganizations || organizations.length === 0}
+          >
             {submitting ? "Enviando..." : "Enviar convite"}
           </Button>
         </div>
