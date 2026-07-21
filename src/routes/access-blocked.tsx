@@ -48,7 +48,9 @@ const COPY = {
 } as const;
 
 function AccessBlockedPage() {
-  const { status } = useSearch({ from: "/access-blocked" });
+  const { status } = useSearch({ from: "/access-blocked" }) as {
+    status: keyof typeof COPY;
+  };
   const copy = COPY[status];
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
