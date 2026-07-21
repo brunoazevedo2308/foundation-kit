@@ -1,3 +1,4 @@
+import { emitEvent, sanitize } from "./observability";
 import { supabase } from "./supabase";
 
 /**
