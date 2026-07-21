@@ -3,6 +3,7 @@ import { AppShell } from "@/components/app-shell";
 import { LoadingPage, NotFoundPage } from "@/components/status-pages";
 import { fetchProfileHeader, fetchProfileStatus } from "@/lib/auth";
 import { buildLoginRedirectSearch } from "@/lib/return-path";
+import { emitEvent, reportError, sanitize } from "@/lib/observability";
 import { supabase } from "@/lib/supabase";
 
 /**
@@ -34,6 +35,10 @@ export const Route = createFileRoute("/_authenticated")({
     }
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) {
+      emitEvent({
+        event_name: "auth.session.invalid",
+        context: { reason: error ? "getUser_error" : "no_user", error: sanitize(error) },
+      });
       throw redirect({
         to: "/login",
         search: buildLoginRedirectSearch(location.pathname + location.searchStr),
@@ -48,6 +53,8 @@ export const Route = createFileRoute("/_authenticated")({
         search: { status: status === "inactive" ? "inactive" : "blocked" },
       });
     }
+
+    emitEvent({ event_name: "auth.session.restored", user_id: data.user.id });
 
     const header = await fetchProfileHeader(data.user.id);
     return { user: data.user, profile: header };
@@ -76,6 +83,7 @@ function AuthenticatedLayout() {
 
 function AuthenticatedErrorBoundary({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
+  reportError(error, { event_name: "backend.request.failure", severity: "error" });
   return (
     <div className="grid min-h-[60vh] w-full place-items-center px-4">
       <div className="max-w-md text-center">

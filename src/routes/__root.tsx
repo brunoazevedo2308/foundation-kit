@@ -12,6 +12,7 @@ import appCss from "../styles.css?url";
 import { supabase } from "../lib/supabase";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { NotFoundPage } from "../components/status-pages";
+import { GlobalErrorBoundary } from "../components/global-error-boundary";
 
 function NotFoundComponent() {
   return (
@@ -127,8 +128,10 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <GlobalErrorBoundary>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+      </GlobalErrorBoundary>
     </QueryClientProvider>
   );
 }

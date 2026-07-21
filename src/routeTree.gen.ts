@@ -30,6 +30,7 @@ import { Route as AuthenticatedActionsRouteImport } from './routes/_authenticate
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedOrganizationsNewRouteImport } from './routes/_authenticated/organizations.new'
+import { Route as AuthenticatedDevObservabilityRouteImport } from './routes/_authenticated/dev.observability'
 import { Route as AuthenticatedActionsActionIdRouteImport } from './routes/_authenticated/actions.$actionId'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
@@ -142,6 +143,12 @@ const AuthenticatedOrganizationsNewRoute =
     path: '/new',
     getParentRoute: () => AuthenticatedOrganizationsRoute,
   } as any)
+const AuthenticatedDevObservabilityRoute =
+  AuthenticatedDevObservabilityRouteImport.update({
+    id: '/dev/observability',
+    path: '/dev/observability',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedActionsActionIdRoute =
   AuthenticatedActionsActionIdRouteImport.update({
     id: '/$actionId',
@@ -177,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/vessels': typeof AuthenticatedVesselsRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/actions/$actionId': typeof AuthenticatedActionsActionIdRoute
+  '/dev/observability': typeof AuthenticatedDevObservabilityRoute
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
 }
 export interface FileRoutesByTo {
@@ -201,6 +209,7 @@ export interface FileRoutesByTo {
   '/vessels': typeof AuthenticatedVesselsRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/actions/$actionId': typeof AuthenticatedActionsActionIdRoute
+  '/dev/observability': typeof AuthenticatedDevObservabilityRoute
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
 }
 export interface FileRoutesById {
@@ -227,6 +236,7 @@ export interface FileRoutesById {
   '/_authenticated/vessels': typeof AuthenticatedVesselsRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/actions/$actionId': typeof AuthenticatedActionsActionIdRoute
+  '/_authenticated/dev/observability': typeof AuthenticatedDevObservabilityRoute
   '/_authenticated/organizations/new': typeof AuthenticatedOrganizationsNewRoute
 }
 export interface FileRouteTypes {
@@ -253,6 +263,7 @@ export interface FileRouteTypes {
     | '/vessels'
     | '/.mcp/invoke-tool/$tool'
     | '/actions/$actionId'
+    | '/dev/observability'
     | '/organizations/new'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -277,6 +288,7 @@ export interface FileRouteTypes {
     | '/vessels'
     | '/.mcp/invoke-tool/$tool'
     | '/actions/$actionId'
+    | '/dev/observability'
     | '/organizations/new'
   id:
     | '__root__'
@@ -302,6 +314,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vessels'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/actions/$actionId'
+    | '/_authenticated/dev/observability'
     | '/_authenticated/organizations/new'
   fileRoutesById: FileRoutesById
 }
@@ -468,6 +481,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrganizationsNewRouteImport
       parentRoute: typeof AuthenticatedOrganizationsRoute
     }
+    '/_authenticated/dev/observability': {
+      id: '/_authenticated/dev/observability'
+      path: '/dev/observability'
+      fullPath: '/dev/observability'
+      preLoaderRoute: typeof AuthenticatedDevObservabilityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/actions/$actionId': {
       id: '/_authenticated/actions/$actionId'
       path: '/$actionId'
@@ -521,6 +541,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedVesselsRoute: typeof AuthenticatedVesselsRoute
+  AuthenticatedDevObservabilityRoute: typeof AuthenticatedDevObservabilityRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -534,6 +555,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedVesselsRoute: AuthenticatedVesselsRoute,
+  AuthenticatedDevObservabilityRoute: AuthenticatedDevObservabilityRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
