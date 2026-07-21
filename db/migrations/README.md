@@ -46,6 +46,7 @@ sequentially; never skip or reorder.
 | 10  | `20260720082500_fix_cross_org_trigger_bypass.sql`      | TT-004.2.2 | Cross-org triggers as SECURITY DEFINER; `assert_same_org` rejects NULL; EXECUTE restricted to `service_role`                  |
 | 11  | `20260720083000_add_profile_status_and_last_login.sql` | TT-005     | `profile_status` enum + `profiles.status` / `profiles.last_login_at` + `public.record_profile_login()` RPC                    |
 | 12  | `20260720084000_auto_create_profile_on_signup.sql`     | TT-005     | `private.handle_new_auth_user()` + `on_auth_user_created_create_profile` trigger on `auth.users` (already applied externally) |
+| 13  | `20260720084500_reconcile_handle_new_auth_user_metadata_keys.sql` | TT-005 | Reconcile `handle_new_auth_user` with live DB: read `profile_status` (preferred) then legacy `status` (fallback) (already applied externally) |
 
 ## Tests
 
