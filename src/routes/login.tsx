@@ -1,5 +1,7 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
+import { z } from "zod";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,9 +12,23 @@ import {
   signOut,
 } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/env";
+import { DEFAULT_RETURN_PATH, sanitizeReturnPath } from "@/lib/return-path";
+
+/**
+ * Login route (TT-005 + TT-006).
+ *
+ * Accepts an optional `?redirect=<same-origin path>` search param preserved
+ * by the `_authenticated` gate. Any unsafe value is dropped by
+ * `sanitizeReturnPath` and the user lands on `/dashboard` instead.
+ */
+
+const SearchSchema = z.object({
+  redirect: z.string().optional(),
+});
 
 export const Route = createFileRoute("/login")({
   ssr: false,
+  validateSearch: (search) => SearchSchema.parse(search),
   head: () => ({
     meta: [
       { title: "Entrar · DP Suite" },
@@ -24,6 +40,8 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const router = useRouter();
+  const search = useSearch({ from: "/login" });
+  const returnTo = sanitizeReturnPath(search.redirect);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +59,7 @@ function LoginPage() {
         setError(humanReadableStatusError(status));
         return;
       }
-      await router.navigate({ to: "/app" });
+      await router.navigate({ to: returnTo || DEFAULT_RETURN_PATH });
     } catch (err) {
       // Errors from auth.ts are already generic PT strings; fall back defensively.
       setError(err instanceof Error ? err.message : "E-mail ou senha inválidos.");

@@ -2,17 +2,26 @@
 
 Plataforma SaaS de governança e conformidade para operações de Dynamic Positioning.
 
-> Estado atual: fundação técnica (TT-001), ambientes Development e Staging (TT-002), schema versionado com RLS e integridade cross-organization (TT-003 e TT-004), autenticação e sessão via Supabase (TT-005), casca do aplicativo com navegação lateral, cabeçalho e páginas base dos módulos (TT-006).
+> Estado atual: fundação técnica (TT-001), ambientes Development e Staging (TT-002), schema versionado com RLS e integridade cross-organization (TT-003 e TT-004), autenticação e sessão via Supabase (TT-005), casca do aplicativo com navegação lateral, cabeçalho, rota dinâmica de Ações e páginas base dos módulos (TT-006).
 
 ## Casca do aplicativo (TT-006)
 
 - **Layout responsivo**: `SidebarProvider` + `AppShell` (`src/components/app-shell.tsx`) envolvem toda rota sob `/_authenticated/`. Em telas pequenas a barra lateral colapsa para _offcanvas_; em telas grandes é fixa e minimizável ao modo ícone.
-- **Navegação lateral** (`src/components/app-sidebar.tsx`): agrupada em Operações (Dashboard, Ações, Notificações, Busca), Cadastros (Clientes, Embarcações, Usuários) e Conta (Configurações). A rota ativa é destacada via `useRouterState` — inclui prefixos, para rotas aninhadas futuras.
+- **Navegação lateral** (`src/components/app-sidebar.tsx`): agrupada em Operações (Dashboard, Ações, Notificações, Busca), Cadastros (Clientes, Embarcações, Usuários) e Conta (Configurações). A rota ativa é destacada via `useRouterState` e prefixos (por exemplo `/actions/$actionId` mantém Ações destacado).
 - **Cabeçalho** (`src/components/app-header.tsx`): `SidebarTrigger`, breadcrumb derivado do pathname (rótulos PT-BR) e menu do usuário exibindo nome, e-mail, organização e ação Sair.
-- **Rotas dos módulos**: `dashboard`, `actions`, `clients`, `vessels`, `users`, `notifications`, `settings`, `search` — cada arquivo em `src/routes/_authenticated/` com `head()` próprio (título/descrição). Os módulos que ainda não têm UI real usam `ModulePlaceholder` (`src/components/module-placeholder.tsx`).
-- **`/app` legado**: preservada como redirecionamento permanente para `/dashboard`, que é a nova landing autenticada.
-- **Páginas de status consistentes** (`src/components/status-pages.tsx`): `LoadingPage`, `ForbiddenPage` e `NotFoundPage` — reutilizadas pelo `_authenticated/route.tsx` (not-found interno) e pelo `__root.tsx` (not-found global).
-- **Sessão reutilizada**: nenhuma alteração no gate — o `beforeLoad` de TT-005 permanece a fonte da verdade (`fetchProfileStatus` + `fetchProfileHeader`). Sem mudanças no banco.
+- **Rotas privadas** (todas em `src/routes/_authenticated/`): `dashboard`, `actions` (índice), `actions.$actionId` (rota dinâmica com placeholder de detalhe), `clients`, `vessels`, `users`, `notifications`, `settings`, `search`. Cada arquivo declara seu `head()` (título/descrição). Módulos sem UI real usam `ModulePlaceholder`.
+- **`/app` legado**: preservada como redirecionamento permanente para `/dashboard`, que é a landing autenticada.
+- **Proteção e estados globais**: o layout `_authenticated/route.tsx` é o único gate.
+  - Sem sessão → redireciona para `/login` **preservando um return path same-origin** via `?redirect=<path>` (sanitizado por `src/lib/return-path.ts` — nunca aceita URLs absolutas, `//` ou rotas públicas de auth).
+  - Sessão válida mas perfil `inactive`/`blocked`/ausente/soft-deletado → `signOut()` e redireciona para `/access-blocked?status=…` (tela pública controlada, `noindex`), em vez de um `/login` cru sem contexto.
+  - Sessão + perfil `active` → renderiza a casca. `pendingComponent` mostra `LoadingPage`; `errorComponent` mostra um erro genérico em português; `notFoundComponent` reutiliza a `NotFoundPage`.
+- **Páginas de status consistentes** (`src/components/status-pages.tsx`): `LoadingPage`, `ForbiddenPage` e `NotFoundPage` — reutilizadas pelos boundaries do `_authenticated` e do `__root.tsx`.
+- **Visibilidade de menu é UX**: nenhuma decisão de autorização depende do frontend — a fonte da verdade é RLS no banco. Nenhum RBAC novo foi introduzido nesta task.
+- **Sem alterações de banco**: TT-006 é 100% frontend; as migrações versionadas de TT-005 seguem intactas.
+
+## Bootstrap do primeiro admin (Development / Staging)
+
+Template documentado em [`db/bootstrap/`](./db/bootstrap/). Explica passo a passo como um operador cria a primeira `public.organizations`, o primeiro usuário `auth.users` (via Auth Admin API / Studio — **nunca** por `INSERT` manual em `auth.users`) e obtém o `public.profiles` `active` correspondente através do trigger `on_auth_user_created_create_profile`. É idempotente onde possível, é somente Dev/Staging, não é executado automaticamente pela aplicação e **não contém credenciais reais** — todos os campos são placeholders que o operador preenche localmente e descarta após uso.
 
 ## Provisionamento automático de perfil (TT-005 follow-up)
 

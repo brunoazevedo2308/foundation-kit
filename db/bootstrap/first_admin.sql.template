@@ -1,0 +1,116 @@
+-- =============================================================================
+-- DP Suite — Development / Staging Bootstrap Template
+-- =============================================================================
+-- Purpose
+--   Guide an operator through creating the FIRST Organization + Supabase Auth
+--   user + ACTIVE Profile for a fresh DP Suite environment (Development or
+--   Staging). This template is documentation-plus-SQL: it is NEVER executed
+--   automatically by the application, contains NO real credentials, and is
+--   NOT intended for Production.
+--
+-- Security rules (non-negotiable)
+--   * Development / Staging ONLY. Never run against a Production project.
+--   * Never commit real e-mails, passwords, service_role keys, or fixed
+--     user UUIDs derived from a running database. Placeholders below.
+--   * The Supabase Auth user is created via the Supabase Auth Admin API
+--     (or the Studio "Users" tab) — NOT by inserting rows directly into
+--     `auth.users` with a hand-rolled password hash.
+--   * The Profile row is inserted through the `handle_new_auth_user` trigger
+--     by passing the correct `user_metadata`, so no service_role write on
+--     `public.profiles` is required.
+--
+-- Idempotency
+--   * Step 1 (Organization) uses ON CONFLICT (slug) DO NOTHING — safe to
+--     re-run.
+--   * Step 3 (Profile promotion) is a no-op when the profile is already
+--     `active`.
+--   * Step 2 (Auth user creation) is idempotent at the API level: calling
+--     `admin.createUser` again with the same e-mail returns an error the
+--     operator can safely ignore. Only create the user once.
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- Step 1 — Create the first Organization
+-- -----------------------------------------------------------------------------
+-- Run in the Supabase SQL Editor (privileged connection) or via psql with
+-- service_role. Replace <ORG_NAME> and <ORG_SLUG> with real values BEFORE
+-- executing. DO NOT commit real values back into the repo.
+
+-- <<<REPLACE>>> ORG_NAME  : Human-readable organization name
+-- <<<REPLACE>>> ORG_SLUG  : URL-safe slug (lowercase, hyphenated)
+
+insert into public.organizations (name, slug)
+values ('<ORG_NAME>', '<ORG_SLUG>')
+on conflict (slug) do nothing;
+
+-- Capture the organization id for the next step:
+--   select id from public.organizations where slug = '<ORG_SLUG>';
+
+-- -----------------------------------------------------------------------------
+-- Step 2 — Create the Auth user via the Supabase Admin API (NOT SQL)
+-- -----------------------------------------------------------------------------
+-- Do this exactly ONCE per environment. Prefer the Supabase Studio UI:
+--   Authentication → Users → "Add user" → "Create new user"
+--
+-- Or via the Admin API using the service_role key kept OUT of the repo:
+--
+--   curl -X POST "$SUPABASE_URL/auth/v1/admin/users" \
+--     -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+--     -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+--     -H "Content-Type: application/json" \
+--     -d '{
+--       "email": "<ADMIN_EMAIL>",
+--       "password": "<ADMIN_TEMP_PASSWORD>",
+--       "email_confirm": true,
+--       "user_metadata": {
+--         "full_name": "<ADMIN_FULL_NAME>",
+--         "organization_id": "<ORG_UUID_FROM_STEP_1>",
+--         "profile_status": "active"
+--       }
+--     }'
+--
+-- Notes:
+--   * `profile_status: "active"` is the ONLY value that promotes the profile
+--     to `active` on creation. Any other value falls back to `inactive`
+--     (see 20260720084500_reconcile_handle_new_auth_user_metadata_keys.sql).
+--   * The trigger `on_auth_user_created_create_profile` creates the matching
+--     `public.profiles` row automatically — do NOT insert into `public.profiles`
+--     from this script.
+--   * Rotate `<ADMIN_TEMP_PASSWORD>` immediately after first sign-in by using
+--     "Esqueci minha senha" or the Studio password reset.
+--   * Never commit `<ADMIN_TEMP_PASSWORD>` or the resulting user UUID.
+
+-- -----------------------------------------------------------------------------
+-- Step 3 — Verification / self-heal (idempotent)
+-- -----------------------------------------------------------------------------
+-- Run these to confirm the bootstrap succeeded and, if the trigger created
+-- the profile without `active` (e.g. missing metadata), promote it once.
+
+-- 3a. Confirm the auth user, profile and organization link.
+select
+  u.id            as auth_user_id,
+  u.email,
+  p.status        as profile_status,
+  p.full_name,
+  o.name          as organization_name
+from auth.users u
+left join public.profiles p on p.id = u.id
+left join public.organizations o on o.id = p.organization_id
+where u.email = '<ADMIN_EMAIL>';
+
+-- 3b. If profile_status came out as `inactive` (e.g. bootstrap ran without
+-- the `profile_status: "active"` metadata key), promote it once. This is a
+-- controlled admin action — leave commented out until the operator has
+-- verified the row above belongs to the intended human.
+--
+-- update public.profiles
+--    set status = 'active'
+--  where id = (select id from auth.users where email = '<ADMIN_EMAIL>')
+--    and status <> 'active'
+--    and deleted_at is null;
+
+-- =============================================================================
+-- Do NOT append this file's real-value edits back to the repository. Keep the
+-- template pristine and store filled values in your local password manager or
+-- the environment's secret vault.
+-- =============================================================================
