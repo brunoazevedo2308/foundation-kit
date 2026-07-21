@@ -392,11 +392,8 @@ export async function createEvidenceSignedUrl(
       error,
     );
   }
-  // Nunca logamos a URL completa — apenas origin+pathname para diagnóstico.
-  emitEvent({
-    event_name: "storage.upload.success",
-    severity: "debug",
-    context: { signed_url_masked: maskSignedUrl(data.signedUrl) },
-  });
+  // Sucesso silencioso: nunca logamos a URL completa. Se for útil ao
+  // diagnóstico, emita manualmente `maskSignedUrl(data.signedUrl)`.
+  void maskSignedUrl;
   return data.signedUrl;
 }
