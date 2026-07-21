@@ -55,9 +55,7 @@ function UsersPage() {
       })
       .catch((err) => {
         if (active) {
-          setError(
-            err instanceof Error ? err.message : "Não foi possível carregar os usuários.",
-          );
+          setError(err instanceof Error ? err.message : "Não foi possível carregar os usuários.");
         }
       })
       .finally(() => {
