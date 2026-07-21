@@ -6,6 +6,7 @@ import {
   uploadEvidence,
   createEvidenceSignedUrl,
   EvidenceStorageError,
+  EVIDENCE_ALLOWED_MIME_TYPES,
   EVIDENCE_MAX_BYTES,
   type EvidenceSupabaseLike,
 } from "./evidence-storage";
