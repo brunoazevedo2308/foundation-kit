@@ -35,6 +35,10 @@ export const Route = createFileRoute("/_authenticated")({
     }
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) {
+      emitEvent({
+        event_name: "auth.session.invalid",
+        context: { reason: error ? "getUser_error" : "no_user", error: sanitize(error) },
+      });
       throw redirect({
         to: "/login",
         search: buildLoginRedirectSearch(location.pathname + location.searchStr),
@@ -49,6 +53,8 @@ export const Route = createFileRoute("/_authenticated")({
         search: { status: status === "inactive" ? "inactive" : "blocked" },
       });
     }
+
+    emitEvent({ event_name: "auth.session.restored", user_id: data.user.id });
 
     const header = await fetchProfileHeader(data.user.id);
     return { user: data.user, profile: header };
