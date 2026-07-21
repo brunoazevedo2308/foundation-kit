@@ -22,7 +22,10 @@ export const Route = createFileRoute("/access-blocked")({
   head: () => ({
     meta: [
       { title: "Acesso indisponível · DP Suite" },
-      { name: "description", content: "Este acesso ao DP Suite está temporariamente indisponível." },
+      {
+        name: "description",
+        content: "Este acesso ao DP Suite está temporariamente indisponível.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),

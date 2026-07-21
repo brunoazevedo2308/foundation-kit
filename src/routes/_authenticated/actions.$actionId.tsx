@@ -58,8 +58,8 @@ function ActionDetailPage() {
           </div>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          Esta rota valida a convenção de parâmetros dinâmicos do TanStack Start
-          (<code className="rounded bg-muted px-1 py-0.5 text-xs">/actions/$actionId</code>) e serve
+          Esta rota valida a convenção de parâmetros dinâmicos do TanStack Start (
+          <code className="rounded bg-muted px-1 py-0.5 text-xs">/actions/$actionId</code>) e serve
           de âncora para os próximos passos: loader com RLS, mutações e histórico de auditoria.
         </CardContent>
       </Card>

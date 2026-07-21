@@ -18,9 +18,9 @@ Reusable, redacted templates for bringing up a fresh DP Suite environment.
      `on_auth_user_created_create_profile` trigger when the operator passes
      `user_metadata.profile_status = "active"` and a valid
      `user_metadata.organization_id`.
-  Includes a read-only verification query and a commented-out one-shot
-  promotion `UPDATE` for the case where the operator forgot the
-  `profile_status` metadata.
+     Includes a read-only verification query and a commented-out one-shot
+     promotion `UPDATE` for the case where the operator forgot the
+     `profile_status` metadata.
 
 ## Rules
 
