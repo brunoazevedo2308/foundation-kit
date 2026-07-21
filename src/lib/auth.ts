@@ -23,18 +23,32 @@ function client() {
 export type ProfileStatus = "active" | "inactive" | "blocked";
 
 export async function signInWithPassword(email: string, password: string) {
+  emitEvent({ event_name: "auth.login.attempt" });
   const { data, error } = await client().auth.signInWithPassword({ email, password });
   if (error) {
+    emitEvent({
+      event_name: "auth.login.failure",
+      context: { supabase_error: sanitize(error) },
+    });
     // Never leak Supabase error text. Any credential failure surfaces the
     // same message to prevent user enumeration.
     throw new Error("E-mail ou senha inválidos.");
   }
+  emitEvent({
+    event_name: "auth.login.success",
+    user_id: data.user?.id,
+  });
   return data;
 }
 
 export async function signOut() {
+  emitEvent({ event_name: "auth.logout" });
   const { error } = await client().auth.signOut();
   if (error) {
+    emitEvent({
+      event_name: "backend.request.failure",
+      context: { operation: "auth.signOut", supabase_error: sanitize(error) },
+    });
     throw new Error("Não foi possível encerrar a sessão.");
   }
 }
