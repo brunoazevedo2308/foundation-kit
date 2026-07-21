@@ -12,8 +12,8 @@ export default tseslint.config(
       ".output",
       ".vinxi",
       "src/routes/mcp.ts",
-      "src/routes/[.mcp]/**/*.ts",
-      "src/routes/[.well-known]/**/*.ts",
+      "src/routes/*mcp*/**/*.ts",
+      "src/routes/*well-known*/**/*.ts",
     ],
   },
   {
