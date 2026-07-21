@@ -24,7 +24,7 @@ describe("sanitizeEvidenceFilename", () => {
     expect(sanitizeEvidenceFilename("bad\x00name\x1f.pdf")).toBe("badname.pdf");
   });
   it("normalizes unsafe characters", () => {
-    expect(sanitizeEvidenceFilename("relatório final #1.PDF")).toBe("relat_rio_final__1.pdf");
+    expect(sanitizeEvidenceFilename("relatório final #1.PDF")).toBe("relat_rio_final_1.pdf");
   });
   it("preserves a single extension and lowercases it", () => {
     expect(sanitizeEvidenceFilename("Report.Final.DOCX")).toBe("Report.Final.docx");
