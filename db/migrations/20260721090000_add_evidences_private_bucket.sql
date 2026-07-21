@@ -8,14 +8,23 @@
 --
 -- Scope:
 --   * Register the private storage bucket `evidences-private` with a
---     50 MB per-object size limit and a whitelist of allowed MIME types.
---   * Install RLS policies on `storage.objects` restricted to this bucket
---     so that only authenticated members of the owning Organization with
---     an ACTIVE profile can INSERT/SELECT an object AND only when the
---     canonical path matches an existing row in `public.evidences` that
---     lives in the same Organization.
---   * No UPDATE / no DELETE policies: new versions must create a new
---     Evidence row (new id + new path). History is preserved.
+--     50 MiB per-object size limit and a strict whitelist of allowed
+--     MIME types: PDF, JPEG, PNG, WEBP, TXT, CSV, DOCX, XLSX.
+--     Legacy MS Office (.doc/.xls), PowerPoint (.ppt/.pptx) and GIF are
+--     intentionally NOT allowed.
+--   * Centralize object authorization in a single SECURITY DEFINER helper
+--     `private.can_access_evidence_object(name text)` that validates:
+--       - the canonical path shape;
+--       - matching public.evidences row (organization / action /
+--         deliverable / evidence, active + not soft-deleted);
+--       - caller is member of the same Organization with an ACTIVE,
+--         non-soft-deleted profile.
+--   * Storage RLS policies on `storage.objects` (bucket-scoped) reuse the
+--     helper. INSERT additionally requires `evidences.uploaded_by =
+--     auth.uid()` so an upload can only be performed by the profile that
+--     owns the metadata row.
+--   * No UPDATE / no DELETE policies by design: new versions must create
+--     a new Evidence row (new id + new path). History is preserved.
 --
 -- Canonical object path (enforced by RLS + module):
 --   organization/{organization_id}/actions/{action_id}/deliverables/{deliverable_id}/evidences/{evidence_id}/{filename}
@@ -31,18 +40,13 @@ values (
   52428800, -- 50 MiB
   array[
     'application/pdf',
-    'image/png',
     'image/jpeg',
+    'image/png',
     'image/webp',
-    'image/gif',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.ms-powerpoint',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     'text/plain',
-    'text/csv'
+    'text/csv',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
   ]
 )
 on conflict (id) do update set
@@ -51,67 +55,76 @@ on conflict (id) do update set
   allowed_mime_types = excluded.allowed_mime_types;
 
 -- =============================================================================
+-- Centralized authorization helper (SECURITY DEFINER)
+-- =============================================================================
+-- Returns true when `_name` matches an active evidence row in the caller's
+-- Organization AND the caller has an active profile in that Organization.
+-- Kept in the `private` schema so it never appears in the Data API.
+create or replace function private.can_access_evidence_object(_name text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = pg_catalog, public
+as $$
+  select exists (
+    select 1
+      from public.evidences   e
+      join public.deliverables d on d.id = e.deliverable_id
+      join public.profiles     p on p.id = auth.uid()
+     where e.deleted_at is null
+       and p.status = 'active'
+       and p.deleted_at is null
+       and p.organization_id = e.organization_id
+       and e.storage_path    = _name
+       and _name = format(
+             'organization/%s/actions/%s/deliverables/%s/evidences/%s/%s',
+             e.organization_id,
+             d.action_id,
+             e.deliverable_id,
+             e.id,
+             split_part(_name, '/', 9)
+           )
+  );
+$$;
+
+comment on function private.can_access_evidence_object(text) is
+  'Centralized authorization for storage.objects in the evidences-private '
+  'bucket. Validates canonical path, matching public.evidences row and '
+  'active membership of the caller in the owning Organization.';
+
+revoke all on function private.can_access_evidence_object(text) from public;
+grant execute on function private.can_access_evidence_object(text) to authenticated;
+
+-- =============================================================================
 -- RLS policies on storage.objects (scoped to the evidences bucket)
 -- =============================================================================
--- Drop-if-exists keeps the migration idempotent on re-runs.
 drop policy if exists "evidences_private_select" on storage.objects;
 drop policy if exists "evidences_private_insert" on storage.objects;
 
--- SELECT: authenticated members of the same Organization with an ACTIVE
--- profile may read the object only when the canonical path corresponds
--- to a live public.evidences row in the same Organization.
+-- SELECT: any active member of the owning Organization may read.
 create policy "evidences_private_select"
 on storage.objects for select
 to authenticated
 using (
   bucket_id = 'evidences-private'
-  and exists (
-    select 1
-      from public.evidences e
-      join public.deliverables d on d.id = e.deliverable_id
-      join public.profiles p     on p.id = auth.uid()
-     where e.deleted_at is null
-       and p.status = 'active'
-       and p.deleted_at is null
-       and p.organization_id = e.organization_id
-       and e.storage_path = storage.objects.name
-       and storage.objects.name = format(
-         'organization/%s/actions/%s/deliverables/%s/evidences/%s/%s',
-         e.organization_id,
-         d.action_id,
-         e.deliverable_id,
-         e.id,
-         split_part(storage.objects.name, '/', 9)
-       )
-  )
+  and private.can_access_evidence_object(storage.objects.name)
 );
 
--- INSERT: authenticated user with an ACTIVE profile may upload only if
--- the target object's name matches an already-inserted evidences row in
--- the same Organization (metadata-first flow).
+-- INSERT: same authorization as SELECT, plus the caller must be the
+-- `uploaded_by` on the metadata row (metadata-first flow).
 create policy "evidences_private_insert"
 on storage.objects for insert
 to authenticated
 with check (
   bucket_id = 'evidences-private'
+  and private.can_access_evidence_object(storage.objects.name)
   and exists (
     select 1
       from public.evidences e
-      join public.deliverables d on d.id = e.deliverable_id
-      join public.profiles p     on p.id = auth.uid()
-     where e.deleted_at is null
-       and p.status = 'active'
-       and p.deleted_at is null
-       and p.organization_id = e.organization_id
-       and e.storage_path = storage.objects.name
-       and storage.objects.name = format(
-         'organization/%s/actions/%s/deliverables/%s/evidences/%s/%s',
-         e.organization_id,
-         d.action_id,
-         e.deliverable_id,
-         e.id,
-         split_part(storage.objects.name, '/', 9)
-       )
+     where e.storage_path = storage.objects.name
+       and e.uploaded_by  = auth.uid()
+       and e.deleted_at is null
   )
 );
 

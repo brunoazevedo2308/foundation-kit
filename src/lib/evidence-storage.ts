@@ -19,19 +19,14 @@ export const EVIDENCE_BUCKET = "evidences-private";
 export const EVIDENCE_MAX_BYTES = 50 * 1024 * 1024; // 50 MiB
 export const EVIDENCE_ALLOWED_MIME_TYPES: readonly string[] = [
   "application/pdf",
-  "image/png",
   "image/jpeg",
+  "image/png",
   "image/webp",
-  "image/gif",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.ms-excel",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.ms-powerpoint",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   "text/plain",
   "text/csv",
-];
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+] as const;
 
 export type EvidenceErrorCode =
   | "invalid_filename"
