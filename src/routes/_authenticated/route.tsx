@@ -67,6 +67,7 @@ function AuthenticatedLayout() {
       displayName={displayName}
       organizationName={organizationName}
       email={user.email ?? ""}
+      role={profile.role}
     >
       <Outlet />
     </AppShell>

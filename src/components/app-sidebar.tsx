@@ -102,6 +102,7 @@ export function AppSidebar({ role }: { role: AppRole }) {
       <SidebarContent>
         {renderGroup("Operações", operational)}
         {renderGroup("Cadastros", registry)}
+        {role === "system_admin" && renderGroup("Administração", administration)}
         {renderGroup("Conta", account)}
       </SidebarContent>
     </Sidebar>
