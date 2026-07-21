@@ -102,6 +102,34 @@ describe("validateEvidenceFile", () => {
       expect((e as EvidenceStorageError).code).toBe("mime_not_allowed");
     }
   });
+  it("exposes exactly the approved MIME whitelist (mirrors remote)", () => {
+    expect([...EVIDENCE_ALLOWED_MIME_TYPES].sort()).toEqual(
+      [
+        "application/pdf",
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "text/plain",
+        "text/csv",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      ].sort(),
+    );
+  });
+  it.each([
+    "image/gif",
+    "application/msword",
+    "application/vnd.ms-excel",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ])("rejects legacy/removed MIME type %s", (mime) => {
+    try {
+      validateEvidenceFile({ name: "x.bin", size: 10, type: mime });
+      throw new Error("expected throw");
+    } catch (e) {
+      expect((e as EvidenceStorageError).code).toBe("mime_not_allowed");
+    }
+  });
 });
 
 // ---- upload flow with mocked Supabase --------------------------------------
