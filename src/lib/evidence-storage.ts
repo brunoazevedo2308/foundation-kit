@@ -1,3 +1,4 @@
+import { emitEvent, maskSignedUrl, sanitize } from "./observability";
 import { supabase } from "./supabase";
 
 /**
@@ -261,6 +262,18 @@ export async function uploadEvidence(
     .single();
 
   if (insertError) {
+    emitEvent({
+      event_name: "storage.upload.failure",
+      user_id: input.uploadedBy,
+      organization_id: input.organizationId,
+      context: {
+        stage: "metadata_insert",
+        file_name: fileName,
+        mime_type: mimeType,
+        size_bytes: sizeBytes,
+        error: sanitize(insertError),
+      },
+    });
     throw new EvidenceStorageError(
       "metadata_insert_failed",
       "Não foi possível registrar a evidência. Verifique suas permissões e tente novamente.",
@@ -275,26 +288,69 @@ export async function uploadEvidence(
   if (uploadError) {
     // Compensating action: soft-delete the metadata row so we don't leave
     // orphan metadata behind. We never call service_role from the browser.
+    emitEvent({
+      event_name: "storage.upload.compensating_cleanup",
+      user_id: input.uploadedBy,
+      organization_id: input.organizationId,
+      context: {
+        evidence_id: evidenceId,
+        file_name: fileName,
+        upload_error: sanitize(uploadError),
+      },
+    });
     const { error: cleanupError } = await client
       .from("evidences")
       .update({ deleted_at: new Date().toISOString() })
       .eq("id", evidenceId);
     if (cleanupError) {
-      // Cleanup failed — surface a distinct error so the caller can log,
-      // but never expose service_role. A background job/admin will need
-      // to reconcile.
+      emitEvent({
+        event_name: "storage.upload.failure",
+        severity: "critical",
+        user_id: input.uploadedBy,
+        organization_id: input.organizationId,
+        context: {
+          stage: "cleanup_failed",
+          evidence_id: evidenceId,
+          upload_error: sanitize(uploadError),
+          cleanup_error: sanitize(cleanupError),
+        },
+      });
       throw new EvidenceStorageError(
         "upload_failed",
         "Falha ao enviar o arquivo. A evidência ficou pendente de limpeza — contate um administrador.",
         { uploadError, cleanupError },
       );
     }
+    emitEvent({
+      event_name: "storage.upload.failure",
+      user_id: input.uploadedBy,
+      organization_id: input.organizationId,
+      context: {
+        stage: "storage_upload",
+        evidence_id: evidenceId,
+        file_name: fileName,
+        error: sanitize(uploadError),
+      },
+    });
     throw new EvidenceStorageError(
       "upload_failed",
       "Falha ao enviar o arquivo. Tente novamente.",
       uploadError,
     );
   }
+
+  emitEvent({
+    event_name: "storage.upload.success",
+    user_id: input.uploadedBy,
+    organization_id: input.organizationId,
+    context: {
+      evidence_id: evidenceId,
+      file_name: fileName,
+      mime_type: mimeType,
+      size_bytes: sizeBytes,
+      version_number: versionNumber,
+    },
+  });
 
   return {
     evidenceId,
@@ -326,11 +382,21 @@ export async function createEvidenceSignedUrl(
     .from(EVIDENCE_BUCKET)
     .createSignedUrl(storagePath, ttl);
   if (error || !data?.signedUrl) {
+    emitEvent({
+      event_name: "storage.signed_url.failure",
+      context: { storage_path: storagePath, error: sanitize(error) },
+    });
     throw new EvidenceStorageError(
       "signed_url_failed",
       "Não foi possível gerar o link de download.",
       error,
     );
   }
+  // Nunca logamos a URL completa — apenas origin+pathname para diagnóstico.
+  emitEvent({
+    event_name: "storage.upload.success",
+    severity: "debug",
+    context: { signed_url_masked: maskSignedUrl(data.signedUrl) },
+  });
   return data.signedUrl;
 }
