@@ -23,7 +23,6 @@ Plataforma SaaS de governança e conformidade para operações de Dynamic Positi
 
 Template documentado em [`db/bootstrap/`](./db/bootstrap/). Explica passo a passo como um operador cria a primeira `public.organizations`, o primeiro usuário `auth.users` (via Auth Admin API / Studio — **nunca** por `INSERT` manual em `auth.users`) e obtém o `public.profiles` `active` correspondente através do trigger `on_auth_user_created_create_profile`. É idempotente onde possível, é somente Dev/Staging, não é executado automaticamente pela aplicação e **não contém credenciais reais** — todos os campos são placeholders que o operador preenche localmente e descarta após uso.
 
-
 ## Provisionamento automático de perfil (TT-005 follow-up)
 
 Duas migrações compõem este ajuste (ambas já aplicadas externamente no Development):
