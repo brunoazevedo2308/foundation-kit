@@ -2,7 +2,17 @@
 
 Plataforma SaaS de governança e conformidade para operações de Dynamic Positioning.
 
-> Estado atual: fundação técnica (TT-001), ambientes Development e Staging (TT-002), schema versionado com RLS e integridade cross-organization (TT-003 e TT-004), autenticação e sessão via Supabase (TT-005).
+> Estado atual: fundação técnica (TT-001), ambientes Development e Staging (TT-002), schema versionado com RLS e integridade cross-organization (TT-003 e TT-004), autenticação e sessão via Supabase (TT-005), casca do aplicativo com navegação lateral, cabeçalho e páginas base dos módulos (TT-006).
+
+## Casca do aplicativo (TT-006)
+
+- **Layout responsivo**: `SidebarProvider` + `AppShell` (`src/components/app-shell.tsx`) envolvem toda rota sob `/_authenticated/`. Em telas pequenas a barra lateral colapsa para _offcanvas_; em telas grandes é fixa e minimizável ao modo ícone.
+- **Navegação lateral** (`src/components/app-sidebar.tsx`): agrupada em Operações (Dashboard, Ações, Notificações, Busca), Cadastros (Clientes, Embarcações, Usuários) e Conta (Configurações). A rota ativa é destacada via `useRouterState` — inclui prefixos, para rotas aninhadas futuras.
+- **Cabeçalho** (`src/components/app-header.tsx`): `SidebarTrigger`, breadcrumb derivado do pathname (rótulos PT-BR) e menu do usuário exibindo nome, e-mail, organização e ação Sair.
+- **Rotas dos módulos**: `dashboard`, `actions`, `clients`, `vessels`, `users`, `notifications`, `settings`, `search` — cada arquivo em `src/routes/_authenticated/` com `head()` próprio (título/descrição). Os módulos que ainda não têm UI real usam `ModulePlaceholder` (`src/components/module-placeholder.tsx`).
+- **`/app` legado**: preservada como redirecionamento permanente para `/dashboard`, que é a nova landing autenticada.
+- **Páginas de status consistentes** (`src/components/status-pages.tsx`): `LoadingPage`, `ForbiddenPage` e `NotFoundPage` — reutilizadas pelo `_authenticated/route.tsx` (not-found interno) e pelo `__root.tsx` (not-found global).
+- **Sessão reutilizada**: nenhuma alteração no gate — o `beforeLoad` de TT-005 permanece a fonte da verdade (`fetchProfileStatus` + `fetchProfileHeader`). Sem mudanças no banco.
 
 ## Autenticação e sessão (TT-005)
 
