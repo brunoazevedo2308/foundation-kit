@@ -27,7 +27,6 @@ export const EVIDENCE_ALLOWED_MIME_TYPES: readonly string[] = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 ] as const;
-];
 
 export type EvidenceErrorCode =
   | "invalid_filename"
