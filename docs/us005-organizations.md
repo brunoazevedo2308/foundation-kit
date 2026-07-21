@@ -21,7 +21,7 @@ Fluxo administrativo para criação de organizações clientes no DP Suite.
 3. O frontend chama **exclusivamente** a RPC remota, com a assinatura
    nominal e ordem exatas:
    `public.create_organization(_legal_name, _display_name, _country_code,
- _primary_email, _status, _default_language, _timezone, _date_format)`.
+_primary_email, _status, _default_language, _timezone, _date_format)`.
    Nenhum caminho da UI faz `insert` direto em `public.organizations`.
 4. A RPC retorna uma única linha composta de `public.organizations` (não
    `SETOF`). O PostgREST entrega o resultado como objeto (ou, em alguns
