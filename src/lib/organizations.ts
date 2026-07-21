@@ -58,7 +58,7 @@ export type CreateOrganizationInput = z.infer<typeof CreateOrganizationSchema>;
  * Categorias de erro mapeadas para mensagens amigáveis em PT-BR.
  * `denied`     — 42501 (RPC recusou por falta de privilégio).
  * `validation` — 23514/22P02 (constraint/enum).
- * `conflict`   — 23505 ou índice único (legal_name / slug).
+ * `conflict`   — 23505 (violação de unicidade — ex.: slug).
  * `unknown`    — qualquer outro erro (rede, indisponibilidade).
  */
 export type OrganizationErrorKind = "denied" | "validation" | "conflict" | "unknown";
@@ -95,7 +95,7 @@ export function mapCreateOrganizationError(err: PostgrestLikeError): CreateOrgan
   if (code === "23505" || message.includes("duplicate") || message.includes("unique")) {
     return new CreateOrganizationError(
       "conflict",
-      "Já existe uma organização com essa razão social.",
+      "Conflito ao gravar a organização. Tente novamente.",
     );
   }
   if (code === "23514" || code === "22P02") {
@@ -110,8 +110,29 @@ export function mapCreateOrganizationError(err: PostgrestLikeError): CreateOrgan
   );
 }
 
-/** Executa a RPC oficial. Nunca insere diretamente em `organizations`. */
-export async function createOrganization(input: CreateOrganizationInput): Promise<string> {
+/** Registro retornado pela RPC `public.create_organization` (SETOF organizations). */
+export type CreatedOrganization = {
+  id: string;
+  name: string;
+  slug: string;
+  legal_name: string | null;
+  country_code: string | null;
+  primary_email: string | null;
+  status: OrganizationStatus;
+  default_language: string;
+  timezone: string;
+  date_format: string;
+};
+
+/**
+ * Executa a RPC oficial. Nunca insere diretamente em `organizations`.
+ * A RPC remota retorna a linha completa de `public.organizations` — o
+ * PostgREST entrega isso como objeto (ou array de um objeto, dependendo
+ * do modo `SETOF`). Normalizamos ambos os formatos antes de devolver.
+ */
+export async function createOrganization(
+  input: CreateOrganizationInput,
+): Promise<CreatedOrganization> {
   if (!supabase) {
     throw new CreateOrganizationError(
       "unknown",
@@ -130,8 +151,10 @@ export async function createOrganization(input: CreateOrganizationInput): Promis
     _date_format: parsed.dateFormat,
   });
   if (error) throw mapCreateOrganizationError(error as PostgrestLikeError);
-  if (typeof data !== "string") {
+
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row || typeof row !== "object" || typeof (row as { id?: unknown }).id !== "string") {
     throw new CreateOrganizationError("unknown", "Resposta inesperada do servidor.");
   }
-  return data;
+  return row as CreatedOrganization;
 }
