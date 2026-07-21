@@ -16,16 +16,20 @@ Plataforma SaaS de governança e conformidade para operações de Dynamic Positi
 
 ## Provisionamento automático de perfil (TT-005 follow-up)
 
-Migração `db/migrations/20260720084000_auto_create_profile_on_signup.sql` (já aplicada externamente no Development). Instala `private.handle_new_auth_user()` (SECURITY DEFINER, `search_path` fixado em `pg_catalog, public`) e o trigger `on_auth_user_created_create_profile` em `auth.users` (AFTER INSERT).
+Duas migrações compõem este ajuste (ambas já aplicadas externamente no Development):
+
+- `db/migrations/20260720084000_auto_create_profile_on_signup.sql` — instala `private.handle_new_auth_user()` (SECURITY DEFINER, `search_path` fixado em `pg_catalog, public`) e o trigger `on_auth_user_created_create_profile` em `auth.users` (AFTER INSERT).
+- `db/migrations/20260720084500_reconcile_handle_new_auth_user_metadata_keys.sql` — reconcilia a função com o estado atual do banco: passa a ler `profile_status` como chave preferencial no metadata e aceita `status` como fallback legado.
 
 Regras aplicadas:
 
 - **Só cria perfil quando** o metadata de signup traz `organization_id` presente, parseável como UUID e referenciando uma `public.organizations` **não** soft-deletada. Sem organização válida, o trigger é no-op — o usuário fica sem perfil e o app o reporta como `blocked`.
-- **Status padrão `inactive`.** `active` só é atribuído quando o metadata declara explicitamente `status = 'active'` (fluxo controlado de convite/ativação). Qualquer outro valor (inclusive `'blocked'` injetado no metadata) faz fallback para `inactive` — o metadata não pode forçar bloqueio.
+- **Chave do status**: `metadata.profile_status` (preferencial). Se ausente, cai para `metadata.status` (compatibilidade). Quando ambas estão presentes, `profile_status` vence.
+- **Status padrão `inactive`.** `active` só é atribuído quando a chave escolhida vale literalmente `'active'` (fluxo controlado de convite/ativação). Qualquer outro valor (inclusive `'blocked'` injetado no metadata) faz fallback para `inactive` — o metadata não pode forçar bloqueio.
 - **`full_name`** vem de `metadata.full_name`; se ausente, é derivado do prefixo do e-mail (parte antes de `@`).
 - **Nunca sobrescreve** um perfil pré-existente: se já há linha em `public.profiles` para o `NEW.id`, o trigger retorna sem mudanças.
 
-Teste transacional reproduzível: `db/tests/tt005_auto_profile_on_signup.sql` (cobre os oito cenários acima; encerra em `ROLLBACK`).
+Teste transacional reproduzível: `db/tests/tt005_auto_profile_on_signup.sql` (cobre organização válida/ausente/malformada/desconhecida/soft-deletada, precedência `profile_status`→`status`, fallback de valores inseguros, derivação de `full_name` e no-op sobre perfil pré-existente; encerra em `ROLLBACK`).
 
 ## Autenticação e sessão (TT-005)
 
