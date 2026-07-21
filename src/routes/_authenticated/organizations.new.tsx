@@ -1,4 +1,5 @@
-import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router";
+import { CheckCircle2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import {
   ORG_STATUSES,
   createOrganization,
   type CreateOrganizationInput,
+  type CreatedOrganization,
 } from "@/lib/organizations";
 
 /**
