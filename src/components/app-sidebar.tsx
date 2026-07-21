@@ -9,7 +9,10 @@ import {
   Settings,
   Search,
   Anchor,
+  Landmark,
 } from "lucide-react";
+
+import type { AppRole } from "@/lib/auth";
 
 import {
   Sidebar,
@@ -49,7 +52,11 @@ const registry: NavItem[] = [
 
 const account: NavItem[] = [{ title: "Configurações", url: "/settings", icon: Settings }];
 
-export function AppSidebar() {
+const administration: NavItem[] = [
+  { title: "Organizations", url: "/organizations", icon: Landmark },
+];
+
+export function AppSidebar({ role }: { role: AppRole }) {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const pathname = useRouterState({ select: (r) => r.location.pathname });
