@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Activity, ListChecks, Users, Ship } from "lucide-react";
+import { Activity, CalendarClock, ListChecks, PackageCheck } from "lucide-react";
 
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,11 +15,27 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
 });
 
-const kpis = [
-  { label: "Ações abertas", value: "—", icon: ListChecks },
-  { label: "Embarcações ativas", value: "—", icon: Ship },
-  { label: "Usuários", value: "—", icon: Users },
-  { label: "Eventos recentes", value: "—", icon: Activity },
+const placeholders = [
+  {
+    label: "Ações",
+    icon: ListChecks,
+    description: "Lista de ações de governança DP aparecerá aqui em uma task futura.",
+  },
+  {
+    label: "Itens vencidos",
+    icon: CalendarClock,
+    description: "Ações e deliverables vencidos serão listados aqui em uma task futura.",
+  },
+  {
+    label: "Deliverables",
+    icon: PackageCheck,
+    description: "Entregáveis vinculados às ações aparecerão aqui em uma task futura.",
+  },
+  {
+    label: "Atividade recente",
+    icon: Activity,
+    description: "Eventos e auditoria recentes aparecerão aqui em uma task futura.",
+  },
 ];
 
 function DashboardPage() {
@@ -34,16 +50,16 @@ function DashboardPage() {
         description={`Painel da organização ${organizationName}.`}
         actions={<Badge variant="secondary">TT-006 · Shell</Badge>}
       />
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {kpis.map(({ label, value, icon: Icon }) => (
-          <Card key={label}>
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Resumo do dashboard">
+        {placeholders.map(({ label, icon: Icon, description }) => (
+          <Card key={label} className="opacity-80">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
               <Icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-semibold tracking-tight">{value}</p>
-              <p className="mt-1 text-xs text-muted-foreground">Dados chegam nas próximas tasks</p>
+              <p className="text-3xl font-semibold tracking-tight text-muted-foreground">—</p>
+              <p className="mt-2 text-xs text-muted-foreground">{description}</p>
             </CardContent>
           </Card>
         ))}
