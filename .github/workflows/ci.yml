@@ -33,12 +33,21 @@ jobs:
         run: bun run build > /tmp/build.log 2>&1 || (cat /tmp/build.log && exit 1)
 
       - name: Typecheck
+        id: typecheck
         shell: bash
         run: |
-          if ! bun run typecheck > /tmp/typecheck.log 2>&1; then
-            cat /tmp/typecheck.log
-            exit 1
-          fi
+          bun run typecheck > typecheck.log 2>&1
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-diagnostics
+          path: |
+            typecheck.log
+            /tmp/build.log
+          if-no-files-found: ignore
+          retention-days: 1
 
       - name: Lint
         run: bun run lint
