@@ -32,19 +32,20 @@ SQL Editor (Development only).
 Migrations are applied in filename (timestamp) order. Always run them
 sequentially; never skip or reorder.
 
-| #   | Migration                                              | Task       | Summary                                                                                                           |
-| --- | ------------------------------------------------------ | ---------- | ----------------------------------------------------------------------------------------------------------------- |
-| 1   | `20260720073636_init_organizations_profiles.sql`       | TT-003.1   | `organizations`, `profiles` (RLS on, no policies yet)                                                             |
-| 2   | `20260720074347_add_clients_vessels.sql`               | TT-003.2   | `clients`, `vessels` (RLS on, no policies yet)                                                                    |
-| 3   | `20260720075000_add_actions.sql`                       | TT-003.3   | `actions` (RLS on, no policies yet)                                                                               |
-| 4   | `20260720075500_add_deliverables.sql`                  | TT-003.4   | `deliverables` (RLS on, no policies yet)                                                                          |
-| 5   | `20260720080000_add_collab_and_audit.sql`              | TT-003.5   | `user_vessels`, `evidences`, `comments`, `attachments`, `notifications`, `audit_events` (RLS on, no policies yet) |
-| 6   | `20260720080500_harden_function_search_paths.sql`      | TT-003.6   | Harden `search_path` on `set_updated_at()` and `prevent_audit_event_mutation()`                                   |
-| 7   | `20260720081000_rls_read_isolation.sql`                | TT-004.1   | `current_organization_id()` + SELECT policies scoping reads to caller's org                                       |
-| 8   | `20260720081500_rls_write_isolation.sql`               | TT-004.2   | INSERT/UPDATE policies + cross-org integrity triggers (no DELETE)                                                 |
-| 9   | `20260720082000_move_rls_helper_private.sql`           | TT-004.2.1 | Move `current_organization_id()` to `private` schema (out of PostgREST API)                                       |
-| 10  | `20260720082500_fix_cross_org_trigger_bypass.sql`      | TT-004.2.2 | Cross-org triggers as SECURITY DEFINER; `assert_same_org` rejects NULL; EXECUTE restricted to `service_role`      |
-| 11  | `20260720083000_add_profile_status_and_last_login.sql` | TT-005     | `profile_status` enum + `profiles.status` / `profiles.last_login_at` + `public.record_profile_login()` RPC        |
+| #   | Migration                                              | Task       | Summary                                                                                                                       |
+| --- | ------------------------------------------------------ | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `20260720073636_init_organizations_profiles.sql`       | TT-003.1   | `organizations`, `profiles` (RLS on, no policies yet)                                                                         |
+| 2   | `20260720074347_add_clients_vessels.sql`               | TT-003.2   | `clients`, `vessels` (RLS on, no policies yet)                                                                                |
+| 3   | `20260720075000_add_actions.sql`                       | TT-003.3   | `actions` (RLS on, no policies yet)                                                                                           |
+| 4   | `20260720075500_add_deliverables.sql`                  | TT-003.4   | `deliverables` (RLS on, no policies yet)                                                                                      |
+| 5   | `20260720080000_add_collab_and_audit.sql`              | TT-003.5   | `user_vessels`, `evidences`, `comments`, `attachments`, `notifications`, `audit_events` (RLS on, no policies yet)             |
+| 6   | `20260720080500_harden_function_search_paths.sql`      | TT-003.6   | Harden `search_path` on `set_updated_at()` and `prevent_audit_event_mutation()`                                               |
+| 7   | `20260720081000_rls_read_isolation.sql`                | TT-004.1   | `current_organization_id()` + SELECT policies scoping reads to caller's org                                                   |
+| 8   | `20260720081500_rls_write_isolation.sql`               | TT-004.2   | INSERT/UPDATE policies + cross-org integrity triggers (no DELETE)                                                             |
+| 9   | `20260720082000_move_rls_helper_private.sql`           | TT-004.2.1 | Move `current_organization_id()` to `private` schema (out of PostgREST API)                                                   |
+| 10  | `20260720082500_fix_cross_org_trigger_bypass.sql`      | TT-004.2.2 | Cross-org triggers as SECURITY DEFINER; `assert_same_org` rejects NULL; EXECUTE restricted to `service_role`                  |
+| 11  | `20260720083000_add_profile_status_and_last_login.sql` | TT-005     | `profile_status` enum + `profiles.status` / `profiles.last_login_at` + `public.record_profile_login()` RPC                    |
+| 12  | `20260720084000_auto_create_profile_on_signup.sql`     | TT-005     | `private.handle_new_auth_user()` + `on_auth_user_created_create_profile` trigger on `auth.users` (already applied externally) |
 
 ## Tests
 
