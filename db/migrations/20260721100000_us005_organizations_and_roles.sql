@@ -7,24 +7,29 @@
 -- aligned with the database.
 --
 -- Scope:
---   * `public.app_role` enum with values (system_admin, organization_admin, member).
+--   * `public.app_role` enum (system_admin, organization_admin, member).
 --   * `public.profiles.role` column (default 'member').
---   * `public.organization_status` enum (active, inactive) — the initial
---     lifecycle values approved for US-005.
---   * Extend `public.organizations` with the fields required by US-005:
---     legal_name, country_code (ISO-3166 alpha-2), primary_email, status,
---     default_language, timezone, date_format. The existing `name` column
---     keeps its role as the human display name.
---   * `public.create_organization(...)` — SECURITY DEFINER RPC that only
---     an active `system_admin` may execute. Validates inputs, normalizes
---     text, enforces uniqueness on lower(legal_name), inserts the row and
---     returns the new organization id.
+--   * `public.organization_status` enum (active, inactive).
+--   * Extend `public.organizations` with the US-005 fields:
+--       legal_name, country_code (ISO-3166 alpha-2), primary_email,
+--       status, default_language, timezone, date_format.
+--     The existing `name` column keeps its role as the human display name.
+--   * `private.is_system_admin()` — SECURITY DEFINER helper that returns
+--     true only for an active caller whose profile has role='system_admin'.
+--   * `public.create_organization(_legal_name, _display_name,
+--     _country_code, _primary_email, _status, _default_language,
+--     _timezone, _date_format)` — SECURITY DEFINER RPC returning the full
+--     `public.organizations` row. Executes only for system admins.
+--     Inserts the audit event `organization.created` itself; no trigger
+--     is used for auditing this action.
+--   * Hardened privileges: EXECUTE granted only to `authenticated`;
+--     revoked from `public` and `anon`.
 --
--- Non-goals: no data changes, no changes to RLS policies, no membership
--- model, no seed data.
+-- Non-goals: no unique index on legal_name in this delivery, no data
+-- changes, no changes to RLS policies for organizations, no seeds.
 
 -- -----------------------------------------------------------------------------
--- Enum: app_role
+-- Enums
 -- -----------------------------------------------------------------------------
 do $$
 begin
@@ -34,9 +39,6 @@ begin
 end
 $$;
 
--- -----------------------------------------------------------------------------
--- Enum: organization_status
--- -----------------------------------------------------------------------------
 do $$
 begin
   if not exists (select 1 from pg_type where typname = 'organization_status') then
@@ -94,49 +96,77 @@ begin
 end
 $$;
 
-create unique index if not exists organizations_legal_name_ci_uidx
-  on public.organizations (lower(legal_name))
-  where deleted_at is null and legal_name is not null;
+-- NOTE: No unique index on lower(legal_name) is present on the remote in
+-- this delivery. Duplicate detection is intentionally NOT enforced here.
+
+-- -----------------------------------------------------------------------------
+-- Helper: private.is_system_admin()
+-- -----------------------------------------------------------------------------
+create schema if not exists private;
+
+create or replace function private.is_system_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = pg_catalog, public
+as $$
+  select exists (
+    select 1
+    from public.profiles p
+    where p.id = auth.uid()
+      and p.deleted_at is null
+      and p.status = 'active'
+      and p.role   = 'system_admin'
+  );
+$$;
+
+comment on function private.is_system_admin() is
+  'True only when auth.uid() is an ACTIVE system_admin profile. SECURITY DEFINER helper for RPCs.';
+
+revoke all on function private.is_system_admin() from public;
+revoke all on function private.is_system_admin() from anon;
+grant execute on function private.is_system_admin() to authenticated;
 
 -- -----------------------------------------------------------------------------
 -- RPC: public.create_organization
 --
--- SECURITY DEFINER: bypasses RLS to insert into public.organizations, but
--- gates execution by requiring an active caller with role = 'system_admin'.
--- Any other caller receives SQLSTATE 42501.
+-- Signature and column order MUST match the remote exactly:
+--   (_legal_name, _display_name, _country_code, _primary_email,
+--    _status, _default_language, _timezone, _date_format)
+-- Returns the full public.organizations row (RETURNS SETOF).
 -- -----------------------------------------------------------------------------
+-- Drop any pre-existing overload so this script is safe to re-run and
+-- guarantees only the canonical signature survives.
+drop function if exists public.create_organization(
+  text, text, text, text, public.organization_status, text, text, text
+);
+
 create or replace function public.create_organization(
-  _country_code     text,
-  _date_format      text,
-  _default_language text,
-  _display_name     text,
   _legal_name       text,
+  _display_name     text,
+  _country_code     text,
   _primary_email    text,
   _status           public.organization_status,
-  _timezone         text
+  _default_language text,
+  _timezone         text,
+  _date_format      text
 )
-returns uuid
+returns setof public.organizations
 language plpgsql
 security definer
 set search_path = pg_catalog, public
 as $$
 declare
-  _uid    uuid := auth.uid();
-  _role   public.app_role;
-  _pstat  public.profile_status;
-  _id     uuid;
-  _slug   text;
+  _uid  uuid := auth.uid();
+  _slug text;
+  _row  public.organizations;
 begin
   if _uid is null then
     raise exception 'authentication required' using errcode = '28000';
   end if;
 
-  select role, status
-    into _role, _pstat
-  from public.profiles
-  where id = _uid;
-
-  if _role is null or _pstat is distinct from 'active' or _role <> 'system_admin' then
+  if not private.is_system_admin() then
     raise exception 'Only an active System Admin can create an organization'
       using errcode = '42501';
   end if;
@@ -163,14 +193,8 @@ begin
     raise exception 'primary_email is invalid' using errcode = '23514';
   end if;
 
-  -- Slug derived from display name (best-effort; unique index on organizations.slug).
-  _slug := regexp_replace(lower(_display_name), '[^a-z0-9]+', '-', 'g');
-  _slug := btrim(_slug, '-');
-  if length(_slug) = 0 then
-    _slug := 'org-' || substr(gen_random_uuid()::text, 1, 8);
-  else
-    _slug := _slug || '-' || substr(gen_random_uuid()::text, 1, 8);
-  end if;
+  -- Slug canônico: prefixo "org-" + sufixo aleatório curto.
+  _slug := 'org-' || substr(replace(gen_random_uuid()::text, '-', ''), 1, 8);
 
   insert into public.organizations(
     name, slug, legal_name, country_code, primary_email,
@@ -180,23 +204,46 @@ begin
     _display_name, _slug, _legal_name, _country_code, _primary_email,
     _status, _default_language, _timezone, _date_format
   )
-  returning id into _id;
+  returning * into _row;
 
-  return _id;
+  -- Audit trail is written by the RPC itself (no trigger for this action).
+  insert into public.audit_events(organization_id, actor_id, event_type, payload)
+  values (
+    _row.id,
+    _uid,
+    'organization.created',
+    jsonb_build_object(
+      'organization_id', _row.id,
+      'name',            _row.name,
+      'slug',            _row.slug,
+      'legal_name',      _row.legal_name,
+      'country_code',    _row.country_code,
+      'primary_email',   _row.primary_email,
+      'status',          _row.status,
+      'default_language', _row.default_language,
+      'timezone',        _row.timezone,
+      'date_format',     _row.date_format
+    )
+  );
+
+  return next _row;
 end;
 $$;
 
 comment on function public.create_organization(
-  text, text, text, text, text, text, public.organization_status, text
+  text, text, text, text, public.organization_status, text, text, text
 ) is
-  'US-005: creates an Organization. SECURITY DEFINER — only an active system_admin may execute. Enforces validation, uniqueness on lower(legal_name) and returns the new id.';
+  'US-005: creates an Organization. SECURITY DEFINER — only an active system_admin may execute. Writes its own organization.created audit event and returns the new row.';
 
+-- -----------------------------------------------------------------------------
+-- Hardening: authenticated-only EXECUTE. Anon/public revoked.
+-- -----------------------------------------------------------------------------
 revoke all on function public.create_organization(
-  text, text, text, text, text, text, public.organization_status, text
+  text, text, text, text, public.organization_status, text, text, text
 ) from public;
 revoke all on function public.create_organization(
-  text, text, text, text, text, text, public.organization_status, text
+  text, text, text, text, public.organization_status, text, text, text
 ) from anon;
 grant execute on function public.create_organization(
-  text, text, text, text, text, text, public.organization_status, text
+  text, text, text, text, public.organization_status, text, text, text
 ) to authenticated;
