@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  CreateOrganizationSchema,
-  mapCreateOrganizationError,
-} from "./organizations";
+import { CreateOrganizationSchema, mapCreateOrganizationError } from "./organizations";
 
 const validInput = {
   legalName: "Nobru Marine Solutions LTDA",
@@ -29,13 +26,20 @@ describe("CreateOrganizationSchema", () => {
   });
 
   it("rejects invalid email", () => {
-    const result = CreateOrganizationSchema.safeParse({ ...validInput, primaryEmail: "not-an-email" });
+    const result = CreateOrganizationSchema.safeParse({
+      ...validInput,
+      primaryEmail: "not-an-email",
+    });
     expect(result.success).toBe(false);
   });
 
   it("rejects blank legal_name / display_name", () => {
-    expect(CreateOrganizationSchema.safeParse({ ...validInput, legalName: "" }).success).toBe(false);
-    expect(CreateOrganizationSchema.safeParse({ ...validInput, displayName: " " }).success).toBe(false);
+    expect(CreateOrganizationSchema.safeParse({ ...validInput, legalName: "" }).success).toBe(
+      false,
+    );
+    expect(CreateOrganizationSchema.safeParse({ ...validInput, displayName: " " }).success).toBe(
+      false,
+    );
   });
 
   it("rejects unknown enum values", () => {
