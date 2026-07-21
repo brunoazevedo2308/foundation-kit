@@ -1,11 +1,14 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { AppShell } from "@/components/app-shell";
+import { NotFoundPage } from "@/components/status-pages";
 import { fetchProfileHeader, fetchProfileStatus } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
 /**
- * DP Suite — pathless authenticated layout (TT-005).
+ * DP Suite — pathless authenticated layout (TT-005 + TT-006).
  *
- * Any route under `src/routes/_authenticated/` is gated by this layout.
+ * Any route under `src/routes/_authenticated/` is gated by this layout and
+ * wrapped in the responsive `AppShell` (sidebar + header + breadcrumb).
  * SSR is disabled because the Supabase session lives in the browser's
  * localStorage and cannot be read during server rendering.
  *
@@ -34,5 +37,21 @@ export const Route = createFileRoute("/_authenticated")({
     const header = await fetchProfileHeader(data.user.id);
     return { user: data.user, profile: header };
   },
-  component: () => <Outlet />,
+  component: AuthenticatedLayout,
+  notFoundComponent: () => <NotFoundPage />,
 });
+
+function AuthenticatedLayout() {
+  const { user, profile } = Route.useRouteContext();
+  const displayName = profile.fullName ?? user.email ?? "Usuário";
+  const organizationName = profile.organizationName ?? "Organização não vinculada";
+  return (
+    <AppShell
+      displayName={displayName}
+      organizationName={organizationName}
+      email={user.email ?? ""}
+    >
+      <Outlet />
+    </AppShell>
+  );
+}
