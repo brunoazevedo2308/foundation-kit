@@ -88,21 +88,30 @@ export async function fetchProfileStatus(userId: string): Promise<ProfileStatus>
   return data.status as ProfileStatus;
 }
 
+export type AppRole = "system_admin" | "organization_admin" | "member";
+
+export type ProfileHeader = {
+  fullName: string | null;
+  organizationName: string | null;
+  role: AppRole;
+};
+
 /**
- * Loads the display data shown on protected surfaces: profile full name +
- * organization name. Both are RLS-scoped to the caller. Returns nulls when
- * a value is unavailable so the UI can degrade gracefully.
+ * Loads the display data shown on protected surfaces: profile full name,
+ * organization name, and application role. Both are RLS-scoped to the
+ * caller. Role defaults to `member` when unavailable so the UI degrades
+ * to the least-privileged experience.
  */
-export async function fetchProfileHeader(
-  userId: string,
-): Promise<{ fullName: string | null; organizationName: string | null }> {
+export async function fetchProfileHeader(userId: string): Promise<ProfileHeader> {
   const c = client();
   const { data: profile, error: profileError } = await c
     .from("profiles")
-    .select("full_name, organization_id")
+    .select("full_name, organization_id, role")
     .eq("id", userId)
     .maybeSingle();
-  if (profileError || !profile) return { fullName: null, organizationName: null };
+  if (profileError || !profile) {
+    return { fullName: null, organizationName: null, role: "member" };
+  }
 
   let organizationName: string | null = null;
   if (profile.organization_id) {
@@ -113,7 +122,11 @@ export async function fetchProfileHeader(
       .maybeSingle();
     organizationName = org?.name ?? null;
   }
-  return { fullName: profile.full_name ?? null, organizationName };
+  return {
+    fullName: profile.full_name ?? null,
+    organizationName,
+    role: (profile.role as AppRole) ?? "member",
+  };
 }
 
 export function humanReadableStatusError(status: ProfileStatus): string {
