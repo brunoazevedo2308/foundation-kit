@@ -1,5 +1,5 @@
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
-import { LogOut } from "lucide-react";
+import { Bell, LogOut, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import {
@@ -21,6 +21,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { signOut } from "@/lib/auth";
 
 const LABELS: Record<string, string> = {
