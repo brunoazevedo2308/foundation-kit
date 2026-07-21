@@ -47,16 +47,13 @@ const registry: NavItem[] = [
   { title: "Usuários", url: "/users", icon: Users },
 ];
 
-const account: NavItem[] = [
-  { title: "Configurações", url: "/settings", icon: Settings },
-];
+const account: NavItem[] = [{ title: "Configurações", url: "/settings", icon: Settings }];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const pathname = useRouterState({ select: (r) => r.location.pathname });
-  const isActive = (url: string) =>
-    pathname === url || pathname.startsWith(`${url}/`);
+  const isActive = (url: string) => pathname === url || pathname.startsWith(`${url}/`);
 
   const renderGroup = (label: string, items: NavItem[]) => (
     <SidebarGroup>

@@ -27,11 +27,7 @@ export function AppShell({
       <div className="flex min-h-screen w-full bg-background text-foreground">
         <AppSidebar />
         <SidebarInset className="flex min-w-0 flex-1 flex-col">
-          <AppHeader
-            displayName={displayName}
-            organizationName={organizationName}
-            email={email}
-          />
+          <AppHeader displayName={displayName} organizationName={organizationName} email={email} />
           <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
         </SidebarInset>
       </div>
