@@ -1,4 +1,5 @@
-import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router";
+import { CheckCircle2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import {
   ORG_STATUSES,
   createOrganization,
   type CreateOrganizationInput,
+  type CreatedOrganization,
 } from "@/lib/organizations";
 
 /**
@@ -68,6 +70,7 @@ function NewOrganizationPage() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [created, setCreated] = useState<CreatedOrganization | null>(null);
 
   function update<K extends keyof CreateOrganizationInput>(
     key: K,
@@ -75,6 +78,13 @@ function NewOrganizationPage() {
   ) {
     setValues((prev) => ({ ...prev, [key]: value }));
     if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
+  }
+
+  function resetForNewEntry() {
+    setValues(DEFAULTS);
+    setErrors({});
+    setFormError(null);
+    setCreated(null);
   }
 
   async function onSubmit(e: FormEvent) {
@@ -95,8 +105,8 @@ function NewOrganizationPage() {
 
     setLoading(true);
     try {
-      await createOrganization(parsed.data);
-      await router.navigate({ to: "/organizations" });
+      const row = await createOrganization(parsed.data);
+      setCreated(row);
     } catch (err) {
       if (err instanceof CreateOrganizationError) {
         setFormError(err.message);
@@ -106,6 +116,59 @@ function NewOrganizationPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (created) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Organization criada"
+          description="Os dados abaixo confirmam o cadastro realizado."
+        />
+        <div
+          role="status"
+          aria-live="polite"
+          className="max-w-2xl rounded-lg border border-emerald-500/40 bg-emerald-500/5 p-6"
+        >
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-600" aria-hidden />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
+                Organization criada com sucesso.
+              </p>
+              <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                <div>
+                  <dt className="text-xs uppercase tracking-widest text-muted-foreground">Nome</dt>
+                  <dd className="mt-0.5 break-words font-medium">{created.name}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-widest text-muted-foreground">ID</dt>
+                  <dd className="mt-0.5 break-all font-mono text-xs">{created.id}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-widest text-muted-foreground">Slug</dt>
+                  <dd className="mt-0.5 break-all font-mono text-xs">{created.slug}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-widest text-muted-foreground">
+                    Status
+                  </dt>
+                  <dd className="mt-0.5">{created.status}</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+          <div className="mt-6 flex flex-wrap items-center gap-2">
+            <Button asChild>
+              <Link to="/organizations">Voltar para a lista</Link>
+            </Button>
+            <Button variant="outline" onClick={resetForNewEntry}>
+              Criar outra
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

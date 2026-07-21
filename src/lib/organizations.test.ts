@@ -69,13 +69,13 @@ describe("mapCreateOrganizationError", () => {
     expect(err.kind).toBe("denied");
   });
 
-  it("maps 23505 / duplicate to conflict", () => {
-    expect(mapCreateOrganizationError({ code: "23505", message: "duplicate key" }).kind).toBe(
-      "conflict",
-    );
-    expect(
-      mapCreateOrganizationError({ message: "duplicate value violates unique constraint" }).kind,
-    ).toBe("conflict");
+  it("maps 23505 (any constraint) to conflict — no legal_name-specific text", () => {
+    const slug = mapCreateOrganizationError({
+      code: "23505",
+      message: "duplicate value violates unique constraint organizations_slug_key",
+    });
+    expect(slug.kind).toBe("conflict");
+    expect(slug.message.toLowerCase()).not.toContain("razão social");
   });
 
   it("maps 23514 / 22P02 to validation", () => {

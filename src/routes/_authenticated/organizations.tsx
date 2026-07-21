@@ -7,11 +7,11 @@ import { PageHeader } from "@/components/page-header";
 /**
  * US-005 — landing (index) das Organizations.
  *
- * Rota disponível apenas para `system_admin` ativos. Usuários sem esse
- * papel são redirecionados para `/dashboard`, mantendo a segregação
- * observada na sidebar. A listagem completa (paginação, filtros, edição)
- * chega em uma US posterior — por enquanto exibimos um placeholder
- * profissional e a ação primária "Nova Organization".
+ * Rota disponível apenas para `system_admin` ativos. Usuários sem esse papel
+ * são redirecionados para `/dashboard`, mantendo a segregação observada na
+ * sidebar. Nesta entrega, a listagem completa (paginação, filtros, edição)
+ * ainda não existe — exibimos a Organization real do contexto do usuário
+ * atual, sem dados fictícios, e o CTA para cadastrar uma nova.
  */
 export const Route = createFileRoute("/_authenticated/organizations")({
   head: () => ({
@@ -30,6 +30,9 @@ export const Route = createFileRoute("/_authenticated/organizations")({
 });
 
 function OrganizationsIndex() {
+  const { profile } = Route.useRouteContext();
+  const orgName = profile.organizationName;
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -44,10 +47,32 @@ function OrganizationsIndex() {
           </Button>
         }
       />
-      <div className="rounded-lg border border-dashed border-border bg-muted/30 p-8 text-center text-sm text-muted-foreground">
-        A listagem completa de organizações chega em uma próxima entrega. Nesta versão, apenas o
+
+      <section aria-labelledby="current-org-heading" className="space-y-3">
+        <h2
+          id="current-org-heading"
+          className="text-xs font-medium uppercase tracking-widest text-muted-foreground"
+        >
+          Sua organização atual
+        </h2>
+        {orgName ? (
+          <div className="rounded-lg border border-border bg-card p-4">
+            <p className="text-sm font-medium">{orgName}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Organização vinculada ao seu perfil neste contexto.
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-lg border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+            Seu perfil ainda não está vinculado a uma organização.
+          </div>
+        )}
+      </section>
+
+      <p className="text-xs text-muted-foreground">
+        A listagem completa de organizações chega em uma próxima entrega. Nesta versão apenas o
         cadastro está disponível.
-      </div>
+      </p>
     </div>
   );
 }
