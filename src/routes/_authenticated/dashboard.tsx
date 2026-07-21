@@ -50,7 +50,10 @@ function DashboardPage() {
         description={`Painel da organização ${organizationName}.`}
         actions={<Badge variant="secondary">TT-006 · Shell</Badge>}
       />
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Resumo do dashboard">
+      <section
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        aria-label="Resumo do dashboard"
+      >
         {placeholders.map(({ label, icon: Icon, description }) => (
           <Card key={label} className="opacity-80">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
