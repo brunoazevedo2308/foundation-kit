@@ -23,8 +23,11 @@ Fluxo administrativo para criação de organizações clientes no DP Suite.
    `public.create_organization(_legal_name, _display_name, _country_code,
  _primary_email, _status, _default_language, _timezone, _date_format)`.
    Nenhum caminho da UI faz `insert` direto em `public.organizations`.
-4. A RPC retorna a linha completa de `public.organizations` (SETOF). O
-   frontend extrai `id`, `name`, `slug` e `status` para exibir a confirmação.
+4. A RPC retorna uma única linha composta de `public.organizations` (não
+   `SETOF`). O PostgREST entrega o resultado como objeto (ou, em alguns
+   modos de negociação, array com um único item); o cliente normaliza os
+   dois formatos e extrai `id`, `name`, `slug` e `status` para exibir a
+   confirmação.
 5. Após o sucesso, o formulário mostra uma tela de confirmação com `id` e
    `nome` da Organization criada e dois botões: **Voltar para a lista** e
    **Criar outra**. Nenhum redirect imediato é feito, para que o admin
@@ -33,15 +36,23 @@ Fluxo administrativo para criação de organizações clientes no DP Suite.
 ## Regras de servidor (RPC)
 
 - `SECURITY DEFINER` com `search_path = pg_catalog, public`.
-- Autorização via `private.is_system_admin()` (SECURITY DEFINER helper).
-  Chamador não-admin ou inativo recebe `SQLSTATE 42501`.
+- Autorização via `private.is_system_admin()` (SECURITY DEFINER helper com
+  `search_path = pg_catalog, public, private`). Chamador não-admin ou
+  inativo recebe `SQLSTATE 42501`.
 - Normaliza e valida entradas (`btrim`, `upper`, `lower`, regex ISO-2 e email).
-- Gera slug canônico `org-<sufixo>` a partir de `gen_random_uuid()`.
+- Gera slug canônico `org-` + 12 caracteres hex extraídos de
+  `gen_random_uuid()`.
 - Insere em `public.organizations` e imediatamente insere o evento
   `organization.created` em `public.audit_events` — **a própria RPC grava
-  o audit event**; não há trigger de auditoria para essa ação.
+  o audit event** usando as colunas reais (`organization_id`,
+  `actor_user_id`, `entity_type='organization'`, `entity_id=<id novo>`,
+  `event_type='organization.created'`, `event_data` com legal_name,
+  display_name, country_code, status, default_language, timezone e
+  date_format). Não há trigger de auditoria para essa ação.
 - `EXECUTE` é concedido apenas a `authenticated`; `public` e `anon` são
-  revogados explicitamente na mesma migration (hardening).
+  revogados explicitamente (hardening). No remoto esse revoke/grant vive
+  em uma migration separada; no repositório espelhamos tudo no mesmo
+  arquivo local para manter o histórico legível.
 
 ## Sem regra de duplicidade de `legal_name`
 
@@ -67,9 +78,14 @@ usuário evita enumeração e vazamento de constraints.
 `db/migrations/20260721100000_us005_organizations_and_roles.sql` é um
 espelho **idempotente** do estado remoto: enums `app_role` e
 `organization_status`, coluna `profiles.role`, colunas estendidas de
-`organizations`, `private.is_system_admin()`, RPC
-`public.create_organization` com a assinatura canônica retornando
-`SETOF public.organizations`, insert de `audit_events` dentro da própria
-RPC, e o hardening `revoke ... from public/anon` + `grant execute ... to
-authenticated`. Não deve ser reaplicada contra o banco — existe apenas
-para manter o histórico versionado.
+`organizations` (`legal_name`, `country_code`, `primary_email` como
+`text NOT NULL`; `status`, `default_language`, `timezone`, `date_format`
+com defaults), checks reais (ISO-2, email, BCP-47, formato de data),
+`private.is_system_admin()`, RPC `public.create_organization` com a
+assinatura canônica retornando **uma única linha** `public.organizations`
+(não `SETOF`), insert de `audit_events` dentro da própria RPC usando as
+colunas reais (`organization_id`, `actor_user_id`, `entity_type`,
+`entity_id`, `event_type`, `event_data`), e o hardening
+`revoke ... from public/anon` + `grant execute ... to authenticated`. Não
+deve ser reaplicada contra o banco — existe apenas para manter o
+histórico versionado.
