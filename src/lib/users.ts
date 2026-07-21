@@ -73,7 +73,9 @@ export class InviteUserError extends Error {
 export async function listUsers(): Promise<UserListItem[]> {
   const { data, error } = await client()
     .from("profiles")
-    .select("id, full_name, organization_id, role, status, created_at, last_login_at, organizations(name)")
+    .select(
+      "id, full_name, organization_id, role, status, created_at, last_login_at, organizations(name)",
+    )
     .is("deleted_at", null)
     .order("full_name", { ascending: true });
 
@@ -136,12 +138,6 @@ export async function listAssignableOrganizations(
 
 export async function inviteUser(input: InviteUserInput): Promise<InvitedUser> {
   const parsed = InviteUserSchema.parse(input);
-  emitEvent({
-    event_name: "users.invite.ui_attempt",
-    organization_id: parsed.organizationId,
-    context: { role: parsed.role },
-  });
-
   const { data, error } = await client().functions.invoke<InviteFunctionBody>("invite-user", {
     body: {
       full_name: parsed.fullName,
@@ -160,9 +156,14 @@ export async function inviteUser(input: InviteUserInput): Promise<InvitedUser> {
       temporary_error: "Não foi possível enviar o convite agora. Tente novamente.",
     };
     emitEvent({
-      event_name: "users.invite.ui_failure",
+      event_name: "backend.request.failure",
       organization_id: parsed.organizationId,
-      context: { code, correlation_id: data?.correlation_id, error: sanitize(error) },
+      correlation_id: data?.correlation_id,
+      context: {
+        operation: "users.invite",
+        code,
+        supabase_error: sanitize(error),
+      },
     });
     throw new InviteUserError(
       messages[code] ?? messages.temporary_error,
@@ -170,13 +171,6 @@ export async function inviteUser(input: InviteUserInput): Promise<InvitedUser> {
       data?.correlation_id,
     );
   }
-
-  emitEvent({
-    event_name: "users.invite.ui_success",
-    organization_id: parsed.organizationId,
-    user_id: data.user.id,
-    context: { role: data.user.role, correlation_id: data.correlation_id },
-  });
 
   return {
     id: data.user.id,
