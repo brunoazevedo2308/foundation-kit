@@ -16,9 +16,12 @@
 --   2. Missing organization_id → NO profile row is created.
 --   3. Malformed organization_id (not a uuid) → NO profile row.
 --   4. Unknown or soft-deleted organization_id → NO profile row.
---   5. status='active' in metadata → profile created with status='active'.
---   6. Any other status value in metadata → falls back to 'inactive'
---      (in particular, metadata cannot force 'blocked').
+--   5. Explicit activation is honored via BOTH metadata keys:
+--      a) `profile_status`='active' (preferred key) → active,
+--      b) legacy `status`='active' (fallback key)   → active,
+--      c) precedence: `profile_status` wins over `status`.
+--   6. Unsafe values on either key (e.g. 'blocked') fall back to 'inactive'
+--      — metadata cannot force `blocked`.
 --   7. Missing full_name in metadata → full_name derived from e-mail prefix.
 --   8. Pre-existing profile row → trigger is a no-op (does not overwrite).
 
