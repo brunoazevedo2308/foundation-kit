@@ -110,7 +110,7 @@ export function mapCreateOrganizationError(err: PostgrestLikeError): CreateOrgan
   );
 }
 
-/** Registro retornado pela RPC `public.create_organization` (SETOF organizations). */
+/** Registro retornado pela RPC `public.create_organization` (composite row). */
 export type CreatedOrganization = {
   id: string;
   name: string;
@@ -126,9 +126,10 @@ export type CreatedOrganization = {
 
 /**
  * Executa a RPC oficial. Nunca insere diretamente em `organizations`.
- * A RPC remota retorna a linha completa de `public.organizations` — o
- * PostgREST entrega isso como objeto (ou array de um objeto, dependendo
- * do modo `SETOF`). Normalizamos ambos os formatos antes de devolver.
+ * A RPC remota retorna uma única linha composta de `public.organizations`
+ * (não `SETOF`). O PostgREST entrega isso como objeto, mas em algumas
+ * negociações pode devolver um array de um único item — normalizamos os
+ * dois formatos antes de retornar.
  */
 export async function createOrganization(
   input: CreateOrganizationInput,

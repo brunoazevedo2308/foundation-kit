@@ -10,20 +10,29 @@
 --   * `public.app_role` enum (system_admin, organization_admin, member).
 --   * `public.profiles.role` column (default 'member').
 --   * `public.organization_status` enum (active, inactive).
---   * Extend `public.organizations` with the US-005 fields:
---       legal_name, country_code (ISO-3166 alpha-2), primary_email,
---       status, default_language, timezone, date_format.
+--   * Extend `public.organizations` with the US-005 fields, matching the
+--     remote types exactly:
+--       legal_name       text NOT NULL,
+--       country_code     text NOT NULL (ISO-3166 alpha-2, uppercase),
+--       primary_email    text NOT NULL,
+--       status           organization_status NOT NULL default 'active',
+--       default_language text NOT NULL default 'pt-BR',
+--       timezone         text NOT NULL default 'America/Sao_Paulo',
+--       date_format      text NOT NULL default 'DD/MM/YYYY'.
 --     The existing `name` column keeps its role as the human display name.
---   * `private.is_system_admin()` — SECURITY DEFINER helper that returns
---     true only for an active caller whose profile has role='system_admin'.
+--   * `private.is_system_admin()` — SECURITY DEFINER helper with
+--     `search_path = pg_catalog, public, private`.
 --   * `public.create_organization(_legal_name, _display_name,
 --     _country_code, _primary_email, _status, _default_language,
---     _timezone, _date_format)` — SECURITY DEFINER RPC returning the full
---     `public.organizations` row. Executes only for system admins.
---     Inserts the audit event `organization.created` itself; no trigger
---     is used for auditing this action.
+--     _timezone, _date_format)` — SECURITY DEFINER RPC returning a single
+--     `public.organizations` composite row (NOT SETOF). Generates a slug
+--     `org-<12 hex chars>` and writes the `organization.created` audit
+--     event itself using the real audit_events columns
+--     (organization_id, actor_user_id, entity_type, entity_id, event_type,
+--      event_data).
 --   * Hardened privileges: EXECUTE granted only to `authenticated`;
---     revoked from `public` and `anon`.
+--     revoked from `public` and `anon` (mirrored here in the same file;
+--     on the remote this hardening was applied in a separate migration).
 --
 -- Non-goals: no unique index on legal_name in this delivery, no data
 -- changes, no changes to RLS policies for organizations, no seeds.
@@ -58,15 +67,55 @@ comment on column public.profiles.role is
 
 -- -----------------------------------------------------------------------------
 -- organizations — US-005 fields
+--
+-- The remote types for these columns are `text NOT NULL` (backfilled prior
+-- to the NOT NULL toggle). We add them as nullable, then flip NOT NULL and
+-- drop the defaults where the remote no longer keeps them, guarded by
+-- pg_attribute so the script stays idempotent.
 -- -----------------------------------------------------------------------------
 alter table public.organizations
   add column if not exists legal_name       text,
-  add column if not exists country_code     char(2),
+  add column if not exists country_code     text,
   add column if not exists primary_email    text,
   add column if not exists status           public.organization_status not null default 'active',
   add column if not exists default_language text not null default 'pt-BR',
   add column if not exists timezone         text not null default 'America/Sao_Paulo',
   add column if not exists date_format      text not null default 'DD/MM/YYYY';
+
+do $$
+begin
+  if exists (
+    select 1
+    from pg_attribute a
+    join pg_class c on c.oid = a.attrelid
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public' and c.relname = 'organizations'
+      and a.attname = 'legal_name' and a.attnotnull = false
+  ) then
+    alter table public.organizations alter column legal_name set not null;
+  end if;
+  if exists (
+    select 1
+    from pg_attribute a
+    join pg_class c on c.oid = a.attrelid
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public' and c.relname = 'organizations'
+      and a.attname = 'country_code' and a.attnotnull = false
+  ) then
+    alter table public.organizations alter column country_code set not null;
+  end if;
+  if exists (
+    select 1
+    from pg_attribute a
+    join pg_class c on c.oid = a.attrelid
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public' and c.relname = 'organizations'
+      and a.attname = 'primary_email' and a.attnotnull = false
+  ) then
+    alter table public.organizations alter column primary_email set not null;
+  end if;
+end
+$$;
 
 comment on column public.organizations.legal_name       is 'Razão social (nome jurídico oficial).';
 comment on column public.organizations.name             is 'Nome de exibição (fantasia) apresentado na UI.';
@@ -77,6 +126,7 @@ comment on column public.organizations.default_language is 'Idioma padrão (tag 
 comment on column public.organizations.timezone         is 'Fuso horário IANA (ex: America/Sao_Paulo).';
 comment on column public.organizations.date_format      is 'Formato de data padrão para a UI (ex: DD/MM/YYYY).';
 
+-- Real CHECK constraints present on the remote.
 do $$
 begin
   if not exists (
@@ -84,14 +134,28 @@ begin
   ) then
     alter table public.organizations
       add constraint organizations_country_code_iso2_chk
-      check (country_code is null or country_code ~ '^[A-Z]{2}$');
+      check (country_code ~ '^[A-Z]{2}$');
   end if;
   if not exists (
     select 1 from pg_constraint where conname = 'organizations_primary_email_chk'
   ) then
     alter table public.organizations
       add constraint organizations_primary_email_chk
-      check (primary_email is null or primary_email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$');
+      check (primary_email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$');
+  end if;
+  if not exists (
+    select 1 from pg_constraint where conname = 'organizations_default_language_chk'
+  ) then
+    alter table public.organizations
+      add constraint organizations_default_language_chk
+      check (default_language ~ '^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$');
+  end if;
+  if not exists (
+    select 1 from pg_constraint where conname = 'organizations_date_format_chk'
+  ) then
+    alter table public.organizations
+      add constraint organizations_date_format_chk
+      check (date_format in ('DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'));
   end if;
 end
 $$;
@@ -109,7 +173,7 @@ returns boolean
 language sql
 stable
 security definer
-set search_path = pg_catalog, public
+set search_path = pg_catalog, public, private
 as $$
   select exists (
     select 1
@@ -134,7 +198,7 @@ grant execute on function private.is_system_admin() to authenticated;
 -- Signature and column order MUST match the remote exactly:
 --   (_legal_name, _display_name, _country_code, _primary_email,
 --    _status, _default_language, _timezone, _date_format)
--- Returns the full public.organizations row (RETURNS SETOF).
+-- Returns a single `public.organizations` composite row (NOT SETOF).
 -- -----------------------------------------------------------------------------
 -- Drop any pre-existing overload so this script is safe to re-run and
 -- guarantees only the canonical signature survives.
@@ -152,15 +216,15 @@ create or replace function public.create_organization(
   _timezone         text,
   _date_format      text
 )
-returns setof public.organizations
+returns public.organizations
 language plpgsql
 security definer
 set search_path = pg_catalog, public
 as $$
 declare
-  _uid  uuid := auth.uid();
-  _slug text;
-  _row  public.organizations;
+  _uid          uuid := auth.uid();
+  _slug         text;
+  _organization public.organizations;
 begin
   if _uid is null then
     raise exception 'authentication required' using errcode = '28000';
@@ -193,8 +257,8 @@ begin
     raise exception 'primary_email is invalid' using errcode = '23514';
   end if;
 
-  -- Slug canônico: prefixo "org-" + sufixo aleatório curto.
-  _slug := 'org-' || substr(replace(gen_random_uuid()::text, '-', ''), 1, 8);
+  -- Slug canônico: prefixo "org-" + 12 caracteres hex de gen_random_uuid().
+  _slug := 'org-' || substr(replace(gen_random_uuid()::text, '-', ''), 1, 12);
 
   insert into public.organizations(
     name, slug, legal_name, country_code, primary_email,
@@ -204,29 +268,32 @@ begin
     _display_name, _slug, _legal_name, _country_code, _primary_email,
     _status, _default_language, _timezone, _date_format
   )
-  returning * into _row;
+  returning * into _organization;
 
   -- Audit trail is written by the RPC itself (no trigger for this action).
-  insert into public.audit_events(organization_id, actor_id, event_type, payload)
+  -- Uses the real audit_events columns present on the remote:
+  --   organization_id, actor_user_id, entity_type, entity_id, event_type, event_data
+  insert into public.audit_events(
+    organization_id, actor_user_id, entity_type, entity_id, event_type, event_data
+  )
   values (
-    _row.id,
+    _organization.id,
     _uid,
+    'organization',
+    _organization.id,
     'organization.created',
     jsonb_build_object(
-      'organization_id', _row.id,
-      'name',            _row.name,
-      'slug',            _row.slug,
-      'legal_name',      _row.legal_name,
-      'country_code',    _row.country_code,
-      'primary_email',   _row.primary_email,
-      'status',          _row.status,
-      'default_language', _row.default_language,
-      'timezone',        _row.timezone,
-      'date_format',     _row.date_format
+      'legal_name',       _organization.legal_name,
+      'display_name',     _organization.name,
+      'country_code',     _organization.country_code,
+      'status',           _organization.status,
+      'default_language', _organization.default_language,
+      'timezone',         _organization.timezone,
+      'date_format',      _organization.date_format
     )
   );
 
-  return next _row;
+  return _organization;
 end;
 $$;
 
@@ -237,6 +304,8 @@ comment on function public.create_organization(
 
 -- -----------------------------------------------------------------------------
 -- Hardening: authenticated-only EXECUTE. Anon/public revoked.
+-- On the remote this was applied as a separate migration; mirrored here so
+-- the local repo remains a faithful representation of the current state.
 -- -----------------------------------------------------------------------------
 revoke all on function public.create_organization(
   text, text, text, text, public.organization_status, text, text, text
