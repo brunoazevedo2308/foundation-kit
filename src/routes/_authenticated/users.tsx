@@ -54,7 +54,11 @@ function UsersPage() {
         if (active) setUsers(rows);
       })
       .catch((err) => {
-        if (active) setError(err instanceof Error ? err.message : "Não foi possível carregar os usuários.");
+        if (active) {
+          setError(
+            err instanceof Error ? err.message : "Não foi possível carregar os usuários.",
+          );
+        }
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -80,7 +84,10 @@ function UsersPage() {
       />
 
       {error ? (
-        <p role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <p
+          role="alert"
+          className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        >
           {error}
         </p>
       ) : null}
@@ -93,7 +100,9 @@ function UsersPage() {
         <div className="rounded-lg border border-dashed border-border p-10 text-center">
           <Users className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden />
           <p className="mt-3 text-sm font-medium">Nenhum usuário disponível.</p>
-          <p className="mt-1 text-sm text-muted-foreground">Envie o primeiro convite para começar.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Envie o primeiro convite para começar.
+          </p>
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg border border-border">
@@ -110,7 +119,9 @@ function UsersPage() {
             <TableBody>
               {users.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.fullName ?? "Nome não informado"}</TableCell>
+                  <TableCell className="font-medium">
+                    {user.fullName ?? "Nome não informado"}
+                  </TableCell>
                   <TableCell>{user.organizationName ?? "Global / não vinculada"}</TableCell>
                   <TableCell>{ROLE_LABELS[user.role]}</TableCell>
                   <TableCell>
@@ -120,7 +131,10 @@ function UsersPage() {
                   </TableCell>
                   <TableCell>
                     {user.lastLoginAt
-                      ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(user.lastLoginAt))
+                      ? new Intl.DateTimeFormat("pt-BR", {
+                          dateStyle: "short",
+                          timeStyle: "short",
+                        }).format(new Date(user.lastLoginAt))
                       : "Nunca"}
                   </TableCell>
                 </TableRow>
