@@ -142,7 +142,11 @@ export function maskSignedUrl(raw: unknown): string | undefined {
  * número de chaves e tamanho de strings, e redigindo qualquer valor cuja
  * chave case como sensível. Trata `Error` e `Response` de forma segura.
  */
-export function sanitize(value: unknown, depth = 0, seen: WeakSet<object> = new WeakSet()): unknown {
+export function sanitize(
+  value: unknown,
+  depth = 0,
+  seen: WeakSet<object> = new WeakSet(),
+): unknown {
   if (value === null || value === undefined) return value;
   const t = typeof value;
   if (t === "string") return truncateString(value as string);
@@ -257,8 +261,7 @@ function noopTransport(_event: ObservabilityEvent): void {
   // interno próprio (rota own-hosted, sem service_role) seja aprovado.
 }
 
-let activeTransport: Transport =
-  env.appEnv === "development" ? consoleTransport : noopTransport;
+let activeTransport: Transport = env.appEnv === "development" ? consoleTransport : noopTransport;
 
 /** Substitui o transport ativo (útil para testes e para futuros sinks). */
 export function setTransport(transport: Transport): void {

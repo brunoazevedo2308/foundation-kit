@@ -4,11 +4,7 @@ import { useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { env } from "@/lib/env";
-import {
-  emitEvent,
-  generateCorrelationId,
-  getSessionCorrelationId,
-} from "@/lib/observability";
+import { emitEvent, generateCorrelationId, getSessionCorrelationId } from "@/lib/observability";
 
 /**
  * Rota protegida disponível somente em Development. Permite disparar um
