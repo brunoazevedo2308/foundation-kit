@@ -1,5 +1,5 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { Landmark, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
@@ -33,7 +33,6 @@ function OrganizationsIndex() {
   return (
     <div className="space-y-6">
       <PageHeader
-        icon={Landmark}
         title="Organizations"
         description="Gestão de organizações do DP Suite."
         actions={
