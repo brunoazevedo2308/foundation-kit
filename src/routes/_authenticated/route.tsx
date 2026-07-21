@@ -83,6 +83,7 @@ function AuthenticatedLayout() {
 
 function AuthenticatedErrorBoundary({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
+  reportError(error, { event_name: "backend.request.failure", severity: "error" });
   return (
     <div className="grid min-h-[60vh] w-full place-items-center px-4">
       <div className="max-w-md text-center">
