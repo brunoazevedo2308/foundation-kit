@@ -198,22 +198,27 @@ function NewUserPage() {
           </Field>
 
           <Field label="Organização" htmlFor="organizationId" error={errors.organizationId}>
-            <Select
-              value={values.organizationId}
-              onValueChange={(value) => update("organizationId", value)}
-              disabled={loadingOrganizations || organizations.length === 1}
-            >
-              <SelectTrigger id="organizationId">
-                <SelectValue placeholder={loadingOrganizations ? "Carregando..." : "Selecione"} />
-              </SelectTrigger>
-              <SelectContent>
-                {organizations.map((organization) => (
-                  <SelectItem key={organization.id} value={organization.id}>
-                    {organization.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {!loadingOrganizations && organizations.length === 1 ? (
+              <Input id="organizationId" value={organizations[0].name} readOnly disabled />
+            ) : (
+              <Select
+                value={values.organizationId}
+                onValueChange={(value) => update("organizationId", value)}
+                disabled={loadingOrganizations}
+              >
+                <SelectTrigger id="organizationId">
+                  <SelectValue placeholder={loadingOrganizations ? "Carregando..." : "Selecione"} />
+                </SelectTrigger>
+
+                <SelectContent>
+                  {organizations.map((organization) => (
+                    <SelectItem key={organization.id} value={organization.id}>
+                      {organization.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </Field>
 
           <Field label="Papel" htmlFor="role" error={errors.role}>
@@ -238,6 +243,16 @@ function NewUserPage() {
             className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
           >
             {formError}
+          </p>
+        ) : null}
+
+        {!loadingOrganizations && organizations.length === 0 ? (
+          <p
+            role="status"
+            className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-muted-foreground"
+          >
+            Nenhuma organização disponível para atribuição. Vincule seu perfil a uma organização (ou
+            crie uma) antes de convidar usuários.
           </p>
         ) : null}
 

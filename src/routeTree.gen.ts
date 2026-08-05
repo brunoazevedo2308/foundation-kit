@@ -29,6 +29,7 @@ import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/ap
 import { Route as AuthenticatedActionsRouteImport } from './routes/_authenticated/actions'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users.index'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users.new'
 import { Route as AuthenticatedOrganizationsNewRouteImport } from './routes/_authenticated/organizations.new'
 import { Route as AuthenticatedDevObservabilityRouteImport } from './routes/_authenticated/dev.observability'
@@ -138,6 +139,11 @@ const Char91DotmcpChar93ListToolsRoute =
     path: '/.mcp/list-tools',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedUsersRoute,
+} as any)
 const AuthenticatedUsersNewRoute = AuthenticatedUsersNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -193,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/dev/observability': typeof AuthenticatedDevObservabilityRoute
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
+  '/users/': typeof AuthenticatedUsersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -212,13 +219,13 @@ export interface FileRoutesByTo {
   '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/search': typeof AuthenticatedSearchRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/users': typeof AuthenticatedUsersRouteWithChildren
   '/vessels': typeof AuthenticatedVesselsRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/actions/$actionId': typeof AuthenticatedActionsActionIdRoute
   '/dev/observability': typeof AuthenticatedDevObservabilityRoute
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
+  '/users': typeof AuthenticatedUsersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -247,6 +254,7 @@ export interface FileRoutesById {
   '/_authenticated/dev/observability': typeof AuthenticatedDevObservabilityRoute
   '/_authenticated/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
+  '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -275,6 +283,7 @@ export interface FileRouteTypes {
     | '/dev/observability'
     | '/organizations/new'
     | '/users/new'
+    | '/users/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -294,13 +303,13 @@ export interface FileRouteTypes {
     | '/organizations'
     | '/search'
     | '/settings'
-    | '/users'
     | '/vessels'
     | '/.mcp/invoke-tool/$tool'
     | '/actions/$actionId'
     | '/dev/observability'
     | '/organizations/new'
     | '/users/new'
+    | '/users'
   id:
     | '__root__'
     | '/'
@@ -328,6 +337,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dev/observability'
     | '/_authenticated/organizations/new'
     | '/_authenticated/users/new'
+    | '/_authenticated/users/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -486,6 +496,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/users/': {
+      id: '/_authenticated/users/'
+      path: '/'
+      fullPath: '/users/'
+      preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
+      parentRoute: typeof AuthenticatedUsersRoute
+    }
     '/_authenticated/users/new': {
       id: '/_authenticated/users/new'
       path: '/new'
@@ -551,10 +568,12 @@ const AuthenticatedOrganizationsRouteWithChildren =
 
 interface AuthenticatedUsersRouteChildren {
   AuthenticatedUsersNewRoute: typeof AuthenticatedUsersNewRoute
+  AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
 }
 
 const AuthenticatedUsersRouteChildren: AuthenticatedUsersRouteChildren = {
   AuthenticatedUsersNewRoute: AuthenticatedUsersNewRoute,
+  AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
 }
 
 const AuthenticatedUsersRouteWithChildren =

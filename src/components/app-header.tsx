@@ -34,6 +34,8 @@ const LABELS: Record<string, string> = {
   settings: "Configurações",
   search: "Busca",
   app: "Aplicação",
+  organizations: "Organizations",
+  new: "Novo",
 };
 
 function labelFor(segment: string) {
