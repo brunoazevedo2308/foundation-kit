@@ -198,27 +198,29 @@ function NewUserPage() {
           </Field>
 
           <Field label="Organização" htmlFor="organizationId" error={errors.organizationId}>
-            <Select
-              value={values.organizationId}
-              onValueChange={(value) => update("organizationId", value)}
-              disabled={loadingOrganizations || organizations.length === 1}
-            >
-              <SelectTrigger id="organizationId">
-                <SelectValue placeholder={loadingOrganizations ? "Carregando..." : "Selecione"}>
-                  {organizations.find((organization) => organization.id === values.organizationId)
-                    ?.name ?? undefined}
-                </SelectValue>
-              </SelectTrigger>
+            {!loadingOrganizations && organizations.length === 1 ? (
+              <Input id="organizationId" value={organizations[0].name} readOnly disabled />
+            ) : (
+              <Select
+                value={values.organizationId}
+                onValueChange={(value) => update("organizationId", value)}
+                disabled={loadingOrganizations}
+              >
+                <SelectTrigger id="organizationId">
+                  <SelectValue placeholder={loadingOrganizations ? "Carregando..." : "Selecione"} />
+                </SelectTrigger>
 
-              <SelectContent>
-                {organizations.map((organization) => (
-                  <SelectItem key={organization.id} value={organization.id}>
-                    {organization.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <SelectContent>
+                  {organizations.map((organization) => (
+                    <SelectItem key={organization.id} value={organization.id}>
+                      {organization.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </Field>
+
 
           <Field label="Papel" htmlFor="role" error={errors.role}>
             <Select value={values.role} onValueChange={(value) => update("role", value as AppRole)}>
