@@ -204,8 +204,12 @@ function NewUserPage() {
               disabled={loadingOrganizations || organizations.length === 1}
             >
               <SelectTrigger id="organizationId">
-                <SelectValue placeholder={loadingOrganizations ? "Carregando..." : "Selecione"} />
+                <SelectValue placeholder={loadingOrganizations ? "Carregando..." : "Selecione"}>
+                  {organizations.find((organization) => organization.id === values.organizationId)
+                    ?.name ?? undefined}
+                </SelectValue>
               </SelectTrigger>
+
               <SelectContent>
                 {organizations.map((organization) => (
                   <SelectItem key={organization.id} value={organization.id}>
@@ -240,6 +244,18 @@ function NewUserPage() {
             {formError}
           </p>
         ) : null}
+
+        {!loadingOrganizations && organizations.length === 0 ? (
+          <p
+            role="status"
+            className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-muted-foreground"
+          >
+            Nenhuma organização disponível para atribuição. Vincule seu perfil a uma organização
+            (ou crie uma) antes de convidar usuários.
+          </p>
+        ) : null}
+
+
 
         <div className="flex justify-end gap-2">
           <Button asChild variant="ghost">
