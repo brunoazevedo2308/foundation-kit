@@ -221,7 +221,6 @@ function NewUserPage() {
             )}
           </Field>
 
-
           <Field label="Papel" htmlFor="role" error={errors.role}>
             <Select value={values.role} onValueChange={(value) => update("role", value as AppRole)}>
               <SelectTrigger id="role">
@@ -252,12 +251,10 @@ function NewUserPage() {
             role="status"
             className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-muted-foreground"
           >
-            Nenhuma organização disponível para atribuição. Vincule seu perfil a uma organização
-            (ou crie uma) antes de convidar usuários.
+            Nenhuma organização disponível para atribuição. Vincule seu perfil a uma organização (ou
+            crie uma) antes de convidar usuários.
           </p>
         ) : null}
-
-
 
         <div className="flex justify-end gap-2">
           <Button asChild variant="ghost">
