@@ -30,7 +30,11 @@ const optionalText = (max: number, message: string) =>
     .default(null);
 
 export const ClientFormSchema = z.object({
-  name: z.string().trim().min(2, "Informe o nome do cliente.").max(120, "Máximo de 120 caracteres."),
+  name: z
+    .string()
+    .trim()
+    .min(2, "Informe o nome do cliente.")
+    .max(120, "Máximo de 120 caracteres."),
   code: optionalText(40, "Máximo de 40 caracteres."),
   contactName: optionalText(120, "Máximo de 120 caracteres."),
   contactEmail: z
