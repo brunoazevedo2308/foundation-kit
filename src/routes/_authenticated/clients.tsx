@@ -1,26 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Building2 } from "lucide-react";
-import { ModulePlaceholder } from "@/components/module-placeholder";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
+/**
+ * US-004 — layout do módulo de clientes.
+ *
+ * A leitura é permitida a qualquer perfil ativo da organização (RLS já
+ * isola por tenant). O gate de cadastro fica na rota `/clients/new`.
+ */
 export const Route = createFileRoute("/_authenticated/clients")({
-  head: () => ({
-    meta: [
-      { title: "Clientes · DP Suite" },
-      { name: "description", content: "Cadastro de clientes da organização." },
-    ],
-  }),
-  component: () => (
-    <ModulePlaceholder
-      title="Clientes"
-      description="Cadastro dos clientes cujas operações DP são governadas por esta organização."
-      icon={Building2}
-      eta="Próximas tasks"
-      bullets={[
-        "CRUD com validação de código único",
-        "Vínculo com embarcações",
-        "Soft-delete e histórico",
-        "Isolamento por Organization (RLS)",
-      ]}
-    />
-  ),
+  component: () => <Outlet />,
 });

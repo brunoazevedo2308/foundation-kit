@@ -30,9 +30,11 @@ import { Route as AuthenticatedActionsRouteImport } from './routes/_authenticate
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users.index'
+import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients.index'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users.new'
 import { Route as AuthenticatedOrganizationsNewRouteImport } from './routes/_authenticated/organizations.new'
 import { Route as AuthenticatedDevObservabilityRouteImport } from './routes/_authenticated/dev.observability'
+import { Route as AuthenticatedClientsNewRouteImport } from './routes/_authenticated/clients.new'
 import { Route as AuthenticatedActionsActionIdRouteImport } from './routes/_authenticated/actions.$actionId'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
@@ -144,6 +146,12 @@ const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedUsersRoute,
 } as any)
+const AuthenticatedClientsIndexRoute =
+  AuthenticatedClientsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedClientsRoute,
+  } as any)
 const AuthenticatedUsersNewRoute = AuthenticatedUsersNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -161,6 +169,11 @@ const AuthenticatedDevObservabilityRoute =
     path: '/dev/observability',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedClientsNewRoute = AuthenticatedClientsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AuthenticatedClientsRoute,
+} as any)
 const AuthenticatedActionsActionIdRoute =
   AuthenticatedActionsActionIdRouteImport.update({
     id: '/$actionId',
@@ -186,7 +199,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/actions': typeof AuthenticatedActionsRouteWithChildren
   '/app': typeof AuthenticatedAppRoute
-  '/clients': typeof AuthenticatedClientsRoute
+  '/clients': typeof AuthenticatedClientsRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
@@ -196,9 +209,11 @@ export interface FileRoutesByFullPath {
   '/vessels': typeof AuthenticatedVesselsRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/actions/$actionId': typeof AuthenticatedActionsActionIdRoute
+  '/clients/new': typeof AuthenticatedClientsNewRoute
   '/dev/observability': typeof AuthenticatedDevObservabilityRoute
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
+  '/clients/': typeof AuthenticatedClientsIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
 }
 export interface FileRoutesByTo {
@@ -213,7 +228,6 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/actions': typeof AuthenticatedActionsRouteWithChildren
   '/app': typeof AuthenticatedAppRoute
-  '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
@@ -222,9 +236,11 @@ export interface FileRoutesByTo {
   '/vessels': typeof AuthenticatedVesselsRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/actions/$actionId': typeof AuthenticatedActionsActionIdRoute
+  '/clients/new': typeof AuthenticatedClientsNewRoute
   '/dev/observability': typeof AuthenticatedDevObservabilityRoute
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
+  '/clients': typeof AuthenticatedClientsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
 }
 export interface FileRoutesById {
@@ -241,7 +257,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/actions': typeof AuthenticatedActionsRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRoute
-  '/_authenticated/clients': typeof AuthenticatedClientsRoute
+  '/_authenticated/clients': typeof AuthenticatedClientsRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
@@ -251,9 +267,11 @@ export interface FileRoutesById {
   '/_authenticated/vessels': typeof AuthenticatedVesselsRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/actions/$actionId': typeof AuthenticatedActionsActionIdRoute
+  '/_authenticated/clients/new': typeof AuthenticatedClientsNewRoute
   '/_authenticated/dev/observability': typeof AuthenticatedDevObservabilityRoute
   '/_authenticated/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
+  '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
 }
 export interface FileRouteTypes {
@@ -280,9 +298,11 @@ export interface FileRouteTypes {
     | '/vessels'
     | '/.mcp/invoke-tool/$tool'
     | '/actions/$actionId'
+    | '/clients/new'
     | '/dev/observability'
     | '/organizations/new'
     | '/users/new'
+    | '/clients/'
     | '/users/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -297,7 +317,6 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/actions'
     | '/app'
-    | '/clients'
     | '/dashboard'
     | '/notifications'
     | '/organizations'
@@ -306,9 +325,11 @@ export interface FileRouteTypes {
     | '/vessels'
     | '/.mcp/invoke-tool/$tool'
     | '/actions/$actionId'
+    | '/clients/new'
     | '/dev/observability'
     | '/organizations/new'
     | '/users/new'
+    | '/clients'
     | '/users'
   id:
     | '__root__'
@@ -334,9 +355,11 @@ export interface FileRouteTypes {
     | '/_authenticated/vessels'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/actions/$actionId'
+    | '/_authenticated/clients/new'
     | '/_authenticated/dev/observability'
     | '/_authenticated/organizations/new'
     | '/_authenticated/users/new'
+    | '/_authenticated/clients/'
     | '/_authenticated/users/'
   fileRoutesById: FileRoutesById
 }
@@ -503,6 +526,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
       parentRoute: typeof AuthenticatedUsersRoute
     }
+    '/_authenticated/clients/': {
+      id: '/_authenticated/clients/'
+      path: '/'
+      fullPath: '/clients/'
+      preLoaderRoute: typeof AuthenticatedClientsIndexRouteImport
+      parentRoute: typeof AuthenticatedClientsRoute
+    }
     '/_authenticated/users/new': {
       id: '/_authenticated/users/new'
       path: '/new'
@@ -523,6 +553,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dev/observability'
       preLoaderRoute: typeof AuthenticatedDevObservabilityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/clients/new': {
+      id: '/_authenticated/clients/new'
+      path: '/new'
+      fullPath: '/clients/new'
+      preLoaderRoute: typeof AuthenticatedClientsNewRouteImport
+      parentRoute: typeof AuthenticatedClientsRoute
     }
     '/_authenticated/actions/$actionId': {
       id: '/_authenticated/actions/$actionId'
@@ -551,6 +588,19 @@ const AuthenticatedActionsRouteChildren: AuthenticatedActionsRouteChildren = {
 
 const AuthenticatedActionsRouteWithChildren =
   AuthenticatedActionsRoute._addFileChildren(AuthenticatedActionsRouteChildren)
+
+interface AuthenticatedClientsRouteChildren {
+  AuthenticatedClientsNewRoute: typeof AuthenticatedClientsNewRoute
+  AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
+}
+
+const AuthenticatedClientsRouteChildren: AuthenticatedClientsRouteChildren = {
+  AuthenticatedClientsNewRoute: AuthenticatedClientsNewRoute,
+  AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
+}
+
+const AuthenticatedClientsRouteWithChildren =
+  AuthenticatedClientsRoute._addFileChildren(AuthenticatedClientsRouteChildren)
 
 interface AuthenticatedOrganizationsRouteChildren {
   AuthenticatedOrganizationsNewRoute: typeof AuthenticatedOrganizationsNewRoute
@@ -582,7 +632,7 @@ const AuthenticatedUsersRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedActionsRoute: typeof AuthenticatedActionsRouteWithChildren
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
-  AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
+  AuthenticatedClientsRoute: typeof AuthenticatedClientsRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRouteWithChildren
@@ -596,7 +646,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedActionsRoute: AuthenticatedActionsRouteWithChildren,
   AuthenticatedAppRoute: AuthenticatedAppRoute,
-  AuthenticatedClientsRoute: AuthenticatedClientsRoute,
+  AuthenticatedClientsRoute: AuthenticatedClientsRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRouteWithChildren,
