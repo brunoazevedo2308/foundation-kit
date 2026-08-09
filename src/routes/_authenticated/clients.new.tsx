@@ -1,18 +1,11 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { CheckCircle2 } from "lucide-react";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState } from "react";
 
+import { ClientForm, EMPTY_CLIENT_FORM } from "@/components/client-form";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  ClientFormSchema,
-  canManageOperationalData,
-  createClient,
-  type ClientFormInput,
-  type ClientListItem,
-} from "@/lib/clients";
+import { canManageOperationalData, createClient, type ClientListItem } from "@/lib/clients";
 
 export const Route = createFileRoute("/_authenticated/clients/new")({
   head: () => ({
@@ -31,55 +24,9 @@ export const Route = createFileRoute("/_authenticated/clients/new")({
   component: NewClientPage,
 });
 
-type FieldErrors = Partial<Record<keyof ClientFormInput, string>>;
-
-const EMPTY: ClientFormInput = {
-  name: "",
-  code: "",
-  contactName: "",
-  contactEmail: "",
-  contactPhone: "",
-};
-
 function NewClientPage() {
-  const [values, setValues] = useState<ClientFormInput>(EMPTY);
-  const [errors, setErrors] = useState<FieldErrors>({});
-  const [formError, setFormError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const [created, setCreated] = useState<ClientListItem | null>(null);
-
-  function update<K extends keyof ClientFormInput>(key: K, value: string) {
-    setValues((current) => ({ ...current, [key]: value }));
-    if (errors[key]) setErrors((current) => ({ ...current, [key]: undefined }));
-  }
-
-  async function onSubmit(event: FormEvent) {
-    event.preventDefault();
-    setErrors({});
-    setFormError(null);
-
-    const parsed = ClientFormSchema.safeParse(values);
-    if (!parsed.success) {
-      const next: FieldErrors = {};
-      for (const issue of parsed.error.issues) {
-        const key = issue.path[0] as keyof ClientFormInput | undefined;
-        if (key && !next[key]) next[key] = issue.message;
-      }
-      setErrors(next);
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      setCreated(await createClient(parsed.data));
-    } catch (error) {
-      setFormError(
-        error instanceof Error ? error.message : "Não foi possível cadastrar o cliente agora.",
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  const [formKey, setFormKey] = useState(0);
 
   if (created) {
     return (
@@ -106,7 +53,7 @@ function NewClientPage() {
               variant="outline"
               onClick={() => {
                 setCreated(null);
-                setValues(EMPTY);
+                setFormKey((value) => value + 1);
               }}
             >
               Cadastrar outro
@@ -123,98 +70,16 @@ function NewClientPage() {
         title="Novo cliente"
         description="Informe os dados do cliente e o contato principal."
       />
-
-      <form onSubmit={onSubmit} className="max-w-2xl space-y-6" noValidate>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Nome" htmlFor="name" error={errors.name}>
-            <Input
-              id="name"
-              value={values.name}
-              onChange={(e) => update("name", e.target.value)}
-              maxLength={120}
-              required
-            />
-          </Field>
-          <Field label="Código (opcional)" htmlFor="code" error={errors.code}>
-            <Input
-              id="code"
-              value={values.code ?? ""}
-              onChange={(e) => update("code", e.target.value)}
-              maxLength={40}
-            />
-          </Field>
-          <Field label="Nome do contato" htmlFor="contactName" error={errors.contactName}>
-            <Input
-              id="contactName"
-              value={values.contactName ?? ""}
-              onChange={(e) => update("contactName", e.target.value)}
-              maxLength={120}
-              autoComplete="name"
-            />
-          </Field>
-          <Field label="E-mail do contato" htmlFor="contactEmail" error={errors.contactEmail}>
-            <Input
-              id="contactEmail"
-              type="email"
-              value={values.contactEmail ?? ""}
-              onChange={(e) => update("contactEmail", e.target.value)}
-              maxLength={254}
-              autoComplete="email"
-            />
-          </Field>
-          <Field label="Telefone do contato" htmlFor="contactPhone" error={errors.contactPhone}>
-            <Input
-              id="contactPhone"
-              value={values.contactPhone ?? ""}
-              onChange={(e) => update("contactPhone", e.target.value)}
-              maxLength={40}
-              autoComplete="tel"
-            />
-          </Field>
-        </div>
-
-        {formError ? (
-          <p
-            role="alert"
-            className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
-          >
-            {formError}
-          </p>
-        ) : null}
-
-        <div className="flex justify-end gap-2">
-          <Button asChild variant="ghost">
-            <Link to="/clients">Cancelar</Link>
-          </Button>
-          <Button type="submit" disabled={submitting}>
-            {submitting ? "Salvando..." : "Cadastrar cliente"}
-          </Button>
-        </div>
-      </form>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  htmlFor,
-  error,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  error?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={htmlFor}>{label}</Label>
-      {children}
-      {error ? (
-        <p className="text-xs text-destructive" role="alert">
-          {error}
-        </p>
-      ) : null}
+      <ClientForm
+        key={formKey}
+        initialValues={EMPTY_CLIENT_FORM}
+        submitLabel="Cadastrar cliente"
+        submittingLabel="Salvando..."
+        cancelTo={<Link to="/clients">Cancelar</Link>}
+        onSubmit={async (values) => {
+          setCreated(await createClient(values));
+        }}
+      />
     </div>
   );
 }
