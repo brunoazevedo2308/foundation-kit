@@ -195,7 +195,7 @@ export function DeliverableForm({
             min={1}
             step={1}
             value={String(values.sequenceNumber ?? 1)}
-            onChange={(e) => update("sequenceNumber", e.target.value)}
+            onChange={(e) => update("sequenceNumber", Number(e.target.value))}
           />
         </Field>
       </div>
