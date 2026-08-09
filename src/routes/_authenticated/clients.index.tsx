@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Building2, Plus } from "lucide-react";
+import { Building2, Pencil, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { PageHeader } from "@/components/page-header";
+import { SoftDeleteDialog } from "@/components/soft-delete-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -12,7 +13,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { canManageOperationalData, listClients, type ClientListItem } from "@/lib/clients";
+import {
+  canManageOperationalData,
+  listClients,
+  softDeleteClient,
+  type ClientListItem,
+} from "@/lib/clients";
 
 export const Route = createFileRoute("/_authenticated/clients/")({
   head: () => ({
