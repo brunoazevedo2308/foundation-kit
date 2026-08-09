@@ -1,23 +1,26 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ListChecks } from "lucide-react";
+import { useEffect, useState } from "react";
 
+import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PageHeader } from "@/components/page-header";
+import {
+  ACTION_CRITICALITY_LABELS,
+  ACTION_PRIORITY_LABELS,
+  ACTION_SITUATION_LABELS,
+  ACTION_STATUS_LABELS,
+  getAction,
+  isOverdue,
+  type ActionListItem,
+} from "@/lib/actions";
 
-/**
- * TT-006 — dynamic Action detail route.
- *
- * File name uses TanStack Start's flat convention: `actions.$actionId.tsx`
- * maps to `/actions/$actionId`. This ships as a shell-ready placeholder;
- * real Action detail UI, loader data and mutations arrive in a later task.
- */
 export const Route = createFileRoute("/_authenticated/actions/$actionId")({
   head: () => ({
     meta: [
       { title: "Detalhe da ação · DP Suite" },
-      { name: "description", content: "Detalhe de uma ação DP." },
+      { name: "description", content: "Detalhe de uma ação operacional DP." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -26,11 +29,34 @@ export const Route = createFileRoute("/_authenticated/actions/$actionId")({
 
 function ActionDetailPage() {
   const { actionId } = Route.useParams();
+  const [action, setAction] = useState<ActionListItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    getAction(actionId)
+      .then((row) => {
+        if (active) setAction(row);
+      })
+      .catch((err) => {
+        if (active)
+          setError(err instanceof Error ? err.message : "Não foi possível carregar a ação.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [actionId]);
+
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       <PageHeader
-        title="Detalhe da ação"
-        description="A UI completa desta tela chega em tarefas seguintes do backlog."
+        title={action?.title ?? "Detalhe da ação"}
+        description="Dados operacionais da ação dentro da sua organização."
         actions={
           <Button asChild variant="outline" size="sm">
             <Link to="/actions" className="flex items-center gap-1.5">
@@ -40,29 +66,70 @@ function ActionDetailPage() {
           </Button>
         }
       />
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground">
-              <ListChecks className="h-5 w-5" aria-hidden="true" />
+
+      {error ? (
+        <p
+          role="alert"
+          className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        >
+          {error}
+        </p>
+      ) : null}
+
+      {loading ? (
+        <div className="rounded-lg border border-border p-8 text-center text-sm text-muted-foreground">
+          Carregando ação...
+        </div>
+      ) : !action && !error ? (
+        <div className="rounded-lg border border-dashed border-border p-10 text-center">
+          <ListChecks className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden />
+          <p className="mt-3 text-sm font-medium">Ação não encontrada.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Ela pode ter sido removida ou pertence a outra organização.
+          </p>
+        </div>
+      ) : action ? (
+        <Card>
+          <CardHeader>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary">{ACTION_STATUS_LABELS[action.status]}</Badge>
+              <Badge variant="outline">{ACTION_SITUATION_LABELS[action.situation]}</Badge>
+              {isOverdue(action) ? <Badge variant="destructive">Vencida</Badge> : null}
             </div>
-            <div className="min-w-0">
-              <CardTitle className="truncate">Ação #{actionId}</CardTitle>
-              <CardDescription>
-                Placeholder de detalhe — nenhum dado de negócio é buscado neste momento.
-              </CardDescription>
-            </div>
-            <Badge variant="secondary" className="ml-auto">
-              Em preparação
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          Esta rota valida a convenção de parâmetros dinâmicos do TanStack Start (
-          <code className="rounded bg-muted px-1 py-0.5 text-xs">/actions/$actionId</code>) e serve
-          de âncora para os próximos passos: loader com RLS, mutações e histórico de auditoria.
-        </CardContent>
-      </Card>
+            <CardTitle className="mt-2">{action.title}</CardTitle>
+            <CardDescription>
+              {action.description ?? "Sem descrição informada para esta ação."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <dl className="grid gap-4 sm:grid-cols-2">
+              <Detail label="Responsável" value={action.responsibleName} />
+              <Detail label="Prazo" value={action.dueDate} />
+              <Detail
+                label="Prioridade de execução"
+                value={ACTION_PRIORITY_LABELS[action.executionPriority]}
+              />
+              <Detail
+                label="Criticidade operacional"
+                value={ACTION_CRITICALITY_LABELS[action.operationalCriticality]}
+              />
+              <Detail label="Cliente" value={action.clientName} />
+              <Detail label="Embarcação" value={action.vesselName} />
+              <Detail label="Origem" value={action.origin} />
+              <Detail label="Tipo" value={action.actionType} />
+            </dl>
+          </CardContent>
+        </Card>
+      ) : null}
+    </div>
+  );
+}
+
+function Detail({ label, value }: { label: string; value: string | null }) {
+  return (
+    <div>
+      <dt className="text-xs uppercase tracking-wide text-muted-foreground">{label}</dt>
+      <dd className="mt-1 text-sm font-medium">{value ?? "—"}</dd>
     </div>
   );
 }
