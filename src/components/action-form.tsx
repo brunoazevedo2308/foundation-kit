@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -373,5 +372,3 @@ function Field({
     </div>
   );
 }
-
-export { Link as ActionFormLink };
