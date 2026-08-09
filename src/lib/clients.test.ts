@@ -46,3 +46,41 @@ describe("canManageOperationalData", () => {
     expect(canManageOperationalData("member")).toBe(false);
   });
 });
+
+describe("toClientFormInput", () => {
+  it("converte nulos em strings vazias para o formulário", () => {
+    expect(
+      toClientFormInput({
+        id: "c1",
+        name: "Petro Offshore",
+        code: null,
+        contactName: null,
+        contactEmail: null,
+        contactPhone: null,
+        createdAt: "2026-08-09T00:00:00.000Z",
+      }),
+    ).toEqual({
+      name: "Petro Offshore",
+      code: "",
+      contactName: "",
+      contactEmail: "",
+      contactPhone: "",
+    });
+  });
+
+  it("faz round-trip com o schema de validação", () => {
+    const parsed = ClientFormSchema.parse(
+      toClientFormInput({
+        id: "c2",
+        name: "Mar Azul",
+        code: "MA-01",
+        contactName: "Ana",
+        contactEmail: "ana@example.com",
+        contactPhone: "+55 21 99999-0000",
+        createdAt: "2026-08-09T00:00:00.000Z",
+      }),
+    );
+    expect(parsed.code).toBe("MA-01");
+    expect(parsed.contactEmail).toBe("ana@example.com");
+  });
+});
