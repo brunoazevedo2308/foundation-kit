@@ -189,10 +189,15 @@ function ActionDetailPage() {
               <Detail label="Embarcação" value={action.vesselName} />
               <Detail label="Origem" value={action.origin} />
               <Detail label="Tipo" value={action.actionType} />
-            </dl>
           </CardContent>
         </Card>
       ) : null}
+
+      {action ? <DeliverablesSection actionId={actionId} canManage={canManage} /> : null}
+    </div>
+  );
+}
+
     </div>
   );
 }
