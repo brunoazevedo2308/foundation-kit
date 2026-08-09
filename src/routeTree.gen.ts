@@ -32,6 +32,7 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as AuthenticatedVesselsIndexRouteImport } from './routes/_authenticated/vessels.index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users.index'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients.index'
+import { Route as AuthenticatedActionsIndexRouteImport } from './routes/_authenticated/actions.index'
 import { Route as AuthenticatedVesselsNewRouteImport } from './routes/_authenticated/vessels.new'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users.new'
 import { Route as AuthenticatedOrganizationsNewRouteImport } from './routes/_authenticated/organizations.new'
@@ -160,6 +161,12 @@ const AuthenticatedClientsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedClientsRoute,
   } as any)
+const AuthenticatedActionsIndexRoute =
+  AuthenticatedActionsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedActionsRoute,
+  } as any)
 const AuthenticatedVesselsNewRoute = AuthenticatedVesselsNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -227,6 +234,7 @@ export interface FileRoutesByFullPath {
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/vessels/new': typeof AuthenticatedVesselsNewRoute
+  '/actions/': typeof AuthenticatedActionsIndexRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/vessels/': typeof AuthenticatedVesselsIndexRoute
@@ -241,7 +249,6 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/actions': typeof AuthenticatedActionsRouteWithChildren
   '/app': typeof AuthenticatedAppRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -255,6 +262,7 @@ export interface FileRoutesByTo {
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/vessels/new': typeof AuthenticatedVesselsNewRoute
+  '/actions': typeof AuthenticatedActionsIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/vessels': typeof AuthenticatedVesselsIndexRoute
@@ -288,6 +296,7 @@ export interface FileRoutesById {
   '/_authenticated/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
   '/_authenticated/vessels/new': typeof AuthenticatedVesselsNewRoute
+  '/_authenticated/actions/': typeof AuthenticatedActionsIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/vessels/': typeof AuthenticatedVesselsIndexRoute
@@ -321,6 +330,7 @@ export interface FileRouteTypes {
     | '/organizations/new'
     | '/users/new'
     | '/vessels/new'
+    | '/actions/'
     | '/clients/'
     | '/users/'
     | '/vessels/'
@@ -335,7 +345,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
-    | '/actions'
     | '/app'
     | '/dashboard'
     | '/notifications'
@@ -349,6 +358,7 @@ export interface FileRouteTypes {
     | '/organizations/new'
     | '/users/new'
     | '/vessels/new'
+    | '/actions'
     | '/clients'
     | '/users'
     | '/vessels'
@@ -381,6 +391,7 @@ export interface FileRouteTypes {
     | '/_authenticated/organizations/new'
     | '/_authenticated/users/new'
     | '/_authenticated/vessels/new'
+    | '/_authenticated/actions/'
     | '/_authenticated/clients/'
     | '/_authenticated/users/'
     | '/_authenticated/vessels/'
@@ -563,6 +574,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientsIndexRouteImport
       parentRoute: typeof AuthenticatedClientsRoute
     }
+    '/_authenticated/actions/': {
+      id: '/_authenticated/actions/'
+      path: '/'
+      fullPath: '/actions/'
+      preLoaderRoute: typeof AuthenticatedActionsIndexRouteImport
+      parentRoute: typeof AuthenticatedActionsRoute
+    }
     '/_authenticated/vessels/new': {
       id: '/_authenticated/vessels/new'
       path: '/new'
@@ -617,10 +635,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedActionsRouteChildren {
   AuthenticatedActionsActionIdRoute: typeof AuthenticatedActionsActionIdRoute
+  AuthenticatedActionsIndexRoute: typeof AuthenticatedActionsIndexRoute
 }
 
 const AuthenticatedActionsRouteChildren: AuthenticatedActionsRouteChildren = {
   AuthenticatedActionsActionIdRoute: AuthenticatedActionsActionIdRoute,
+  AuthenticatedActionsIndexRoute: AuthenticatedActionsIndexRoute,
 }
 
 const AuthenticatedActionsRouteWithChildren =
