@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Building2, Plus } from "lucide-react";
+import { Building2, Pencil, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { PageHeader } from "@/components/page-header";
+import { SoftDeleteDialog } from "@/components/soft-delete-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -12,7 +13,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { canManageOperationalData, listClients, type ClientListItem } from "@/lib/clients";
+import {
+  canManageOperationalData,
+  listClients,
+  softDeleteClient,
+  type ClientListItem,
+} from "@/lib/clients";
 
 export const Route = createFileRoute("/_authenticated/clients/")({
   head: () => ({
@@ -101,6 +107,7 @@ function ClientsPage() {
                 <TableHead>Contato</TableHead>
                 <TableHead>E-mail</TableHead>
                 <TableHead>Telefone</TableHead>
+                {canManage ? <TableHead className="text-right">Ações</TableHead> : null}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -111,6 +118,35 @@ function ClientsPage() {
                   <TableCell>{item.contactName ?? "—"}</TableCell>
                   <TableCell>{item.contactEmail ?? "—"}</TableCell>
                   <TableCell>{item.contactPhone ?? "—"}</TableCell>
+                  {canManage ? (
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button asChild variant="ghost" size="sm" aria-label="Editar cliente">
+                          <Link to="/clients/$clientId/edit" params={{ clientId: item.id }}>
+                            <Pencil className="h-4 w-4" />
+                            <span className="sr-only">Editar</span>
+                          </Link>
+                        </Button>
+                        <SoftDeleteDialog
+                          title={`Excluir ${item.name}?`}
+                          description="O cliente deixa de aparecer nas listagens da organização. O registro é mantido no histórico (exclusão lógica) para fins de auditoria."
+                          triggerLabel="Excluir cliente"
+                          onConfirm={async () => {
+                            try {
+                              await softDeleteClient(item.id);
+                              setClients((current) => current.filter((c) => c.id !== item.id));
+                            } catch (err) {
+                              setError(
+                                err instanceof Error
+                                  ? err.message
+                                  : "Não foi possível excluir o cliente.",
+                              );
+                            }
+                          }}
+                        />
+                      </div>
+                    </TableCell>
+                  ) : null}
                 </TableRow>
               ))}
             </TableBody>

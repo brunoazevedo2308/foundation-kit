@@ -161,3 +161,90 @@ export async function createVessel(input: VesselFormInput): Promise<VesselListIt
 
   return mapVessel(data as VesselRow);
 }
+
+/** Converte uma embarcação carregada do banco em valores de formulário. */
+export function toVesselFormInput(item: VesselListItem): VesselFormInput {
+  return {
+    name: item.name,
+    imoNumber: item.imoNumber ?? "",
+    vesselType: item.vesselType ?? "",
+    dpClass: item.dpClass ?? "",
+    status: item.status,
+    clientId: item.clientId ?? "",
+  };
+}
+
+export async function getVessel(vesselId: string): Promise<VesselListItem | null> {
+  const { data, error } = await client()
+    .from("vessels")
+    .select(SELECT_COLUMNS)
+    .eq("id", vesselId)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (error) {
+    emitEvent({
+      event_name: "backend.request.failure",
+      context: { operation: "vessels.get", supabase_error: sanitize(error) },
+    });
+    throw new Error("Não foi possível carregar a embarcação.");
+  }
+
+  return data ? mapVessel(data as VesselRow) : null;
+}
+
+export async function updateVessel(
+  vesselId: string,
+  input: VesselFormInput,
+): Promise<VesselListItem> {
+  const parsed = VesselFormSchema.parse(input);
+
+  const { data, error } = await client()
+    .from("vessels")
+    .update({
+      client_id: parsed.clientId,
+      name: parsed.name,
+      imo_number: parsed.imoNumber,
+      vessel_type: parsed.vesselType,
+      dp_class: parsed.dpClass,
+      status: parsed.status,
+    })
+    .eq("id", vesselId)
+    .is("deleted_at", null)
+    .select(SELECT_COLUMNS)
+    .single();
+
+  if (error || !data) {
+    emitEvent({
+      event_name: "backend.request.failure",
+      context: { operation: "vessels.update", supabase_error: sanitize(error) },
+    });
+    if (error?.code === "23505") {
+      throw new Error("Já existe uma embarcação ativa com este nome ou número IMO.");
+    }
+    throw new Error("Não foi possível salvar as alterações da embarcação.");
+  }
+
+  return mapVessel(data as VesselRow);
+}
+
+/**
+ * Soft-delete via UPDATE em `deleted_at` (DELETE é bloqueado pela RLS).
+ */
+export async function softDeleteVessel(vesselId: string): Promise<void> {
+  const { data, error } = await client()
+    .from("vessels")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", vesselId)
+    .is("deleted_at", null)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) {
+    emitEvent({
+      event_name: "backend.request.failure",
+      context: { operation: "vessels.soft_delete", supabase_error: sanitize(error) },
+    });
+    throw new Error("Não foi possível excluir a embarcação.");
+  }
+}

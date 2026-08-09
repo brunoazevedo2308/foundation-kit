@@ -41,6 +41,8 @@ import { Route as AuthenticatedClientsNewRouteImport } from './routes/_authentic
 import { Route as AuthenticatedActionsNewRouteImport } from './routes/_authenticated/actions.new'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AuthenticatedActionsActionIdIndexRouteImport } from './routes/_authenticated/actions.$actionId.index'
+import { Route as AuthenticatedVesselsVesselIdEditRouteImport } from './routes/_authenticated/vessels.$vesselId.edit'
+import { Route as AuthenticatedClientsClientIdEditRouteImport } from './routes/_authenticated/clients.$clientId.edit'
 import { Route as AuthenticatedActionsActionIdEditRouteImport } from './routes/_authenticated/actions.$actionId.edit'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -213,6 +215,18 @@ const AuthenticatedActionsActionIdIndexRoute =
     path: '/$actionId/',
     getParentRoute: () => AuthenticatedActionsRoute,
   } as any)
+const AuthenticatedVesselsVesselIdEditRoute =
+  AuthenticatedVesselsVesselIdEditRouteImport.update({
+    id: '/$vesselId/edit',
+    path: '/$vesselId/edit',
+    getParentRoute: () => AuthenticatedVesselsRoute,
+  } as any)
+const AuthenticatedClientsClientIdEditRoute =
+  AuthenticatedClientsClientIdEditRouteImport.update({
+    id: '/$clientId/edit',
+    path: '/$clientId/edit',
+    getParentRoute: () => AuthenticatedClientsRoute,
+  } as any)
 const AuthenticatedActionsActionIdEditRoute =
   AuthenticatedActionsActionIdEditRouteImport.update({
     id: '/$actionId/edit',
@@ -252,6 +266,8 @@ export interface FileRoutesByFullPath {
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/vessels/': typeof AuthenticatedVesselsIndexRoute
   '/actions/$actionId/edit': typeof AuthenticatedActionsActionIdEditRoute
+  '/clients/$clientId/edit': typeof AuthenticatedClientsClientIdEditRoute
+  '/vessels/$vesselId/edit': typeof AuthenticatedVesselsVesselIdEditRoute
   '/actions/$actionId/': typeof AuthenticatedActionsActionIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -282,6 +298,8 @@ export interface FileRoutesByTo {
   '/users': typeof AuthenticatedUsersIndexRoute
   '/vessels': typeof AuthenticatedVesselsIndexRoute
   '/actions/$actionId/edit': typeof AuthenticatedActionsActionIdEditRoute
+  '/clients/$clientId/edit': typeof AuthenticatedClientsClientIdEditRoute
+  '/vessels/$vesselId/edit': typeof AuthenticatedVesselsVesselIdEditRoute
   '/actions/$actionId': typeof AuthenticatedActionsActionIdIndexRoute
 }
 export interface FileRoutesById {
@@ -318,6 +336,8 @@ export interface FileRoutesById {
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/vessels/': typeof AuthenticatedVesselsIndexRoute
   '/_authenticated/actions/$actionId/edit': typeof AuthenticatedActionsActionIdEditRoute
+  '/_authenticated/clients/$clientId/edit': typeof AuthenticatedClientsClientIdEditRoute
+  '/_authenticated/vessels/$vesselId/edit': typeof AuthenticatedVesselsVesselIdEditRoute
   '/_authenticated/actions/$actionId/': typeof AuthenticatedActionsActionIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -354,6 +374,8 @@ export interface FileRouteTypes {
     | '/users/'
     | '/vessels/'
     | '/actions/$actionId/edit'
+    | '/clients/$clientId/edit'
+    | '/vessels/$vesselId/edit'
     | '/actions/$actionId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -384,6 +406,8 @@ export interface FileRouteTypes {
     | '/users'
     | '/vessels'
     | '/actions/$actionId/edit'
+    | '/clients/$clientId/edit'
+    | '/vessels/$vesselId/edit'
     | '/actions/$actionId'
   id:
     | '__root__'
@@ -419,6 +443,8 @@ export interface FileRouteTypes {
     | '/_authenticated/users/'
     | '/_authenticated/vessels/'
     | '/_authenticated/actions/$actionId/edit'
+    | '/_authenticated/clients/$clientId/edit'
+    | '/_authenticated/vessels/$vesselId/edit'
     | '/_authenticated/actions/$actionId/'
   fileRoutesById: FileRoutesById
 }
@@ -662,6 +688,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedActionsActionIdIndexRouteImport
       parentRoute: typeof AuthenticatedActionsRoute
     }
+    '/_authenticated/vessels/$vesselId/edit': {
+      id: '/_authenticated/vessels/$vesselId/edit'
+      path: '/$vesselId/edit'
+      fullPath: '/vessels/$vesselId/edit'
+      preLoaderRoute: typeof AuthenticatedVesselsVesselIdEditRouteImport
+      parentRoute: typeof AuthenticatedVesselsRoute
+    }
+    '/_authenticated/clients/$clientId/edit': {
+      id: '/_authenticated/clients/$clientId/edit'
+      path: '/$clientId/edit'
+      fullPath: '/clients/$clientId/edit'
+      preLoaderRoute: typeof AuthenticatedClientsClientIdEditRouteImport
+      parentRoute: typeof AuthenticatedClientsRoute
+    }
     '/_authenticated/actions/$actionId/edit': {
       id: '/_authenticated/actions/$actionId/edit'
       path: '/$actionId/edit'
@@ -693,11 +733,13 @@ const AuthenticatedActionsRouteWithChildren =
 interface AuthenticatedClientsRouteChildren {
   AuthenticatedClientsNewRoute: typeof AuthenticatedClientsNewRoute
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
+  AuthenticatedClientsClientIdEditRoute: typeof AuthenticatedClientsClientIdEditRoute
 }
 
 const AuthenticatedClientsRouteChildren: AuthenticatedClientsRouteChildren = {
   AuthenticatedClientsNewRoute: AuthenticatedClientsNewRoute,
   AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
+  AuthenticatedClientsClientIdEditRoute: AuthenticatedClientsClientIdEditRoute,
 }
 
 const AuthenticatedClientsRouteWithChildren =
@@ -733,11 +775,13 @@ const AuthenticatedUsersRouteWithChildren =
 interface AuthenticatedVesselsRouteChildren {
   AuthenticatedVesselsNewRoute: typeof AuthenticatedVesselsNewRoute
   AuthenticatedVesselsIndexRoute: typeof AuthenticatedVesselsIndexRoute
+  AuthenticatedVesselsVesselIdEditRoute: typeof AuthenticatedVesselsVesselIdEditRoute
 }
 
 const AuthenticatedVesselsRouteChildren: AuthenticatedVesselsRouteChildren = {
   AuthenticatedVesselsNewRoute: AuthenticatedVesselsNewRoute,
   AuthenticatedVesselsIndexRoute: AuthenticatedVesselsIndexRoute,
+  AuthenticatedVesselsVesselIdEditRoute: AuthenticatedVesselsVesselIdEditRoute,
 }
 
 const AuthenticatedVesselsRouteWithChildren =

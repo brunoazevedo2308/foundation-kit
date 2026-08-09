@@ -2,7 +2,15 @@
 
 Plataforma SaaS de governança e conformidade para operações de Dynamic Positioning.
 
-> Estado atual: fundação técnica (TT-001), ambientes Development e Staging (TT-002), schema versionado com RLS e integridade cross-organization (TT-003 e TT-004), autenticação e sessão via Supabase (TT-005), casca do aplicativo com navegação lateral, cabeçalho, rota dinâmica de Ações e páginas base dos módulos (TT-006).
+> Estado atual: fundação técnica (TT-001), ambientes Development e Staging (TT-002), schema versionado com RLS e integridade cross-organization (TT-003 e TT-004), autenticação e sessão via Supabase (TT-005), casca do aplicativo com navegação lateral, cabeçalho, rota dinâmica de Ações e páginas base dos módulos (TT-006), estrutura operacional com Clientes, Embarcações e Ações — criação, edição e exclusão lógica (US-004).
+
+## Estrutura operacional (US-004)
+
+- **Módulos reais**: Clientes (`/clients`), Embarcações (`/vessels`) e Ações (`/actions`), todos tenant-scoped por RLS e sem `service_role` no frontend.
+- **CRUD com exclusão lógica**: criação, edição (`/clients/$clientId/edit`, `/vessels/$vesselId/edit`, `/actions/$actionId/edit`) e soft-delete via `UPDATE deleted_at` — o `DELETE` físico continua bloqueado pela RLS. Toda exclusão passa por diálogo de confirmação (`src/components/soft-delete-dialog.tsx`).
+- **Formulários compartilhados**: `src/components/client-form.tsx`, `vessel-form.tsx` e `action-form.tsx` são usados tanto na criação quanto na edição, garantindo validação Zod e rótulos idênticos.
+- **Guards de admin**: `canManageOperationalData` esconde ações na UI e `beforeLoad` bloqueia rotas de escrita; a fonte da verdade continua no banco (`private.can_manage_operational_data()` nas policies de INSERT/UPDATE — migrations `20260807125500` e `20260809094500`). `member` permanece somente leitura.
+- **Auditoria**: `UPDATE` e soft-delete de Ações geram `action.updated` / `action.soft_deleted` em `public.audit_events` pelo trigger `trg_actions_audit_change` (migration `20260809100000`). Clientes e Embarcações **ainda não** possuem trigger equivalente.
 
 ## Casca do aplicativo (TT-006)
 
