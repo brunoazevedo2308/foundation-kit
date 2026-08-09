@@ -182,7 +182,9 @@ export function ActionForm({
             disabled={loadingRefs || users.length === 0}
           >
             <SelectTrigger id="responsibleUserId">
-              <SelectValue placeholder={loadingRefs ? "Carregando..." : "Selecione o responsável"} />
+              <SelectValue
+                placeholder={loadingRefs ? "Carregando..." : "Selecione o responsável"}
+              />
             </SelectTrigger>
             <SelectContent>
               {users.map((item) => (

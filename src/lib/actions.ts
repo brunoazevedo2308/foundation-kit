@@ -391,4 +391,3 @@ export async function softDeleteAction(actionId: string): Promise<void> {
     throw new Error("Não foi possível excluir a ação.");
   }
 }
-

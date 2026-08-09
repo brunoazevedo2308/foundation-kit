@@ -1,8 +1,19 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, ListChecks } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ArrowLeft, ListChecks, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { PageHeader } from "@/components/page-header";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,8 +24,10 @@ import {
   ACTION_STATUS_LABELS,
   getAction,
   isOverdue,
+  softDeleteAction,
   type ActionListItem,
 } from "@/lib/actions";
+import { canManageOperationalData } from "@/lib/clients";
 
 export const Route = createFileRoute("/_authenticated/actions/$actionId/")({
   head: () => ({
@@ -29,6 +42,10 @@ export const Route = createFileRoute("/_authenticated/actions/$actionId/")({
 
 function ActionDetailPage() {
   const { actionId } = Route.useParams();
+  const { profile } = Route.useRouteContext();
+  const canManage = canManageOperationalData(profile.role);
+  const navigate = useNavigate();
+  const [deleting, setDeleting] = useState(false);
   const [action, setAction] = useState<ActionListItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -58,12 +75,67 @@ function ActionDetailPage() {
         title={action?.title ?? "Detalhe da ação"}
         description="Dados operacionais da ação dentro da sua organização."
         actions={
-          <Button asChild variant="outline" size="sm">
-            <Link to="/actions" className="flex items-center gap-1.5">
-              <ArrowLeft className="h-4 w-4" />
-              Voltar para Ações
-            </Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link to="/actions" className="flex items-center gap-1.5">
+                <ArrowLeft className="h-4 w-4" />
+                Voltar para Ações
+              </Link>
+            </Button>
+            {canManage && action ? (
+              <>
+                <Button asChild size="sm">
+                  <Link
+                    to="/actions/$actionId/edit"
+                    params={{ actionId }}
+                    className="flex items-center gap-1.5"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Editar
+                  </Link>
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" disabled={deleting}>
+                      <Trash2 className="mr-1.5 h-4 w-4" />
+                      Excluir
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Excluir esta ação?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        A ação deixa de aparecer nas listagens da organização. O registro é mantido
+                        no histórico (exclusão lógica) para fins de auditoria.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={async () => {
+                          setDeleting(true);
+                          try {
+                            await softDeleteAction(actionId);
+                            await navigate({ to: "/actions" });
+                          } catch (err) {
+                            setError(
+                              err instanceof Error
+                                ? err.message
+                                : "Não foi possível excluir a ação.",
+                            );
+                          } finally {
+                            setDeleting(false);
+                          }
+                        }}
+                      >
+                        Excluir
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </>
+            ) : null}
+          </div>
         }
       />
 

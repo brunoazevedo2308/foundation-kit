@@ -97,7 +97,11 @@ function EditActionPage() {
           initialValues={initialValues}
           submitLabel="Salvar alterações"
           submittingLabel="Salvando..."
-          cancelTo={<Link to="/actions/$actionId" params={{ actionId }}>Cancelar</Link>}
+          cancelTo={
+            <Link to="/actions/$actionId" params={{ actionId }}>
+              Cancelar
+            </Link>
+          }
           onSubmit={async (values) => {
             await updateAction(actionId, values, action.completedAt);
             await navigate({ to: "/actions/$actionId", params: { actionId } });
