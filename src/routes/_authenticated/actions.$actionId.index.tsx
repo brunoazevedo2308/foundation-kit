@@ -16,7 +16,7 @@ import {
   type ActionListItem,
 } from "@/lib/actions";
 
-export const Route = createFileRoute("/_authenticated/actions/$actionId")({
+export const Route = createFileRoute("/_authenticated/actions/$actionId/")({
   head: () => ({
     meta: [
       { title: "Detalhe da ação · DP Suite" },
