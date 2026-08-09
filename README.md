@@ -12,7 +12,6 @@ Plataforma SaaS de governança e conformidade para operações de Dynamic Positi
 - **Guards de admin**: `canManageOperationalData` esconde ações na UI e `beforeLoad` bloqueia rotas de escrita; a fonte da verdade continua no banco (`private.can_manage_operational_data()` nas policies de INSERT/UPDATE — migrations `20260807125500` e `20260809094500`). `member` permanece somente leitura.
 - **Auditoria**: `UPDATE` e soft-delete de Ações geram `action.updated` / `action.soft_deleted` em `public.audit_events` pelo trigger `trg_actions_audit_change` (migration `20260809100000`). Clientes e Embarcações **ainda não** possuem trigger equivalente.
 
-
 ## Casca do aplicativo (TT-006)
 
 - **Layout responsivo**: `SidebarProvider` + `AppShell` (`src/components/app-shell.tsx`) envolvem toda rota sob `/_authenticated/`. Em telas pequenas a barra lateral colapsa para _offcanvas_; em telas grandes é fixa e minimizável ao modo ícone.
