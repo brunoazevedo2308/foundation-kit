@@ -154,3 +154,115 @@ export async function createClient(input: ClientFormInput): Promise<ClientListIt
     createdAt: data.created_at,
   };
 }
+
+const CLIENT_SELECT_COLUMNS =
+  "id, name, code, contact_name, contact_email, contact_phone, created_at";
+
+type ClientRow = {
+  id: string;
+  name: string;
+  code: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  created_at: string;
+};
+
+function mapClient(row: ClientRow): ClientListItem {
+  return {
+    id: row.id,
+    name: row.name,
+    code: row.code,
+    contactName: row.contact_name,
+    contactEmail: row.contact_email,
+    contactPhone: row.contact_phone,
+    createdAt: row.created_at,
+  };
+}
+
+/** Converte um cliente carregado do banco em valores de formulário. */
+export function toClientFormInput(item: ClientListItem): ClientFormInput {
+  return {
+    name: item.name,
+    code: item.code ?? "",
+    contactName: item.contactName ?? "",
+    contactEmail: item.contactEmail ?? "",
+    contactPhone: item.contactPhone ?? "",
+  };
+}
+
+export async function getClient(clientId: string): Promise<ClientListItem | null> {
+  const { data, error } = await client()
+    .from("clients")
+    .select(CLIENT_SELECT_COLUMNS)
+    .eq("id", clientId)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (error) {
+    emitEvent({
+      event_name: "backend.request.failure",
+      context: { operation: "clients.get", supabase_error: sanitize(error) },
+    });
+    throw new Error("Não foi possível carregar o cliente.");
+  }
+
+  return data ? mapClient(data as ClientRow) : null;
+}
+
+export async function updateClient(
+  clientId: string,
+  input: ClientFormInput,
+): Promise<ClientListItem> {
+  const parsed = ClientFormSchema.parse(input);
+
+  const { data, error } = await client()
+    .from("clients")
+    .update({
+      name: parsed.name,
+      code: parsed.code,
+      contact_name: parsed.contactName,
+      contact_email: parsed.contactEmail,
+      contact_phone: parsed.contactPhone,
+    })
+    .eq("id", clientId)
+    .is("deleted_at", null)
+    .select(CLIENT_SELECT_COLUMNS)
+    .single();
+
+  if (error || !data) {
+    emitEvent({
+      event_name: "backend.request.failure",
+      context: { operation: "clients.update", supabase_error: sanitize(error) },
+    });
+    if (error?.code === "23505") {
+      throw new Error("Já existe um cliente ativo com este nome ou código.");
+    }
+    throw new Error("Não foi possível salvar as alterações do cliente.");
+  }
+
+  return mapClient(data as ClientRow);
+}
+
+/**
+ * Soft-delete: DELETE físico é bloqueado pela RLS; marcamos `deleted_at`
+ * via UPDATE, permitido apenas para admins da mesma organização
+ * (migration 20260807125500_harden_clients_vessels_admin_writes.sql).
+ */
+export async function softDeleteClient(clientId: string): Promise<void> {
+  const { data, error } = await client()
+    .from("clients")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", clientId)
+    .is("deleted_at", null)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) {
+    emitEvent({
+      event_name: "backend.request.failure",
+      context: { operation: "clients.soft_delete", supabase_error: sanitize(error) },
+    });
+    throw new Error("Não foi possível excluir o cliente.");
+  }
+}
