@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { ActionFormSchema, isOverdue, mapAction, type ActionListItem } from "./actions";
+import {
+  ActionFormSchema,
+  isOverdue,
+  mapAction,
+  resolveCompletedAt,
+  toActionFormInput,
+  type ActionListItem,
+} from "./actions";
 
 const VALID = {
   title: "  Revisar FMEA  ",
@@ -105,5 +112,51 @@ describe("isOverdue", () => {
     expect(isOverdue({ ...base, status: "cancelled" }, today)).toBe(false);
     expect(isOverdue({ ...base, dueDate: null }, today)).toBe(false);
     expect(isOverdue({ ...base, dueDate: "2026-12-01" }, today)).toBe(false);
+  });
+});
+
+describe("resolveCompletedAt", () => {
+  const now = new Date("2026-08-09T10:00:00.000Z");
+
+  it("limpa completed_at fora do status concluída", () => {
+    expect(resolveCompletedAt("open", "2026-01-01T00:00:00Z", now)).toBeNull();
+    expect(resolveCompletedAt("cancelled", null, now)).toBeNull();
+  });
+
+  it("preenche ao concluir e preserva o valor existente", () => {
+    expect(resolveCompletedAt("completed", null, now)).toBe("2026-08-09T10:00:00.000Z");
+    expect(resolveCompletedAt("completed", "2026-01-01T00:00:00Z", now)).toBe(
+      "2026-01-01T00:00:00Z",
+    );
+  });
+});
+
+describe("toActionFormInput", () => {
+  it("converte nulos em strings vazias para o formulário", () => {
+    const item: ActionListItem = {
+      id: "a1",
+      title: "Ação",
+      description: null,
+      origin: null,
+      actionType: null,
+      status: "open",
+      situation: "no_blockers",
+      executionPriority: "medium",
+      operationalCriticality: "low",
+      dueDate: null,
+      completedAt: null,
+      clientId: null,
+      clientName: null,
+      vesselId: null,
+      vesselName: null,
+      responsibleUserId: "0f10f14c-a74d-41c2-81c3-c67ac69e9f12",
+      responsibleName: null,
+      createdAt: "2026-01-01T00:00:00Z",
+    };
+    const form = toActionFormInput(item);
+    expect(form.description).toBe("");
+    expect(form.clientId).toBe("");
+    expect(form.dueDate).toBe("");
+    expect(ActionFormSchema.safeParse(form).success).toBe(true);
   });
 });

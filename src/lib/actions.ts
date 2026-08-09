@@ -298,3 +298,96 @@ export async function createAction(input: ActionFormInput): Promise<ActionListIt
 
   return mapAction(data as ActionRow);
 }
+
+/** Converte um registro carregado para os valores do formulário. */
+export function toActionFormInput(item: ActionListItem): ActionFormInput {
+  return {
+    title: item.title,
+    description: item.description ?? "",
+    origin: item.origin ?? "",
+    actionType: item.actionType ?? "",
+    responsibleUserId: item.responsibleUserId,
+    clientId: item.clientId ?? "",
+    vesselId: item.vesselId ?? "",
+    executionPriority: item.executionPriority,
+    operationalCriticality: item.operationalCriticality,
+    status: item.status,
+    situation: item.situation,
+    dueDate: item.dueDate ?? "",
+  };
+}
+
+/**
+ * Mantém a consistência exigida por `actions_completed_at_consistency_check`:
+ * `completed_at` preenchido apenas quando o status é `completed`.
+ */
+export function resolveCompletedAt(
+  status: ActionStatus,
+  current: string | null,
+  now = new Date(),
+): string | null {
+  if (status !== "completed") return null;
+  return current ?? now.toISOString();
+}
+
+export async function updateAction(
+  actionId: string,
+  input: ActionFormInput,
+  currentCompletedAt: string | null = null,
+): Promise<ActionListItem> {
+  const parsed = ActionFormSchema.parse(input);
+
+  const { data, error } = await client()
+    .from("actions")
+    .update({
+      client_id: parsed.clientId,
+      vessel_id: parsed.vesselId,
+      title: parsed.title,
+      description: parsed.description,
+      origin: parsed.origin,
+      action_type: parsed.actionType,
+      responsible_user_id: parsed.responsibleUserId,
+      execution_priority: parsed.executionPriority,
+      operational_criticality: parsed.operationalCriticality,
+      status: parsed.status,
+      situation: parsed.situation,
+      due_date: parsed.dueDate,
+      completed_at: resolveCompletedAt(parsed.status, currentCompletedAt),
+    })
+    .eq("id", actionId)
+    .is("deleted_at", null)
+    .select(SELECT_COLUMNS)
+    .single();
+
+  if (error || !data) {
+    emitEvent({
+      event_name: "backend.request.failure",
+      context: { operation: "actions.update", supabase_error: sanitize(error) },
+    });
+    throw new Error("Não foi possível salvar as alterações da ação.");
+  }
+
+  return mapAction(data as ActionRow);
+}
+
+/**
+ * Soft-delete: o DELETE físico é bloqueado pela RLS; marcamos `deleted_at`
+ * via UPDATE, que só é permitido para admins da mesma organização.
+ */
+export async function softDeleteAction(actionId: string): Promise<void> {
+  const { data, error } = await client()
+    .from("actions")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", actionId)
+    .is("deleted_at", null)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) {
+    emitEvent({
+      event_name: "backend.request.failure",
+      context: { operation: "actions.soft_delete", supabase_error: sanitize(error) },
+    });
+    throw new Error("Não foi possível excluir a ação.");
+  }
+}

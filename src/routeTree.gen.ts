@@ -39,8 +39,9 @@ import { Route as AuthenticatedOrganizationsNewRouteImport } from './routes/_aut
 import { Route as AuthenticatedDevObservabilityRouteImport } from './routes/_authenticated/dev.observability'
 import { Route as AuthenticatedClientsNewRouteImport } from './routes/_authenticated/clients.new'
 import { Route as AuthenticatedActionsNewRouteImport } from './routes/_authenticated/actions.new'
-import { Route as AuthenticatedActionsActionIdRouteImport } from './routes/_authenticated/actions.$actionId'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as AuthenticatedActionsActionIdIndexRouteImport } from './routes/_authenticated/actions.$actionId.index'
+import { Route as AuthenticatedActionsActionIdEditRouteImport } from './routes/_authenticated/actions.$actionId.edit'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -200,17 +201,23 @@ const AuthenticatedActionsNewRoute = AuthenticatedActionsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AuthenticatedActionsRoute,
 } as any)
-const AuthenticatedActionsActionIdRoute =
-  AuthenticatedActionsActionIdRouteImport.update({
-    id: '/$actionId',
-    path: '/$actionId',
-    getParentRoute: () => AuthenticatedActionsRoute,
-  } as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedActionsActionIdIndexRoute =
+  AuthenticatedActionsActionIdIndexRouteImport.update({
+    id: '/$actionId/',
+    path: '/$actionId/',
+    getParentRoute: () => AuthenticatedActionsRoute,
+  } as any)
+const AuthenticatedActionsActionIdEditRoute =
+  AuthenticatedActionsActionIdEditRouteImport.update({
+    id: '/$actionId/edit',
+    path: '/$actionId/edit',
+    getParentRoute: () => AuthenticatedActionsRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -234,7 +241,6 @@ export interface FileRoutesByFullPath {
   '/users': typeof AuthenticatedUsersRouteWithChildren
   '/vessels': typeof AuthenticatedVesselsRouteWithChildren
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/actions/$actionId': typeof AuthenticatedActionsActionIdRoute
   '/actions/new': typeof AuthenticatedActionsNewRoute
   '/clients/new': typeof AuthenticatedClientsNewRoute
   '/dev/observability': typeof AuthenticatedDevObservabilityRoute
@@ -245,6 +251,8 @@ export interface FileRoutesByFullPath {
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/vessels/': typeof AuthenticatedVesselsIndexRoute
+  '/actions/$actionId/edit': typeof AuthenticatedActionsActionIdEditRoute
+  '/actions/$actionId/': typeof AuthenticatedActionsActionIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -263,7 +271,6 @@ export interface FileRoutesByTo {
   '/search': typeof AuthenticatedSearchRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/actions/$actionId': typeof AuthenticatedActionsActionIdRoute
   '/actions/new': typeof AuthenticatedActionsNewRoute
   '/clients/new': typeof AuthenticatedClientsNewRoute
   '/dev/observability': typeof AuthenticatedDevObservabilityRoute
@@ -274,6 +281,8 @@ export interface FileRoutesByTo {
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/vessels': typeof AuthenticatedVesselsIndexRoute
+  '/actions/$actionId/edit': typeof AuthenticatedActionsActionIdEditRoute
+  '/actions/$actionId': typeof AuthenticatedActionsActionIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -298,7 +307,6 @@ export interface FileRoutesById {
   '/_authenticated/users': typeof AuthenticatedUsersRouteWithChildren
   '/_authenticated/vessels': typeof AuthenticatedVesselsRouteWithChildren
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/_authenticated/actions/$actionId': typeof AuthenticatedActionsActionIdRoute
   '/_authenticated/actions/new': typeof AuthenticatedActionsNewRoute
   '/_authenticated/clients/new': typeof AuthenticatedClientsNewRoute
   '/_authenticated/dev/observability': typeof AuthenticatedDevObservabilityRoute
@@ -309,6 +317,8 @@ export interface FileRoutesById {
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/vessels/': typeof AuthenticatedVesselsIndexRoute
+  '/_authenticated/actions/$actionId/edit': typeof AuthenticatedActionsActionIdEditRoute
+  '/_authenticated/actions/$actionId/': typeof AuthenticatedActionsActionIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -333,7 +343,6 @@ export interface FileRouteTypes {
     | '/users'
     | '/vessels'
     | '/.mcp/invoke-tool/$tool'
-    | '/actions/$actionId'
     | '/actions/new'
     | '/clients/new'
     | '/dev/observability'
@@ -344,6 +353,8 @@ export interface FileRouteTypes {
     | '/clients/'
     | '/users/'
     | '/vessels/'
+    | '/actions/$actionId/edit'
+    | '/actions/$actionId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -362,7 +373,6 @@ export interface FileRouteTypes {
     | '/search'
     | '/settings'
     | '/.mcp/invoke-tool/$tool'
-    | '/actions/$actionId'
     | '/actions/new'
     | '/clients/new'
     | '/dev/observability'
@@ -373,6 +383,8 @@ export interface FileRouteTypes {
     | '/clients'
     | '/users'
     | '/vessels'
+    | '/actions/$actionId/edit'
+    | '/actions/$actionId'
   id:
     | '__root__'
     | '/'
@@ -396,7 +408,6 @@ export interface FileRouteTypes {
     | '/_authenticated/users'
     | '/_authenticated/vessels'
     | '/.mcp/invoke-tool/$tool'
-    | '/_authenticated/actions/$actionId'
     | '/_authenticated/actions/new'
     | '/_authenticated/clients/new'
     | '/_authenticated/dev/observability'
@@ -407,6 +418,8 @@ export interface FileRouteTypes {
     | '/_authenticated/clients/'
     | '/_authenticated/users/'
     | '/_authenticated/vessels/'
+    | '/_authenticated/actions/$actionId/edit'
+    | '/_authenticated/actions/$actionId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -635,13 +648,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedActionsNewRouteImport
       parentRoute: typeof AuthenticatedActionsRoute
     }
-    '/_authenticated/actions/$actionId': {
-      id: '/_authenticated/actions/$actionId'
-      path: '/$actionId'
-      fullPath: '/actions/$actionId'
-      preLoaderRoute: typeof AuthenticatedActionsActionIdRouteImport
-      parentRoute: typeof AuthenticatedActionsRoute
-    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -649,19 +655,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/actions/$actionId/': {
+      id: '/_authenticated/actions/$actionId/'
+      path: '/$actionId'
+      fullPath: '/actions/$actionId/'
+      preLoaderRoute: typeof AuthenticatedActionsActionIdIndexRouteImport
+      parentRoute: typeof AuthenticatedActionsRoute
+    }
+    '/_authenticated/actions/$actionId/edit': {
+      id: '/_authenticated/actions/$actionId/edit'
+      path: '/$actionId/edit'
+      fullPath: '/actions/$actionId/edit'
+      preLoaderRoute: typeof AuthenticatedActionsActionIdEditRouteImport
+      parentRoute: typeof AuthenticatedActionsRoute
+    }
   }
 }
 
 interface AuthenticatedActionsRouteChildren {
-  AuthenticatedActionsActionIdRoute: typeof AuthenticatedActionsActionIdRoute
   AuthenticatedActionsNewRoute: typeof AuthenticatedActionsNewRoute
   AuthenticatedActionsIndexRoute: typeof AuthenticatedActionsIndexRoute
+  AuthenticatedActionsActionIdEditRoute: typeof AuthenticatedActionsActionIdEditRoute
+  AuthenticatedActionsActionIdIndexRoute: typeof AuthenticatedActionsActionIdIndexRoute
 }
 
 const AuthenticatedActionsRouteChildren: AuthenticatedActionsRouteChildren = {
-  AuthenticatedActionsActionIdRoute: AuthenticatedActionsActionIdRoute,
   AuthenticatedActionsNewRoute: AuthenticatedActionsNewRoute,
   AuthenticatedActionsIndexRoute: AuthenticatedActionsIndexRoute,
+  AuthenticatedActionsActionIdEditRoute: AuthenticatedActionsActionIdEditRoute,
+  AuthenticatedActionsActionIdIndexRoute:
+    AuthenticatedActionsActionIdIndexRoute,
 }
 
 const AuthenticatedActionsRouteWithChildren =
