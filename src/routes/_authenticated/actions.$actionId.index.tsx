@@ -200,7 +200,6 @@ function ActionDetailPage() {
   );
 }
 
-
 function Detail({ label, value }: { label: string; value: string | null }) {
   return (
     <div>
