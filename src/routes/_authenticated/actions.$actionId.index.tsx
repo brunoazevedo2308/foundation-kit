@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ListChecks, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { DeliverablesSection } from "@/components/deliverables-section";
 import { PageHeader } from "@/components/page-header";
 import {
   AlertDialog,
@@ -193,6 +194,8 @@ function ActionDetailPage() {
           </CardContent>
         </Card>
       ) : null}
+
+      {action ? <DeliverablesSection actionId={actionId} canManage={canManage} /> : null}
     </div>
   );
 }
