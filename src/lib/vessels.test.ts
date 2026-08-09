@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { VesselFormSchema } from "./vessels";
+import { VesselFormSchema, toVesselFormInput } from "./vessels";
 
 describe("VesselFormSchema", () => {
   it("normaliza campos e mantém vínculo opcional nulo", () => {

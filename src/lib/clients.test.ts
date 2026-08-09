@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ClientFormSchema, canManageOperationalData } from "./clients";
+import { ClientFormSchema, canManageOperationalData, toClientFormInput } from "./clients";
 
 describe("ClientFormSchema", () => {
   it("normaliza e converte campos opcionais vazios em null", () => {
