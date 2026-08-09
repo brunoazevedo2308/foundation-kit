@@ -36,6 +36,7 @@ const LABELS: Record<string, string> = {
   app: "Aplicação",
   organizations: "Organizations",
   new: "Novo",
+  edit: "Editar",
 };
 
 function labelFor(segment: string) {
