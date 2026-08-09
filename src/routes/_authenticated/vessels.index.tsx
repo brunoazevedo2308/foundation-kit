@@ -112,6 +112,7 @@ function VesselsPage() {
                 <TableHead>Classe DP</TableHead>
                 <TableHead>Cliente</TableHead>
                 <TableHead>Status</TableHead>
+                {canManage ? <TableHead className="text-right">Ações</TableHead> : null}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -127,6 +128,35 @@ function VesselsPage() {
                       {STATUS_LABELS[item.status] ?? item.status}
                     </Badge>
                   </TableCell>
+                  {canManage ? (
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button asChild variant="ghost" size="sm" aria-label="Editar embarcação">
+                          <Link to="/vessels/$vesselId/edit" params={{ vesselId: item.id }}>
+                            <Pencil className="h-4 w-4" />
+                            <span className="sr-only">Editar</span>
+                          </Link>
+                        </Button>
+                        <SoftDeleteDialog
+                          title={`Excluir ${item.name}?`}
+                          description="A embarcação deixa de aparecer nas listagens da organização. O registro é mantido no histórico (exclusão lógica) para fins de auditoria."
+                          triggerLabel="Excluir embarcação"
+                          onConfirm={async () => {
+                            try {
+                              await softDeleteVessel(item.id);
+                              setVessels((current) => current.filter((v) => v.id !== item.id));
+                            } catch (err) {
+                              setError(
+                                err instanceof Error
+                                  ? err.message
+                                  : "Não foi possível excluir a embarcação.",
+                              );
+                            }
+                          }}
+                        />
+                      </div>
+                    </TableCell>
+                  ) : null}
                 </TableRow>
               ))}
             </TableBody>
