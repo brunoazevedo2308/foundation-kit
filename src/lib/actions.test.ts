@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  ActionFormSchema,
-  isOverdue,
-  mapAction,
-  type ActionListItem,
-} from "./actions";
+import { ActionFormSchema, isOverdue, mapAction, type ActionListItem } from "./actions";
 
 const VALID = {
   title: "  Revisar FMEA  ",

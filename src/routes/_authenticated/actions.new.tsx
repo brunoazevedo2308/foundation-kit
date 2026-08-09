@@ -135,7 +135,10 @@ function NewActionPage() {
   if (created) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Ação criada" description="A ação já está disponível no acompanhamento." />
+        <PageHeader
+          title="Ação criada"
+          description="A ação já está disponível no acompanhamento."
+        />
         <div
           className="max-w-2xl rounded-lg border border-emerald-500/40 bg-emerald-500/5 p-6"
           role="status"
