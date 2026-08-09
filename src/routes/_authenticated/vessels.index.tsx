@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus, Ship } from "lucide-react";
+import { Pencil, Plus, Ship } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { PageHeader } from "@/components/page-header";
+import { SoftDeleteDialog } from "@/components/soft-delete-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { canManageOperationalData } from "@/lib/clients";
-import { listVessels, type VesselListItem } from "@/lib/vessels";
+import { listVessels, softDeleteVessel, type VesselListItem } from "@/lib/vessels";
 
 export const Route = createFileRoute("/_authenticated/vessels/")({
   head: () => ({
