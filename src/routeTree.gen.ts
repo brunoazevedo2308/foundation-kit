@@ -41,6 +41,7 @@ import { Route as AuthenticatedClientsNewRouteImport } from './routes/_authentic
 import { Route as AuthenticatedActionsNewRouteImport } from './routes/_authenticated/actions.new'
 import { Route as AuthenticatedActionsActionIdRouteImport } from './routes/_authenticated/actions.$actionId'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as AuthenticatedActionsActionIdEditRouteImport } from './routes/_authenticated/actions.$actionId.edit'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -212,6 +213,12 @@ const Char91DotmcpChar93InvokeToolToolRoute =
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedActionsActionIdEditRoute =
+  AuthenticatedActionsActionIdEditRouteImport.update({
+    id: '/edit',
+    path: '/edit',
+    getParentRoute: () => AuthenticatedActionsActionIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -234,7 +241,7 @@ export interface FileRoutesByFullPath {
   '/users': typeof AuthenticatedUsersRouteWithChildren
   '/vessels': typeof AuthenticatedVesselsRouteWithChildren
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/actions/$actionId': typeof AuthenticatedActionsActionIdRoute
+  '/actions/$actionId': typeof AuthenticatedActionsActionIdRouteWithChildren
   '/actions/new': typeof AuthenticatedActionsNewRoute
   '/clients/new': typeof AuthenticatedClientsNewRoute
   '/dev/observability': typeof AuthenticatedDevObservabilityRoute
@@ -245,6 +252,7 @@ export interface FileRoutesByFullPath {
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/vessels/': typeof AuthenticatedVesselsIndexRoute
+  '/actions/$actionId/edit': typeof AuthenticatedActionsActionIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -263,7 +271,7 @@ export interface FileRoutesByTo {
   '/search': typeof AuthenticatedSearchRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/actions/$actionId': typeof AuthenticatedActionsActionIdRoute
+  '/actions/$actionId': typeof AuthenticatedActionsActionIdRouteWithChildren
   '/actions/new': typeof AuthenticatedActionsNewRoute
   '/clients/new': typeof AuthenticatedClientsNewRoute
   '/dev/observability': typeof AuthenticatedDevObservabilityRoute
@@ -274,6 +282,7 @@ export interface FileRoutesByTo {
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/vessels': typeof AuthenticatedVesselsIndexRoute
+  '/actions/$actionId/edit': typeof AuthenticatedActionsActionIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -298,7 +307,7 @@ export interface FileRoutesById {
   '/_authenticated/users': typeof AuthenticatedUsersRouteWithChildren
   '/_authenticated/vessels': typeof AuthenticatedVesselsRouteWithChildren
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/_authenticated/actions/$actionId': typeof AuthenticatedActionsActionIdRoute
+  '/_authenticated/actions/$actionId': typeof AuthenticatedActionsActionIdRouteWithChildren
   '/_authenticated/actions/new': typeof AuthenticatedActionsNewRoute
   '/_authenticated/clients/new': typeof AuthenticatedClientsNewRoute
   '/_authenticated/dev/observability': typeof AuthenticatedDevObservabilityRoute
@@ -309,6 +318,7 @@ export interface FileRoutesById {
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/vessels/': typeof AuthenticatedVesselsIndexRoute
+  '/_authenticated/actions/$actionId/edit': typeof AuthenticatedActionsActionIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -344,6 +354,7 @@ export interface FileRouteTypes {
     | '/clients/'
     | '/users/'
     | '/vessels/'
+    | '/actions/$actionId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -373,6 +384,7 @@ export interface FileRouteTypes {
     | '/clients'
     | '/users'
     | '/vessels'
+    | '/actions/$actionId/edit'
   id:
     | '__root__'
     | '/'
@@ -407,6 +419,7 @@ export interface FileRouteTypes {
     | '/_authenticated/clients/'
     | '/_authenticated/users/'
     | '/_authenticated/vessels/'
+    | '/_authenticated/actions/$actionId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -649,17 +662,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/actions/$actionId/edit': {
+      id: '/_authenticated/actions/$actionId/edit'
+      path: '/edit'
+      fullPath: '/actions/$actionId/edit'
+      preLoaderRoute: typeof AuthenticatedActionsActionIdEditRouteImport
+      parentRoute: typeof AuthenticatedActionsActionIdRoute
+    }
   }
 }
 
+interface AuthenticatedActionsActionIdRouteChildren {
+  AuthenticatedActionsActionIdEditRoute: typeof AuthenticatedActionsActionIdEditRoute
+}
+
+const AuthenticatedActionsActionIdRouteChildren: AuthenticatedActionsActionIdRouteChildren =
+  {
+    AuthenticatedActionsActionIdEditRoute:
+      AuthenticatedActionsActionIdEditRoute,
+  }
+
+const AuthenticatedActionsActionIdRouteWithChildren =
+  AuthenticatedActionsActionIdRoute._addFileChildren(
+    AuthenticatedActionsActionIdRouteChildren,
+  )
+
 interface AuthenticatedActionsRouteChildren {
-  AuthenticatedActionsActionIdRoute: typeof AuthenticatedActionsActionIdRoute
+  AuthenticatedActionsActionIdRoute: typeof AuthenticatedActionsActionIdRouteWithChildren
   AuthenticatedActionsNewRoute: typeof AuthenticatedActionsNewRoute
   AuthenticatedActionsIndexRoute: typeof AuthenticatedActionsIndexRoute
 }
 
 const AuthenticatedActionsRouteChildren: AuthenticatedActionsRouteChildren = {
-  AuthenticatedActionsActionIdRoute: AuthenticatedActionsActionIdRoute,
+  AuthenticatedActionsActionIdRoute:
+    AuthenticatedActionsActionIdRouteWithChildren,
   AuthenticatedActionsNewRoute: AuthenticatedActionsNewRoute,
   AuthenticatedActionsIndexRoute: AuthenticatedActionsIndexRoute,
 }
