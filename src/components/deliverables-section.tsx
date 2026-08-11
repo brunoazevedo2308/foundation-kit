@@ -2,6 +2,7 @@ import { ListTodo, Pencil, Plus } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { DeliverableForm, emptyDeliverableForm } from "@/components/deliverable-form";
+import { EvidencesSection } from "@/components/evidences-section";
 import { SoftDeleteDialog } from "@/components/soft-delete-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -163,6 +164,11 @@ export function DeliverablesSection({ actionId, canManage }: DeliverablesSection
                         {item.responsibleName ?? "Sem responsável identificado"}
                       </span>
                     </div>
+                    <EvidencesSection
+                      actionId={actionId}
+                      deliverableId={item.id}
+                      canManage={canManage}
+                    />
                   </div>
                   {canManage ? (
                     <div className="flex items-center gap-1">
