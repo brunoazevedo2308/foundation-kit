@@ -4,6 +4,7 @@ import {
   EVIDENCE_MAX_BYTES,
   EvidenceStorageError,
   createEvidenceSignedUrl,
+  sanitizeEvidenceFilename,
   uploadEvidence,
   validateEvidenceFile,
   type EvidenceSupabaseLike,
@@ -189,7 +190,7 @@ export async function createEvidence(input: CreateEvidenceInput) {
       deliverableId: input.deliverableId,
       title,
       description: input.description?.trim() ? input.description.trim() : null,
-      versionNumber: nextEvidenceVersion(existing, sanitizedName(input.file.name)),
+      versionNumber: nextEvidenceVersion(existing, sanitizeEvidenceFilename(input.file.name)),
       uploadedBy: authData.user.id,
       file: input.file,
     },
@@ -197,11 +198,6 @@ export async function createEvidence(input: CreateEvidenceInput) {
   );
 }
 
-// Reexporta o saneamento usado pelo módulo de storage sem duplicar a lógica.
-import { sanitizeEvidenceFilename } from "./evidence-storage";
-function sanitizedName(raw: string): string {
-  return sanitizeEvidenceFilename(raw);
-}
 export { sanitizeEvidenceFilename };
 
 /** Link temporário de download (Storage API, RLS aplicada). */
