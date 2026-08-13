@@ -240,11 +240,61 @@ describe("uploadEvidence", () => {
     expect((err as EvidenceStorageError).message).toMatch(/administrador/i);
   });
 
+  it("retries with the next version when the unique index rejects a concurrent upload", async () => {
+    const rows: Record<string, unknown>[] = [];
+    let remainingConflicts = 2;
+    const client: EvidenceSupabaseLike = {
+      from() {
+        return {
+          insert(row: Record<string, unknown>) {
+            return {
+              select() {
+                return {
+                  single: async () => {
+                    if (remainingConflicts > 0) {
+                      remainingConflicts -= 1;
+                      return { data: null, error: { code: "23505", message: "duplicate key" } };
+                    }
+                    rows.push(row);
+                    return { data: { id: row.id }, error: null };
+                  },
+                };
+              },
+            };
+          },
+          update() {
+            return { eq: async () => ({ error: null }) };
+          },
+        };
+      },
+      storage: {
+        from() {
+          return {
+            upload: async () => ({ data: null, error: null }),
+            createSignedUrl: async () => ({ data: { signedUrl: "x" }, error: null }),
+          };
+        },
+      },
+    };
+    const result = await uploadEvidence({ ...base, versionNumber: 1, file: makeFile() }, client);
+    expect(result.versionNumber).toBe(3);
+    expect(rows[0]).toMatchObject({ version_number: 3 });
+  });
+
+  it("gives up with a friendly message when the version keeps colliding", async () => {
+    const client = makeClient({ insertError: { code: "23505", message: "duplicate key" } });
+    const err = await uploadEvidence({ ...base, file: makeFile() }, client).catch((e) => e);
+    expect((err as EvidenceStorageError).code).toBe("metadata_insert_failed");
+    expect((err as EvidenceStorageError).message).toMatch(/ao mesmo tempo/i);
+    expect(client._uploads).toHaveLength(0);
+  });
+
   it("throws supabase_unavailable when client is null", async () => {
     await expect(uploadEvidence({ ...base, file: makeFile() }, null)).rejects.toMatchObject({
       code: "supabase_unavailable",
     });
   });
+
 
   it("validates the file before touching the network", async () => {
     const client = makeClient();
