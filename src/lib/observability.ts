@@ -291,7 +291,12 @@ function defaultSeverityFor(name: EventName): Severity {
   ) {
     return "error";
   }
-  if (name === "storage.upload.compensating_cleanup") return "warning";
+  if (
+    name === "storage.upload.compensating_cleanup" ||
+    name === "storage.upload.version_conflict"
+  ) {
+    return "warning";
+  }
   if (name === "dev.controlled_error") return "error";
   return "info";
 }
