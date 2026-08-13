@@ -93,6 +93,11 @@ export function EvidencesSection({ actionId, deliverableId, canManage }: Evidenc
           <EvidenceUploadForm
             onCancel={() => setUploading(false)}
             onSubmit={async (values) => {
+              setError(null);
+              // Recarrega antes de calcular a próxima versão: reduz colisão
+              // com uploads concorrentes (o índice único ainda decide).
+              const current = await listEvidences(deliverableId);
+              setItems(current);
               await createEvidence({
                 actionId,
                 deliverableId,
