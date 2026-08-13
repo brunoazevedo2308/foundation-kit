@@ -209,10 +209,25 @@ function newUuid(): string {
   return `${b.slice(0, 8)}-${b.slice(8, 12)}-${b.slice(12, 16)}-${b.slice(16, 20)}-${b.slice(20)}`;
 }
 
+/** Detecta violação do índice único de versão ativa (Postgres 23505). */
+function isVersionConflict(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const e = error as { code?: unknown; message?: unknown };
+  if (e.code === "23505") return true;
+  return typeof e.message === "string" && /duplicate key|already exists/i.test(e.message);
+}
+
+/** Número máximo de tentativas ao colidir com uma versão concorrente. */
+export const EVIDENCE_VERSION_MAX_RETRIES = 5;
+
 /**
  * Metadata-first upload. Steps:
  *   1. Generate a new Evidence UUID and canonical path.
  *   2. Insert the metadata row in `public.evidences` (RLS-scoped).
+ *      Em caso de colisão de versão (upload concorrente no mesmo
+ *      arquivo), reincrementa `version_number` e tenta novamente com um
+ *      novo UUID/caminho — o índice único é a fonte da verdade, nunca a
+ *      lista carregada no cliente.
  *   3. Upload the object to `evidences-private` (RLS re-validates the row).
  *   4. If the upload fails, soft-delete the metadata row so no orphan
  *      metadata pollutes the table and the unique-version index stays
@@ -230,36 +245,60 @@ export async function uploadEvidence(
   }
   validateEvidenceFile(input.file);
 
-  const evidenceId = newUuid();
   const fileName = sanitizeEvidenceFilename(input.file.name);
-  const storagePath = buildEvidencePath({
-    organizationId: input.organizationId,
-    actionId: input.actionId,
-    deliverableId: input.deliverableId,
-    evidenceId,
-    filename: fileName,
-  });
   const mimeType = input.file.type.toLowerCase();
   const sizeBytes = input.file.size;
-  const versionNumber = input.versionNumber ?? 1;
 
-  const { error: insertError } = await client
-    .from("evidences")
-    .insert({
-      id: evidenceId,
+  let evidenceId = "";
+  let storagePath = "";
+  let versionNumber = input.versionNumber ?? 1;
+  let insertError: unknown = null;
+
+  for (let attempt = 0; attempt < EVIDENCE_VERSION_MAX_RETRIES; attempt += 1) {
+    evidenceId = newUuid();
+    storagePath = buildEvidencePath({
+      organizationId: input.organizationId,
+      actionId: input.actionId,
+      deliverableId: input.deliverableId,
+      evidenceId,
+      filename: fileName,
+    });
+
+    const { error } = await client
+      .from("evidences")
+      .insert({
+        id: evidenceId,
+        organization_id: input.organizationId,
+        deliverable_id: input.deliverableId,
+        title: input.title,
+        description: input.description ?? null,
+        storage_path: storagePath,
+        file_name: fileName,
+        mime_type: mimeType,
+        size_bytes: sizeBytes,
+        version_number: versionNumber,
+        uploaded_by: input.uploadedBy,
+      })
+      .select("id")
+      .single();
+
+    insertError = error ?? null;
+    if (!insertError) break;
+    if (!isVersionConflict(insertError)) break;
+
+    emitEvent({
+      event_name: "storage.upload.version_conflict",
+      severity: "warning",
+      user_id: input.uploadedBy,
       organization_id: input.organizationId,
-      deliverable_id: input.deliverableId,
-      title: input.title,
-      description: input.description ?? null,
-      storage_path: storagePath,
-      file_name: fileName,
-      mime_type: mimeType,
-      size_bytes: sizeBytes,
-      version_number: versionNumber,
-      uploaded_by: input.uploadedBy,
-    })
-    .select("id")
-    .single();
+      context: {
+        file_name: fileName,
+        attempted_version: versionNumber,
+        attempt: attempt + 1,
+      },
+    });
+    versionNumber += 1;
+  }
 
   if (insertError) {
     emitEvent({
@@ -276,10 +315,13 @@ export async function uploadEvidence(
     });
     throw new EvidenceStorageError(
       "metadata_insert_failed",
-      "Não foi possível registrar a evidência. Verifique suas permissões e tente novamente.",
+      isVersionConflict(insertError)
+        ? "Outra versão deste arquivo foi enviada ao mesmo tempo. Atualize a lista e tente novamente."
+        : "Não foi possível registrar a evidência. Verifique suas permissões e tente novamente.",
       insertError,
     );
   }
+
 
   const { error: uploadError } = await client.storage
     .from(EVIDENCE_BUCKET)
