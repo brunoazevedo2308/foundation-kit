@@ -104,7 +104,7 @@ export function EvidencesSection({ actionId, deliverableId, canManage }: Evidenc
                 title: values.title,
                 description: values.description,
                 file: values.file,
-                existing: items,
+                existing: current,
               });
               await reload();
               setUploading(false);
