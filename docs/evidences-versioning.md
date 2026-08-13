@@ -38,7 +38,6 @@ o usuário recebe uma mensagem pedindo para atualizar a lista. Nenhum
 objeto é enviado antes de o metadata existir, então uma colisão nunca
 deixa arquivo órfão no bucket.
 
-
 ## Por que não sobrescrever?
 
 - **Auditoria**: cada versão é rastreável de forma imutável — o
