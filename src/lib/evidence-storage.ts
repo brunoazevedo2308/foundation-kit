@@ -322,7 +322,6 @@ export async function uploadEvidence(
     );
   }
 
-
   const { error: uploadError } = await client.storage
     .from(EVIDENCE_BUCKET)
     .upload(storagePath, input.file, { contentType: mimeType, upsert: false });

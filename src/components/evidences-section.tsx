@@ -168,7 +168,6 @@ export function EvidencesSection({ actionId, deliverableId, canManage }: Evidenc
                             );
                           }
                         }}
-
                       >
                         <Download className="h-4 w-4" />
                       </Button>

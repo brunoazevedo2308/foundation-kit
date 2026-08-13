@@ -295,7 +295,6 @@ describe("uploadEvidence", () => {
     });
   });
 
-
   it("validates the file before touching the network", async () => {
     const client = makeClient();
     const spy = vi.spyOn(client.storage, "from");
