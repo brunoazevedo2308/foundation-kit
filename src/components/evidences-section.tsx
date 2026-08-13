@@ -141,7 +141,15 @@ export function EvidencesSection({ actionId, deliverableId, canManage }: Evidenc
                           setError(null);
                           try {
                             const url = await getEvidenceDownloadUrl(evidence.storagePath);
-                            window.open(url, "_blank", "noopener,noreferrer");
+                            // Âncora temporária em vez de window.open: o clique
+                            // já foi consumido pelo await e popups seriam bloqueados.
+                            const anchor = document.createElement("a");
+                            anchor.href = url;
+                            anchor.rel = "noopener noreferrer";
+                            anchor.download = evidence.fileName;
+                            document.body.appendChild(anchor);
+                            anchor.click();
+                            anchor.remove();
                           } catch (err) {
                             setError(
                               err instanceof Error
@@ -150,6 +158,7 @@ export function EvidencesSection({ actionId, deliverableId, canManage }: Evidenc
                             );
                           }
                         }}
+
                       >
                         <Download className="h-4 w-4" />
                       </Button>
