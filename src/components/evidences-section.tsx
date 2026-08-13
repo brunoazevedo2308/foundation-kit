@@ -67,7 +67,12 @@ export function EvidencesSection({ actionId, deliverableId, canManage }: Evidenc
         <h4 className="flex items-center gap-2 text-sm font-medium">
           <FileText className="h-4 w-4" aria-hidden />
           Evidências
-          {items.length > 0 ? <Badge variant="secondary">{items.length}</Badge> : null}
+          {items.length > 0 ? (
+            <Badge variant="secondary">
+              {groups.length} {groups.length === 1 ? "arquivo" : "arquivos"} · {items.length}{" "}
+              {items.length === 1 ? "versão" : "versões"}
+            </Badge>
+          ) : null}
         </h4>
         {canManage && !uploading ? (
           <Button size="sm" variant="outline" onClick={() => setUploading(true)}>
