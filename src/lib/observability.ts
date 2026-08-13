@@ -41,6 +41,7 @@ export type EventName =
   | "storage.upload.success"
   | "storage.upload.failure"
   | "storage.upload.compensating_cleanup"
+  | "storage.upload.version_conflict"
   | "storage.signed_url.failure"
   // Notificações (reservado para futura instrumentação)
   | "notifications.dispatch.failure"
@@ -290,7 +291,12 @@ function defaultSeverityFor(name: EventName): Severity {
   ) {
     return "error";
   }
-  if (name === "storage.upload.compensating_cleanup") return "warning";
+  if (
+    name === "storage.upload.compensating_cleanup" ||
+    name === "storage.upload.version_conflict"
+  ) {
+    return "warning";
+  }
   if (name === "dev.controlled_error") return "error";
   return "info";
 }

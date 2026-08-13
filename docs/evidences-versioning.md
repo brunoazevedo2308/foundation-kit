@@ -27,6 +27,17 @@ das versões ativas via `evidences_active_version_file_uniq`. Fica a
 critério da UI de listagem ordenar por `version_number desc` e sinalizar
 qual versão é a "atual".
 
+### Concorrência
+
+A próxima versão calculada no cliente é apenas um palpite: dois uploads
+simultâneos do mesmo arquivo chegariam com o mesmo `version_number`. O
+índice único é a fonte da verdade — ao receber `23505`, o módulo
+reincrementa a versão, gera **novo UUID e novo caminho** e tenta
+novamente (até `EVIDENCE_VERSION_MAX_RETRIES`). Persistindo o conflito,
+o usuário recebe uma mensagem pedindo para atualizar a lista. Nenhum
+objeto é enviado antes de o metadata existir, então uma colisão nunca
+deixa arquivo órfão no bucket.
+
 ## Por que não sobrescrever?
 
 - **Auditoria**: cada versão é rastreável de forma imutável — o

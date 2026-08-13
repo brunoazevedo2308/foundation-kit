@@ -67,7 +67,12 @@ export function EvidencesSection({ actionId, deliverableId, canManage }: Evidenc
         <h4 className="flex items-center gap-2 text-sm font-medium">
           <FileText className="h-4 w-4" aria-hidden />
           Evidências
-          {items.length > 0 ? <Badge variant="secondary">{items.length}</Badge> : null}
+          {items.length > 0 ? (
+            <Badge variant="secondary">
+              {groups.length} {groups.length === 1 ? "arquivo" : "arquivos"} · {items.length}{" "}
+              {items.length === 1 ? "versão" : "versões"}
+            </Badge>
+          ) : null}
         </h4>
         {canManage && !uploading ? (
           <Button size="sm" variant="outline" onClick={() => setUploading(true)}>
@@ -88,13 +93,18 @@ export function EvidencesSection({ actionId, deliverableId, canManage }: Evidenc
           <EvidenceUploadForm
             onCancel={() => setUploading(false)}
             onSubmit={async (values) => {
+              setError(null);
+              // Recarrega antes de calcular a próxima versão: reduz colisão
+              // com uploads concorrentes (o índice único ainda decide).
+              const current = await listEvidences(deliverableId);
+              setItems(current);
               await createEvidence({
                 actionId,
                 deliverableId,
                 title: values.title,
                 description: values.description,
                 file: values.file,
-                existing: items,
+                existing: current,
               });
               await reload();
               setUploading(false);
@@ -141,7 +151,15 @@ export function EvidencesSection({ actionId, deliverableId, canManage }: Evidenc
                           setError(null);
                           try {
                             const url = await getEvidenceDownloadUrl(evidence.storagePath);
-                            window.open(url, "_blank", "noopener,noreferrer");
+                            // Âncora temporária em vez de window.open: o clique
+                            // já foi consumido pelo await e popups seriam bloqueados.
+                            const anchor = document.createElement("a");
+                            anchor.href = url;
+                            anchor.rel = "noopener noreferrer";
+                            anchor.download = evidence.fileName;
+                            document.body.appendChild(anchor);
+                            anchor.click();
+                            anchor.remove();
                           } catch (err) {
                             setError(
                               err instanceof Error
