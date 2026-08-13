@@ -41,6 +41,7 @@ export type EventName =
   | "storage.upload.success"
   | "storage.upload.failure"
   | "storage.upload.compensating_cleanup"
+  | "storage.upload.version_conflict"
   | "storage.signed_url.failure"
   // Notificações (reservado para futura instrumentação)
   | "notifications.dispatch.failure"
