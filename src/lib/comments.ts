@@ -28,11 +28,7 @@ function client() {
 }
 
 export const CommentFormSchema = z.object({
-  body: z
-    .string()
-    .trim()
-    .min(2, "Escreva um comentário.")
-    .max(2000, "Máximo de 2000 caracteres."),
+  body: z.string().trim().min(2, "Escreva um comentário.").max(2000, "Máximo de 2000 caracteres."),
 });
 
 export type CommentFormInput = z.input<typeof CommentFormSchema>;
