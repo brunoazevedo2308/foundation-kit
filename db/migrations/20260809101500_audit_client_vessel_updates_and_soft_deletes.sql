@@ -18,7 +18,7 @@ begin
     'client',
     old.id,
     case when old.deleted_at is null and new.deleted_at is not null then 'client.soft_deleted' else 'client.updated' end,
-    jsonb_build_object('old', to_jsonb(old), 'new', to_jsonb(new))
+    jsonb_build_object('before', to_jsonb(old), 'after', to_jsonb(new))
   );
   return new;
 end;
@@ -52,7 +52,7 @@ begin
     'vessel',
     old.id,
     case when old.deleted_at is null and new.deleted_at is not null then 'vessel.soft_deleted' else 'vessel.updated' end,
-    jsonb_build_object('old', to_jsonb(old), 'new', to_jsonb(new))
+    jsonb_build_object('before', to_jsonb(old), 'after', to_jsonb(new))
   );
   return new;
 end;
