@@ -196,6 +196,15 @@ function ActionDetailPage() {
       ) : null}
 
       {action ? <DeliverablesSection actionId={actionId} canManage={canManage} /> : null}
+
+      {action ? (
+        <CommentsSection
+          context={{ actionId }}
+          currentUserId={user.id}
+          role={profile.role}
+          title="Comentários da ação"
+        />
+      ) : null}
     </div>
   );
 }
