@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ListChecks, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { CommentsSection } from "@/components/comments-section";
 import { DeliverablesSection } from "@/components/deliverables-section";
 import { PageHeader } from "@/components/page-header";
 import {
@@ -43,7 +44,7 @@ export const Route = createFileRoute("/_authenticated/actions/$actionId/")({
 
 function ActionDetailPage() {
   const { actionId } = Route.useParams();
-  const { profile } = Route.useRouteContext();
+  const { profile, user } = Route.useRouteContext();
   const canManage = canManageOperationalData(profile.role);
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
