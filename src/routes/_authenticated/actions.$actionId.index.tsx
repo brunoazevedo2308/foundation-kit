@@ -196,7 +196,12 @@ function ActionDetailPage() {
         </Card>
       ) : null}
 
-      {action ? <DeliverablesSection actionId={actionId} canManage={canManage} /> : null}
+      {action ? <DeliverablesSection
+          actionId={actionId}
+          canManage={canManage}
+          currentUserId={user.id}
+          role={profile.role}
+        /> : null}
 
       {action ? (
         <CommentsSection

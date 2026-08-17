@@ -1,6 +1,7 @@
 import { ListTodo, Pencil, Plus } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
+import { CommentsSection } from "@/components/comments-section";
 import { DeliverableForm, emptyDeliverableForm } from "@/components/deliverable-form";
 import { EvidencesSection } from "@/components/evidences-section";
 import { SoftDeleteDialog } from "@/components/soft-delete-dialog";
@@ -29,9 +30,16 @@ import {
 interface DeliverablesSectionProps {
   actionId: string;
   canManage: boolean;
+  currentUserId: string;
+  role: string;
 }
 
-export function DeliverablesSection({ actionId, canManage }: DeliverablesSectionProps) {
+export function DeliverablesSection({
+  actionId,
+  canManage,
+  currentUserId,
+  role,
+}: DeliverablesSectionProps) {
   const [items, setItems] = useState<DeliverableListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -168,6 +176,12 @@ export function DeliverablesSection({ actionId, canManage }: DeliverablesSection
                       actionId={actionId}
                       deliverableId={item.id}
                       canManage={canManage}
+                    />
+                    <CommentsSection
+                      context={{ deliverableId: item.id }}
+                      currentUserId={currentUserId}
+                      role={role}
+                      title={`Comentários — ${item.title}`}
                     />
                   </div>
                   {canManage ? (
