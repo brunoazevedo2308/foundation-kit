@@ -67,7 +67,6 @@ export function DeliverableForm({
     setValues(JSON.parse(initialSignature) as DeliverableFormInput);
   }, [initialSignature]);
 
-
   useEffect(() => {
     let active = true;
     listUsers()

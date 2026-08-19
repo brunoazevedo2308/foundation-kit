@@ -26,7 +26,6 @@ Itens fora do escopo da US-004:
 - **Leaked password protection** (Supabase Auth) pertence a **Production Readiness**, não à US-004.
 - **Limpeza de objetos órfãos** no bucket após soft-delete de evidências é retenção/infra, tratada fora deste escopo (o soft-delete preserva o objeto por design de auditoria).
 
-
 ## Casca do aplicativo (TT-006)
 
 - **Layout responsivo**: `SidebarProvider` + `AppShell` (`src/components/app-shell.tsx`) envolvem toda rota sob `/_authenticated/`. Em telas pequenas a barra lateral colapsa para _offcanvas_; em telas grandes é fixa e minimizável ao modo ícone.
