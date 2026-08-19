@@ -48,3 +48,10 @@ leitura não tem valor de produto e permanece não exposta na UI.
    metadata-first com rollback compensatório de `src/lib/evidence-storage.ts`.
 
 Até lá, Evidences continua sendo o único artefato com arquivo no DP Suite.
+
+## Situação no fechamento da US-004
+
+Este é o **único bloqueio funcional de infraestrutura restante** da US-004.
+Todos os demais módulos (clients, vessels, actions, deliverables, evidences,
+comments) estão completos e auditados. O item "leaked password protection"
+do Security Advisor **não** pertence à US-004: é Production Readiness.

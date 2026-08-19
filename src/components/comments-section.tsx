@@ -46,6 +46,7 @@ export function CommentsSection({
 
   const reload = useCallback(async () => {
     setItems(await listComments(context));
+    setError(null);
     // contextKey identifica o alvo de forma estável entre renders
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contextKey]);
@@ -53,6 +54,7 @@ export function CommentsSection({
   useEffect(() => {
     let active = true;
     setLoading(true);
+    setError(null);
     listComments(context)
       .then((rows) => {
         if (active) setItems(rows);

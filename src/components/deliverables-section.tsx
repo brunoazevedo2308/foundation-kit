@@ -49,11 +49,13 @@ export function DeliverablesSection({
   const reload = useCallback(async () => {
     const rows = await listDeliverables(actionId);
     setItems(rows);
+    setError(null);
   }, [actionId]);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
+    setError(null);
     listDeliverables(actionId)
       .then((rows) => {
         if (active) setItems(rows);

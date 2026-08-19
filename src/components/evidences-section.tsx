@@ -37,11 +37,13 @@ export function EvidencesSection({ actionId, deliverableId, canManage }: Evidenc
   const reload = useCallback(async () => {
     const rows = await listEvidences(deliverableId);
     setItems(rows);
+    setError(null);
   }, [deliverableId]);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
+    setError(null);
     listEvidences(deliverableId)
       .then((rows) => {
         if (active) setItems(rows);

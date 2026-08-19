@@ -59,9 +59,13 @@ export function DeliverableForm({
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // `initialValues` é recriado a cada render do pai (objeto literal).
+  // Comparar o conteúdo evita descartar o que o usuário já digitou quando
+  // o pai re-renderiza por outro motivo (loading/erro/recarga da lista).
+  const initialSignature = JSON.stringify(initialValues);
   useEffect(() => {
-    setValues(initialValues);
-  }, [initialValues]);
+    setValues(JSON.parse(initialSignature) as DeliverableFormInput);
+  }, [initialSignature]);
 
   useEffect(() => {
     let active = true;
