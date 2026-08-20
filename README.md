@@ -26,7 +26,21 @@ Itens fora do escopo da US-004:
 - **Leaked password protection** (Supabase Auth) pertence a **Production Readiness**, não à US-004.
 - **Limpeza de objetos órfãos** no bucket após soft-delete de evidências é retenção/infra, tratada fora deste escopo (o soft-delete preserva o objeto por design de auditoria).
 
+## Dashboard Operacional (US-005 — 1º ciclo)
+
+- **Rota**: `/dashboard` (dentro do shell autenticado) deixou de ser placeholder e passou a renderizar a visão operacional real.
+- **Fonte de dados**: `src/lib/dashboard.ts` lê `public.actions` e `public.deliverables` ativos (`deleted_at is null`) com a chave publishable + sessão. O escopo multi-tenant é garantido exclusivamente pela RLS — sem `service_role`, sem tabelas, views, functions ou migrations novas.
+- **KPIs**: ações abertas, ações vencidas, ações críticas (criticidade `high`/`critical` em aberto), entregáveis pendentes e entregáveis vencidos. `completed` e `cancelled` contam como fechados e nunca aparecem como vencidos.
+- **Vencimento**: comparação por data local (`localDateKey`, formato `AAAA-MM-DD`) contra `due_date`; o próprio dia não é vencido.
+- **Distribuições e rankings**: ações por status (todos os status, inclusive zerados), ações abertas por prioridade e Top 5 de clientes, embarcações e responsáveis por ações abertas.
+- **Atenção imediata**: lista ordenada por severidade (vencida > crítica > urgente) e depois pelo prazo mais próximo, com link direto para `/actions/$actionId`.
+- **Estados**: loading, erro com "Tentar novamente" e empty state explícito (Development ainda sem dados operacionais) apontando para Ações, Clientes e Embarcações.
+- **Permissões**: leitura apenas. Nenhum gate de escrita novo foi introduzido; `member` continua somente leitura.
+- **Testes**: `src/lib/dashboard.test.ts` cobre vencimento, status fechados, KPIs, distribuições, rankings e `attentionList` de forma determinística (datas fixas, sem rede).
+
 ## Casca do aplicativo (TT-006)
+
+
 
 - **Layout responsivo**: `SidebarProvider` + `AppShell` (`src/components/app-shell.tsx`) envolvem toda rota sob `/_authenticated/`. Em telas pequenas a barra lateral colapsa para _offcanvas_; em telas grandes é fixa e minimizável ao modo ícone.
 - **Navegação lateral** (`src/components/app-sidebar.tsx`): agrupada em Operações (Dashboard, Ações, Notificações, Busca), Cadastros (Clientes, Embarcações, Usuários) e Conta (Configurações). A rota ativa é destacada via `useRouterState` e prefixos (por exemplo `/actions/$actionId` mantém Ações destacado).
