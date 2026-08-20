@@ -40,8 +40,6 @@ Itens fora do escopo da US-004:
 
 ## Casca do aplicativo (TT-006)
 
-
-
 - **Layout responsivo**: `SidebarProvider` + `AppShell` (`src/components/app-shell.tsx`) envolvem toda rota sob `/_authenticated/`. Em telas pequenas a barra lateral colapsa para _offcanvas_; em telas grandes é fixa e minimizável ao modo ícone.
 - **Navegação lateral** (`src/components/app-sidebar.tsx`): agrupada em Operações (Dashboard, Ações, Notificações, Busca), Cadastros (Clientes, Embarcações, Usuários) e Conta (Configurações). A rota ativa é destacada via `useRouterState` e prefixos (por exemplo `/actions/$actionId` mantém Ações destacado).
 - **Cabeçalho** (`src/components/app-header.tsx`): `SidebarTrigger`, breadcrumb derivado do pathname (rótulos PT-BR) e menu do usuário exibindo nome, e-mail, organização e ação Sair.

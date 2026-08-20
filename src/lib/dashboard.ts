@@ -7,11 +7,7 @@ import {
   type ActionPriority,
   type ActionStatus,
 } from "./actions";
-import {
-  mapDeliverable,
-  type DeliverableListItem,
-  type DeliverableStatus,
-} from "./deliverables";
+import { mapDeliverable, type DeliverableListItem, type DeliverableStatus } from "./deliverables";
 import { emitEvent, sanitize } from "./observability";
 import { supabase } from "./supabase";
 

@@ -158,7 +158,13 @@ describe("distribuições", () => {
 
 describe("rankings", () => {
   const actions = [
-    action({ id: "a1", clientId: "c1", clientName: "Alpha", vesselId: "v1", vesselName: "Navio A" }),
+    action({
+      id: "a1",
+      clientId: "c1",
+      clientName: "Alpha",
+      vesselId: "v1",
+      vesselName: "Navio A",
+    }),
     action({ id: "a2", clientId: "c1", clientName: "Alpha", responsibleUserId: "u2" }),
     action({ id: "a3", clientId: "c2", clientName: "Beta" }),
     action({ id: "a4", clientId: "c2", clientName: "Beta", status: "cancelled" }),

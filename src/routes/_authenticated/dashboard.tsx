@@ -195,9 +195,7 @@ function AttentionRow({ item, today }: { item: ActionListItem; today: string }) 
           <Badge variant="outline">Prazo {item.dueDate}</Badge>
         ) : null}
         <Badge variant="secondary">{ACTION_PRIORITY_LABELS[item.executionPriority]}</Badge>
-        <Badge variant="outline">
-          {ACTION_CRITICALITY_LABELS[item.operationalCriticality]}
-        </Badge>
+        <Badge variant="outline">{ACTION_CRITICALITY_LABELS[item.operationalCriticality]}</Badge>
       </div>
     </li>
   );
@@ -220,9 +218,7 @@ function DashboardPage() {
       setError(null);
     } catch (err) {
       setData(null);
-      setError(
-        err instanceof Error ? err.message : "Não foi possível carregar os indicadores.",
-      );
+      setError(err instanceof Error ? err.message : "Não foi possível carregar os indicadores.");
     } finally {
       setLoading(false);
     }
