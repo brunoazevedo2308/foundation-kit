@@ -3,19 +3,28 @@ import { describe, expect, it } from "vitest";
 import type { ActionListItem } from "./actions";
 import type { DeliverableListItem } from "./deliverables";
 import {
+  activeFilterCount,
+  addDaysKey,
+  applyFilters,
   attentionList,
+  buildFilterOptions,
   computeKpis,
   distributionByPriority,
   distributionByStatus,
+  EMPTY_FILTERS,
+  filterActions,
+  hasActiveFilters,
   isActionOpen,
   isActionOverdueLocal,
   isDeliverableOverdueLocal,
   isDeliverablePending,
   localDateKey,
+  matchesDueWindow,
   rankClients,
   rankResponsibles,
   rankVessels,
 } from "./dashboard";
+
 
 const TODAY = "2026-08-20";
 
@@ -213,5 +222,156 @@ describe("attentionList", () => {
 
   it("retorna vazio sem ações", () => {
     expect(attentionList([], TODAY)).toEqual([]);
+  });
+});
+
+describe("filtros gerenciais (US-005, 2º ciclo)", () => {
+  const base = [
+    action({
+      id: "a1",
+      clientId: "c1",
+      clientName: "Cliente A",
+      vesselId: "v1",
+      vesselName: "Navio A",
+      responsibleUserId: "u1",
+      status: "open",
+      executionPriority: "urgent",
+      dueDate: "2026-08-10",
+    }),
+    action({
+      id: "a2",
+      clientId: "c2",
+      clientName: "Cliente B",
+      vesselId: null,
+      vesselName: null,
+      responsibleUserId: "u2",
+      status: "in_progress",
+      executionPriority: "low",
+      dueDate: "2026-08-25",
+    }),
+    action({
+      id: "a3",
+      clientId: "c1",
+      clientName: "Cliente A",
+      responsibleUserId: "u1",
+      status: "completed",
+      executionPriority: "medium",
+      dueDate: "2026-08-01",
+    }),
+    action({ id: "a4", responsibleUserId: "u3", dueDate: null }),
+  ];
+
+  it("addDaysKey soma dias respeitando virada de mês", () => {
+    expect(addDaysKey("2026-08-20", 7)).toBe("2026-08-27");
+    expect(addDaysKey("2026-08-20", 30)).toBe("2026-09-19");
+    expect(addDaysKey("2026-12-31", 1)).toBe("2027-01-01");
+  });
+
+  it("EMPTY_FILTERS não filtra nada", () => {
+    expect(hasActiveFilters(EMPTY_FILTERS)).toBe(false);
+    expect(activeFilterCount(EMPTY_FILTERS)).toBe(0);
+    expect(filterActions(base, EMPTY_FILTERS, TODAY)).toHaveLength(4);
+  });
+
+  it("conta filtros ativos", () => {
+    expect(
+      activeFilterCount({ ...EMPTY_FILTERS, clientId: "c1", dueWindow: "overdue" }),
+    ).toBe(2);
+  });
+
+  it("filtra por cliente, embarcação e responsável", () => {
+    expect(
+      filterActions(base, { ...EMPTY_FILTERS, clientId: "c1" }, TODAY).map((i) => i.id),
+    ).toEqual(["a1", "a3"]);
+    expect(
+      filterActions(base, { ...EMPTY_FILTERS, vesselId: "v1" }, TODAY).map((i) => i.id),
+    ).toEqual(["a1"]);
+    expect(
+      filterActions(base, { ...EMPTY_FILTERS, responsibleUserId: "u3" }, TODAY).map((i) => i.id),
+    ).toEqual(["a4"]);
+  });
+
+  it("filtra por status e prioridade", () => {
+    expect(
+      filterActions(base, { ...EMPTY_FILTERS, status: "completed" }, TODAY).map((i) => i.id),
+    ).toEqual(["a3"]);
+    expect(
+      filterActions(base, { ...EMPTY_FILTERS, priority: "urgent" }, TODAY).map((i) => i.id),
+    ).toEqual(["a1"]);
+  });
+
+  it("aplica janelas de prazo e ignora itens sem prazo", () => {
+    expect(
+      filterActions(base, { ...EMPTY_FILTERS, dueWindow: "overdue" }, TODAY).map((i) => i.id),
+    ).toEqual(["a1"]);
+    expect(
+      filterActions(base, { ...EMPTY_FILTERS, dueWindow: "next7" }, TODAY).map((i) => i.id),
+    ).toEqual([]);
+    expect(
+      filterActions(base, { ...EMPTY_FILTERS, dueWindow: "next30" }, TODAY).map((i) => i.id),
+    ).toEqual(["a2"]);
+  });
+
+  it("matchesDueWindow trata limites inclusivos", () => {
+    expect(matchesDueWindow("2026-08-27", true, "next7", TODAY)).toBe(true);
+    expect(matchesDueWindow("2026-08-28", true, "next7", TODAY)).toBe(false);
+    expect(matchesDueWindow(TODAY, true, "next7", TODAY)).toBe(true);
+    expect(matchesDueWindow("2026-08-01", false, "overdue", TODAY)).toBe(false);
+    expect(matchesDueWindow(null, true, "all", TODAY)).toBe(true);
+  });
+
+  it("entregáveis herdam o escopo das ações filtradas", () => {
+    const items = [
+      deliverable({ id: "d1", actionId: "a1", dueDate: "2026-08-25" }),
+      deliverable({ id: "d2", actionId: "a2", dueDate: "2026-08-25" }),
+    ];
+    const scoped = applyFilters(
+      { actions: base, deliverables: items },
+      { ...EMPTY_FILTERS, clientId: "c1" },
+      TODAY,
+    );
+    expect(scoped.deliverables.map((i) => i.id)).toEqual(["d1"]);
+  });
+
+  it("janela de prazo também recorta entregáveis pelo próprio prazo", () => {
+    const items = [
+      deliverable({ id: "d1", actionId: "a2", dueDate: "2026-08-25" }),
+      deliverable({ id: "d2", actionId: "a2", dueDate: "2026-10-01" }),
+    ];
+    const scoped = applyFilters(
+      { actions: base, deliverables: items },
+      { ...EMPTY_FILTERS, dueWindow: "next30" },
+      TODAY,
+    );
+    expect(scoped.deliverables.map((i) => i.id)).toEqual(["d1"]);
+  });
+
+  it("KPIs, distribuições, rankings e atenção respeitam o recorte", () => {
+    const scoped = applyFilters(
+      { actions: base, deliverables: [] },
+      { ...EMPTY_FILTERS, clientId: "c1" },
+      TODAY,
+    );
+    expect(computeKpis(scoped.actions, scoped.deliverables, TODAY)).toMatchObject({
+      openActions: 1,
+      overdueActions: 1,
+    });
+    expect(rankClients(scoped.actions)).toEqual([{ id: "c1", label: "Cliente A", count: 1 }]);
+    expect(rankResponsibles(scoped.actions)).toEqual([{ id: "u1", label: "Ana", count: 1 }]);
+    expect(attentionList(scoped.actions, TODAY).map((i) => i.id)).toEqual(["a1"]);
+    expect(
+      distributionByStatus(scoped.actions).find((entry) => entry.key === "completed")?.count,
+    ).toBe(1);
+    expect(
+      distributionByPriority(scoped.actions).find((entry) => entry.key === "urgent")?.count,
+    ).toBe(1);
+  });
+
+  it("opções de filtro derivam apenas dos dados carregados", () => {
+    const options = buildFilterOptions(base);
+    expect(options.clients.map((o) => o.value)).toEqual(["c1", "c2"]);
+    expect(options.vessels).toEqual([{ value: "v1", label: "Navio A" }]);
+    expect(options.responsibles.map((o) => o.value).sort()).toEqual(["u1", "u2", "u3"]);
+    expect(buildFilterOptions([])).toEqual({ clients: [], vessels: [], responsibles: [] });
   });
 });

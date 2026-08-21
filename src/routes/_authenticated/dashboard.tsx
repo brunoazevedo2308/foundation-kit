@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { DashboardFiltersCard } from "@/components/dashboard-filters";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,19 +21,25 @@ import {
   type ActionListItem,
 } from "@/lib/actions";
 import {
+  applyFilters,
   attentionList,
+  buildFilterOptions,
   computeKpis,
   distributionByPriority,
   distributionByStatus,
+  EMPTY_FILTERS,
   fetchDashboardData,
+  hasActiveFilters,
   isActionOverdueLocal,
   localDateKey,
   rankClients,
   rankResponsibles,
   rankVessels,
   type DashboardData,
+  type DashboardFilters,
   type RankingEntry,
 } from "@/lib/dashboard";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -228,27 +235,38 @@ function DashboardPage() {
     void load();
   }, [load]);
 
+  const [filters, setFilters] = useState<DashboardFilters>(EMPTY_FILTERS);
+  const filtered = hasActiveFilters(filters);
+
   const today = localDateKey();
+  const filterOptions = useMemo(
+    () => buildFilterOptions(data?.actions ?? []),
+    [data],
+  );
+
   const view = useMemo(() => {
     if (!data) return null;
+    const scoped = applyFilters(data, filters, today);
     return {
-      kpis: computeKpis(data.actions, data.deliverables, today),
-      byStatus: distributionByStatus(data.actions).map((entry) => ({
+      hasRows: scoped.actions.length > 0 || scoped.deliverables.length > 0,
+      kpis: computeKpis(scoped.actions, scoped.deliverables, today),
+      byStatus: distributionByStatus(scoped.actions).map((entry) => ({
         label: ACTION_STATUS_LABELS[entry.key],
         count: entry.count,
       })),
-      byPriority: distributionByPriority(data.actions).map((entry) => ({
+      byPriority: distributionByPriority(scoped.actions).map((entry) => ({
         label: ACTION_PRIORITY_LABELS[entry.key],
         count: entry.count,
       })),
-      clients: rankClients(data.actions),
-      vessels: rankVessels(data.actions),
-      responsibles: rankResponsibles(data.actions),
-      attention: attentionList(data.actions, today),
+      clients: rankClients(scoped.actions),
+      vessels: rankVessels(scoped.actions),
+      responsibles: rankResponsibles(scoped.actions),
+      attention: attentionList(scoped.actions, today),
     };
-  }, [data, today]);
+  }, [data, filters, today]);
 
   const isEmpty = Boolean(data && data.actions.length === 0 && data.deliverables.length === 0);
+  const clearFilters = useCallback(() => setFilters(EMPTY_FILTERS), []);
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
@@ -257,7 +275,10 @@ function DashboardPage() {
         description={`Painel operacional da organização ${organizationName}.`}
         actions={
           <Button variant="outline" size="sm" onClick={() => void load()} disabled={loading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              aria-hidden="true"
+            />
             Atualizar
           </Button>
         }
@@ -265,7 +286,10 @@ function DashboardPage() {
 
       {loading ? (
         <Card>
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+          <CardContent
+            className="py-10 text-center text-sm text-muted-foreground"
+            aria-live="polite"
+          >
             Carregando indicadores...
           </CardContent>
         </Card>
@@ -304,6 +328,41 @@ function DashboardPage() {
           </CardContent>
         </Card>
       ) : view ? (
+        <>
+          <DashboardFiltersCard
+            filters={filters}
+            options={filterOptions}
+            onChange={setFilters}
+            onClear={clearFilters}
+          />
+
+          {filtered ? (
+            <p
+              className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-muted-foreground"
+              role="status"
+            >
+              Exibindo um recorte filtrado: {view.kpis.openActions} ações abertas e{" "}
+              {view.kpis.pendingDeliverables} entregáveis pendentes dentro dos filtros aplicados.
+            </p>
+          ) : null}
+
+          {!view.hasRows ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Nenhum resultado para estes filtros</CardTitle>
+                <CardDescription>
+                  Existem dados operacionais na organização, mas nenhum registro atende à
+                  combinação de filtros selecionada. Ajuste os critérios ou limpe os filtros.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" onClick={clearFilters}>
+                  Limpar filtros
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+
         <>
           <section
             className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
@@ -397,8 +456,11 @@ function DashboardPage() {
               )}
             </CardContent>
           </Card>
+          </>
+          )}
         </>
       ) : null}
+
     </div>
   );
 }
