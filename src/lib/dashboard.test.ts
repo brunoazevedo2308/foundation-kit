@@ -3,19 +3,28 @@ import { describe, expect, it } from "vitest";
 import type { ActionListItem } from "./actions";
 import type { DeliverableListItem } from "./deliverables";
 import {
+  activeFilterCount,
+  addDaysKey,
+  applyFilters,
   attentionList,
+  buildFilterOptions,
   computeKpis,
   distributionByPriority,
   distributionByStatus,
+  EMPTY_FILTERS,
+  filterActions,
+  hasActiveFilters,
   isActionOpen,
   isActionOverdueLocal,
   isDeliverableOverdueLocal,
   isDeliverablePending,
   localDateKey,
+  matchesDueWindow,
   rankClients,
   rankResponsibles,
   rankVessels,
 } from "./dashboard";
+
 
 const TODAY = "2026-08-20";
 
