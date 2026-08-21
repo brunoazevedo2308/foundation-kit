@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { DashboardFiltersCard } from "@/components/dashboard-filters";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,19 +21,25 @@ import {
   type ActionListItem,
 } from "@/lib/actions";
 import {
+  applyFilters,
   attentionList,
+  buildFilterOptions,
   computeKpis,
   distributionByPriority,
   distributionByStatus,
+  EMPTY_FILTERS,
   fetchDashboardData,
+  hasActiveFilters,
   isActionOverdueLocal,
   localDateKey,
   rankClients,
   rankResponsibles,
   rankVessels,
   type DashboardData,
+  type DashboardFilters,
   type RankingEntry,
 } from "@/lib/dashboard";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
