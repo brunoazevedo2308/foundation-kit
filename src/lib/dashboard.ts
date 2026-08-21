@@ -197,6 +197,167 @@ export type DashboardData = {
   deliverables: DeliverableListItem[];
 };
 
+/**
+ * US-005 (2º ciclo) — filtros gerenciais.
+ *
+ * Todos os filtros são aplicados em memória sobre os dados já carregados e
+ * tenant-scoped pela RLS. Nenhum filtro amplia o escopo de leitura.
+ */
+
+export const DUE_WINDOWS = ["all", "overdue", "next7", "next30"] as const;
+export type DueWindow = (typeof DUE_WINDOWS)[number];
+
+export const DUE_WINDOW_LABELS: Record<DueWindow, string> = {
+  all: "Todos os prazos",
+  overdue: "Vencidos",
+  next7: "Próximos 7 dias",
+  next30: "Próximos 30 dias",
+};
+
+export type DashboardFilters = {
+  clientId: string | null;
+  vesselId: string | null;
+  responsibleUserId: string | null;
+  status: ActionStatus | null;
+  priority: ActionPriority | null;
+  dueWindow: DueWindow;
+};
+
+export const EMPTY_FILTERS: DashboardFilters = {
+  clientId: null,
+  vesselId: null,
+  responsibleUserId: null,
+  status: null,
+  priority: null,
+  dueWindow: "all",
+};
+
+export function activeFilterCount(filters: DashboardFilters): number {
+  let count = 0;
+  if (filters.clientId) count += 1;
+  if (filters.vesselId) count += 1;
+  if (filters.responsibleUserId) count += 1;
+  if (filters.status) count += 1;
+  if (filters.priority) count += 1;
+  if (filters.dueWindow !== "all") count += 1;
+  return count;
+}
+
+export function hasActiveFilters(filters: DashboardFilters): boolean {
+  return activeFilterCount(filters) > 0;
+}
+
+/** Soma dias a uma chave AAAA-MM-DD, retornando outra chave AAAA-MM-DD. */
+export function addDaysKey(dateKey: string, days: number): string {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const reference = new Date(year ?? 1970, (month ?? 1) - 1, day ?? 1);
+  reference.setDate(reference.getDate() + days);
+  return localDateKey(reference);
+}
+
+/**
+ * Regras da janela de prazo:
+ * - `all`: não filtra;
+ * - `overdue`: prazo anterior a hoje e item ainda aberto/pendente;
+ * - `next7` / `next30`: prazo entre hoje e hoje + N dias (inclusive).
+ * Itens sem prazo são excluídos em qualquer janela diferente de `all`.
+ */
+export function matchesDueWindow(
+  dueDate: string | null,
+  open: boolean,
+  window: DueWindow,
+  today = localDateKey(),
+): boolean {
+  if (window === "all") return true;
+  if (!dueDate) return false;
+  if (window === "overdue") return open && dueDate < today;
+  const days = window === "next7" ? 7 : 30;
+  return dueDate >= today && dueDate <= addDaysKey(today, days);
+}
+
+export function filterActions(
+  actions: ActionListItem[],
+  filters: DashboardFilters,
+  today = localDateKey(),
+): ActionListItem[] {
+  return actions.filter((item) => {
+    if (filters.clientId && item.clientId !== filters.clientId) return false;
+    if (filters.vesselId && item.vesselId !== filters.vesselId) return false;
+    if (filters.responsibleUserId && item.responsibleUserId !== filters.responsibleUserId)
+      return false;
+    if (filters.status && item.status !== filters.status) return false;
+    if (filters.priority && item.executionPriority !== filters.priority) return false;
+    return matchesDueWindow(item.dueDate, isActionOpen(item), filters.dueWindow, today);
+  });
+}
+
+/**
+ * Entregáveis herdam o escopo das ações filtradas (cliente, embarcação,
+ * responsável da ação, status e prioridade) e, quando há janela de prazo,
+ * respeitam também o próprio `due_date`.
+ */
+export function filterDeliverables(
+  deliverables: DeliverableListItem[],
+  visibleActionIds: ReadonlySet<string>,
+  filters: DashboardFilters,
+  today = localDateKey(),
+): DeliverableListItem[] {
+  return deliverables.filter((item) => {
+    if (!visibleActionIds.has(item.actionId)) return false;
+    return matchesDueWindow(item.dueDate, isDeliverablePending(item), filters.dueWindow, today);
+  });
+}
+
+export function applyFilters(
+  data: DashboardData,
+  filters: DashboardFilters,
+  today = localDateKey(),
+): DashboardData {
+  const actions = filterActions(data.actions, filters, today);
+  const ids = new Set(actions.map((item) => item.id));
+  return {
+    actions,
+    deliverables: filterDeliverables(data.deliverables, ids, filters, today),
+  };
+}
+
+export type FilterOption = { value: string; label: string };
+
+export type DashboardFilterOptions = {
+  clients: FilterOption[];
+  vessels: FilterOption[];
+  responsibles: FilterOption[];
+};
+
+function options(
+  actions: ActionListItem[],
+  pick: (item: ActionListItem) => FilterOption | null,
+): FilterOption[] {
+  const map = new Map<string, FilterOption>();
+  for (const item of actions) {
+    const option = pick(item);
+    if (option && !map.has(option.value)) map.set(option.value, option);
+  }
+  return [...map.values()].sort((a, b) => a.label.localeCompare(b.label));
+}
+
+/** Opções derivadas apenas dos dados já carregados (sem novas leituras). */
+export function buildFilterOptions(actions: ActionListItem[]): DashboardFilterOptions {
+  return {
+    clients: options(actions, (item) =>
+      item.clientId ? { value: item.clientId, label: item.clientName ?? "Cliente" } : null,
+    ),
+    vessels: options(actions, (item) =>
+      item.vesselId ? { value: item.vesselId, label: item.vesselName ?? "Embarcação" } : null,
+    ),
+    responsibles: options(actions, (item) => ({
+      value: item.responsibleUserId,
+      label: item.responsibleName ?? "Sem nome",
+    })),
+  };
+}
+
+
 const ACTION_COLUMNS =
   "id, title, description, origin, action_type, status, situation, execution_priority, operational_criticality, due_date, completed_at, client_id, vessel_id, responsible_user_id, created_at, clients(name), vessels(name), profiles!actions_responsible_user_id_fkey(full_name)";
 
