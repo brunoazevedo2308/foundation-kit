@@ -456,8 +456,11 @@ function DashboardPage() {
               )}
             </CardContent>
           </Card>
+          </>
+          )}
         </>
       ) : null}
+
     </div>
   );
 }
