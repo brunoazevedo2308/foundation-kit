@@ -27,7 +27,9 @@ Itens fora do escopo da US-004:
 - **Limpeza de objetos órfãos** no bucket após soft-delete de evidências é retenção/infra, tratada fora deste escopo (o soft-delete preserva o objeto por design de auditoria).
 
 ## Dashboard Operacional (US-005 — 1º ciclo)
+
 ...
+
 - **Testes**: `src/lib/dashboard.test.ts` cobre vencimento, status fechados, KPIs, distribuições, rankings e `attentionList` de forma determinística (datas fixas, sem rede).
 
 ### US-005 — 2º ciclo (filtros gerenciais)
