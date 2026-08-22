@@ -27,16 +27,18 @@ Itens fora do escopo da US-004:
 - **Limpeza de objetos órfãos** no bucket após soft-delete de evidências é retenção/infra, tratada fora deste escopo (o soft-delete preserva o objeto por design de auditoria).
 
 ## Dashboard Operacional (US-005 — 1º ciclo)
-
-- **Rota**: `/dashboard` (dentro do shell autenticado) deixou de ser placeholder e passou a renderizar a visão operacional real.
-- **Fonte de dados**: `src/lib/dashboard.ts` lê `public.actions` e `public.deliverables` ativos (`deleted_at is null`) com a chave publishable + sessão. O escopo multi-tenant é garantido exclusivamente pela RLS — sem `service_role`, sem tabelas, views, functions ou migrations novas.
-- **KPIs**: ações abertas, ações vencidas, ações críticas (criticidade `high`/`critical` em aberto), entregáveis pendentes e entregáveis vencidos. `completed` e `cancelled` contam como fechados e nunca aparecem como vencidos.
-- **Vencimento**: comparação por data local (`localDateKey`, formato `AAAA-MM-DD`) contra `due_date`; o próprio dia não é vencido.
-- **Distribuições e rankings**: ações por status (todos os status, inclusive zerados), ações abertas por prioridade e Top 5 de clientes, embarcações e responsáveis por ações abertas.
-- **Atenção imediata**: lista ordenada por severidade (vencida > crítica > urgente) e depois pelo prazo mais próximo, com link direto para `/actions/$actionId`.
-- **Estados**: loading, erro com "Tentar novamente" e empty state explícito (Development ainda sem dados operacionais) apontando para Ações, Clientes e Embarcações.
-- **Permissões**: leitura apenas. Nenhum gate de escrita novo foi introduzido; `member` continua somente leitura.
+...
 - **Testes**: `src/lib/dashboard.test.ts` cobre vencimento, status fechados, KPIs, distribuições, rankings e `attentionList` de forma determinística (datas fixas, sem rede).
+
+### US-005 — 2º ciclo (filtros gerenciais)
+
+- **Filtros**: cliente, embarcação, responsável, status, prioridade e janela de prazo (`Todos os prazos`, `Vencidos`, `Próximos 7 dias`, `Próximos 30 dias`), combinados de forma conjuntiva no cartão "Filtros gerenciais" (`src/components/dashboard-filters.tsx`).
+- **Recorte único**: `applyFilters` (`src/lib/dashboard.ts`) produz um único conjunto filtrado de ações e entregáveis; KPIs, distribuições, rankings e a lista de atenção imediata consomem **exatamente o mesmo recorte**. Entregáveis herdam o escopo das ações visíveis e, quando há janela de prazo ativa, respeitam também o próprio `due_date`.
+- **Janelas de prazo**: `Vencidos` = `due_date < hoje` e item aberto; `Próximos N dias` = `hoje <= due_date <= hoje + N` (limites inclusivos). Itens sem prazo só aparecem em `Todos os prazos`.
+- **Agregação client-side**: os filtros são aplicados em memória sobre os dados já carregados, tenant-scoped via RLS — sem DDL, sem seeds, sem `service_role`. Nenhum filtro amplia o escopo de leitura. Gap futuro documentado: se o volume crescer, avaliar view/RPC/índice de agregação server-side (não implementado neste ciclo).
+- **Empty states**: distingue organização sem dados (empty state global com CTAs) de recorte sem resultados (empty state filtrado com "Limpar filtros"). O botão "Limpar filtros" fica desabilitado sem filtros ativos e o contador exibe quantos filtros estão aplicados.
+- **Acessibilidade**: `Select` rotulado com `Label`/ID, `aria-live="polite"` no estado de carregamento, `role="status"` no aviso de recorte filtrado e grid responsivo (`sm`/`lg`) em filtros, KPIs, distribuições e rankings.
+- **Testes**: 11 testes determinísticos cobrem contagem de filtros ativos, filtros individuais e combinados, janelas de prazo (inclusive limites e itens sem prazo), herança de escopo dos entregáveis, consistência do recorte em KPIs/rankings/atenção e opções derivadas dos dados carregados.
 
 ## Casca do aplicativo (TT-006)
 
