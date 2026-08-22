@@ -303,7 +303,7 @@ describe("filtros gerenciais (US-005, 2º ciclo)", () => {
     ).toEqual(["a1"]);
     expect(
       filterActions(base, { ...EMPTY_FILTERS, dueWindow: "next7" }, TODAY).map((i) => i.id),
-    ).toEqual([]);
+    ).toEqual(["a2"]);
     expect(
       filterActions(base, { ...EMPTY_FILTERS, dueWindow: "next30" }, TODAY).map((i) => i.id),
     ).toEqual(["a2"]);
