@@ -25,7 +25,6 @@ import {
   rankVessels,
 } from "./dashboard";
 
-
 const TODAY = "2026-08-20";
 
 function action(overrides: Partial<ActionListItem> & { id: string }): ActionListItem {
@@ -274,9 +273,7 @@ describe("filtros gerenciais (US-005, 2º ciclo)", () => {
   });
 
   it("conta filtros ativos", () => {
-    expect(
-      activeFilterCount({ ...EMPTY_FILTERS, clientId: "c1", dueWindow: "overdue" }),
-    ).toBe(2);
+    expect(activeFilterCount({ ...EMPTY_FILTERS, clientId: "c1", dueWindow: "overdue" })).toBe(2);
   });
 
   it("filtra por cliente, embarcação e responsável", () => {

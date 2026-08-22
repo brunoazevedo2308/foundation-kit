@@ -357,7 +357,6 @@ export function buildFilterOptions(actions: ActionListItem[]): DashboardFilterOp
   };
 }
 
-
 const ACTION_COLUMNS =
   "id, title, description, origin, action_type, status, situation, execution_priority, operational_criticality, due_date, completed_at, client_id, vessel_id, responsible_user_id, created_at, clients(name), vessels(name), profiles!actions_responsible_user_id_fkey(full_name)";
 

@@ -40,7 +40,6 @@ import {
   type RankingEntry,
 } from "@/lib/dashboard";
 
-
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
@@ -239,10 +238,7 @@ function DashboardPage() {
   const filtered = hasActiveFilters(filters);
 
   const today = localDateKey();
-  const filterOptions = useMemo(
-    () => buildFilterOptions(data?.actions ?? []),
-    [data],
-  );
+  const filterOptions = useMemo(() => buildFilterOptions(data?.actions ?? []), [data]);
 
   const view = useMemo(() => {
     if (!data) return null;
@@ -351,8 +347,8 @@ function DashboardPage() {
               <CardHeader>
                 <CardTitle>Nenhum resultado para estes filtros</CardTitle>
                 <CardDescription>
-                  Existem dados operacionais na organização, mas nenhum registro atende à
-                  combinação de filtros selecionada. Ajuste os critérios ou limpe os filtros.
+                  Existem dados operacionais na organização, mas nenhum registro atende à combinação
+                  de filtros selecionada. Ajuste os critérios ou limpe os filtros.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -362,105 +358,103 @@ function DashboardPage() {
               </CardContent>
             </Card>
           ) : (
+            <>
+              <section
+                className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
+                aria-label="Indicadores operacionais"
+              >
+                <KpiCard
+                  label="Ações abertas"
+                  value={view.kpis.openActions}
+                  hint="Ações que não estão concluídas nem canceladas."
+                  icon={ListChecks}
+                />
+                <KpiCard
+                  label="Ações vencidas"
+                  value={view.kpis.overdueActions}
+                  hint="Prazo anterior a hoje e ainda em aberto."
+                  icon={CalendarClock}
+                  tone="danger"
+                />
+                <KpiCard
+                  label="Ações críticas"
+                  value={view.kpis.criticalActions}
+                  hint="Criticidade operacional alta ou crítica, em aberto."
+                  icon={Flame}
+                  tone="warning"
+                />
+                <KpiCard
+                  label="Entregáveis pendentes"
+                  value={view.kpis.pendingDeliverables}
+                  hint="Entregáveis que ainda não foram finalizados."
+                  icon={PackageCheck}
+                />
+                <KpiCard
+                  label="Entregáveis vencidos"
+                  value={view.kpis.overdueDeliverables}
+                  hint="Prazo vencido e ainda pendentes."
+                  icon={AlertTriangle}
+                  tone="danger"
+                />
+              </section>
 
-        <>
-          <section
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
-            aria-label="Indicadores operacionais"
-          >
-            <KpiCard
-              label="Ações abertas"
-              value={view.kpis.openActions}
-              hint="Ações que não estão concluídas nem canceladas."
-              icon={ListChecks}
-            />
-            <KpiCard
-              label="Ações vencidas"
-              value={view.kpis.overdueActions}
-              hint="Prazo anterior a hoje e ainda em aberto."
-              icon={CalendarClock}
-              tone="danger"
-            />
-            <KpiCard
-              label="Ações críticas"
-              value={view.kpis.criticalActions}
-              hint="Criticidade operacional alta ou crítica, em aberto."
-              icon={Flame}
-              tone="warning"
-            />
-            <KpiCard
-              label="Entregáveis pendentes"
-              value={view.kpis.pendingDeliverables}
-              hint="Entregáveis que ainda não foram finalizados."
-              icon={PackageCheck}
-            />
-            <KpiCard
-              label="Entregáveis vencidos"
-              value={view.kpis.overdueDeliverables}
-              hint="Prazo vencido e ainda pendentes."
-              icon={AlertTriangle}
-              tone="danger"
-            />
-          </section>
+              <section className="grid gap-4 lg:grid-cols-2" aria-label="Distribuições">
+                <DistributionList
+                  title="Ações por status"
+                  description="Considera todas as ações ativas da organização."
+                  entries={view.byStatus}
+                />
+                <DistributionList
+                  title="Ações abertas por prioridade"
+                  description="Somente ações em aberto."
+                  entries={view.byPriority}
+                />
+              </section>
 
-          <section className="grid gap-4 lg:grid-cols-2" aria-label="Distribuições">
-            <DistributionList
-              title="Ações por status"
-              description="Considera todas as ações ativas da organização."
-              entries={view.byStatus}
-            />
-            <DistributionList
-              title="Ações abertas por prioridade"
-              description="Somente ações em aberto."
-              entries={view.byPriority}
-            />
-          </section>
+              <section className="grid gap-4 lg:grid-cols-3" aria-label="Rankings">
+                <RankingCard
+                  title="Top clientes"
+                  description="Clientes com mais ações abertas."
+                  entries={view.clients}
+                />
+                <RankingCard
+                  title="Top embarcações"
+                  description="Embarcações com mais ações abertas."
+                  entries={view.vessels}
+                />
+                <RankingCard
+                  title="Top responsáveis"
+                  description="Responsáveis com mais ações abertas."
+                  entries={view.responsibles}
+                />
+              </section>
 
-          <section className="grid gap-4 lg:grid-cols-3" aria-label="Rankings">
-            <RankingCard
-              title="Top clientes"
-              description="Clientes com mais ações abertas."
-              entries={view.clients}
-            />
-            <RankingCard
-              title="Top embarcações"
-              description="Embarcações com mais ações abertas."
-              entries={view.vessels}
-            />
-            <RankingCard
-              title="Top responsáveis"
-              description="Responsáveis com mais ações abertas."
-              entries={view.responsibles}
-            />
-          </section>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Atenção imediata</CardTitle>
-              <CardDescription>
-                Ações vencidas, urgentes ou de criticidade crítica, ordenadas por severidade e
-                prazo.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {view.attention.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Nenhuma ação exige atenção imediata neste momento.
-                </p>
-              ) : (
-                <ul className="flex flex-col">
-                  {view.attention.map((item) => (
-                    <AttentionRow key={item.id} item={item} today={today} />
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
-          </>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Atenção imediata</CardTitle>
+                  <CardDescription>
+                    Ações vencidas, urgentes ou de criticidade crítica, ordenadas por severidade e
+                    prazo.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {view.attention.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      Nenhuma ação exige atenção imediata neste momento.
+                    </p>
+                  ) : (
+                    <ul className="flex flex-col">
+                      {view.attention.map((item) => (
+                        <AttentionRow key={item.id} item={item} today={today} />
+                      ))}
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+            </>
           )}
         </>
       ) : null}
-
     </div>
   );
 }

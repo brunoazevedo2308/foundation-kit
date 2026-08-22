@@ -70,9 +70,7 @@ function FilterSelect({
           ))}
         </SelectContent>
       </Select>
-      {disabled && emptyHint ? (
-        <p className="text-xs text-muted-foreground">{emptyHint}</p>
-      ) : null}
+      {disabled && emptyHint ? <p className="text-xs text-muted-foreground">{emptyHint}</p> : null}
     </div>
   );
 }
@@ -150,7 +148,9 @@ export function DashboardFiltersCard({
               value: status,
               label: ACTION_STATUS_LABELS[status],
             }))}
-            onChange={(status) => onChange({ ...filters, status: (status as ActionStatus) ?? null })}
+            onChange={(status) =>
+              onChange({ ...filters, status: (status as ActionStatus) ?? null })
+            }
           />
           <FilterSelect
             id="filter-priority"
