@@ -297,6 +297,23 @@ describe("filtros gerenciais (US-005, 2º ciclo)", () => {
     ).toEqual(["a1"]);
   });
 
+  it("combina filtros de forma conjuntiva", () => {
+    expect(
+      filterActions(
+        base,
+        { ...EMPTY_FILTERS, clientId: "c1", status: "completed", dueWindow: "all" },
+        TODAY,
+      ).map((i) => i.id),
+    ).toEqual(["a3"]);
+    expect(
+      filterActions(
+        base,
+        { ...EMPTY_FILTERS, clientId: "c1", status: "open", priority: "medium" },
+        TODAY,
+      ).map((i) => i.id),
+    ).toEqual([]);
+  });
+
   it("aplica janelas de prazo e ignora itens sem prazo", () => {
     expect(
       filterActions(base, { ...EMPTY_FILTERS, dueWindow: "overdue" }, TODAY).map((i) => i.id),
