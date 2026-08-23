@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import type { AppRole } from "@/lib/auth";
+import { NotificationBadge } from "@/components/notification-badge";
 
 import {
   Sidebar,
@@ -71,8 +72,16 @@ export function AppSidebar({ role }: { role: AppRole }) {
             <SidebarMenuItem key={item.url}>
               <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
                 <Link to={item.url} className="flex items-center gap-2">
-                  <item.icon className="h-4 w-4 shrink-0" />
+                  <span className="relative flex shrink-0">
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    {collapsed && item.url === "/notifications" ? (
+                      <NotificationBadge variant="dot" />
+                    ) : null}
+                  </span>
                   {!collapsed && <span className="truncate">{item.title}</span>}
+                  {!collapsed && item.url === "/notifications" ? (
+                    <NotificationBadge className="ml-auto" />
+                  ) : null}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

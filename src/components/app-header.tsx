@@ -22,6 +22,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { NotificationBadge } from "@/components/notification-badge";
 import { signOut } from "@/lib/auth";
 
 const LABELS: Record<string, string> = {
@@ -125,8 +126,9 @@ export function AppHeader({ displayName, organizationName, email }: HeaderProps)
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" asChild aria-label="Notificações">
-                <Link to="/notifications">
+                <Link to="/notifications" className="relative">
                   <Bell className="h-5 w-5" />
+                  <NotificationBadge className="absolute -right-0.5 -top-0.5 h-4 min-w-4 text-[9px]" />
                 </Link>
               </Button>
             </TooltipTrigger>
