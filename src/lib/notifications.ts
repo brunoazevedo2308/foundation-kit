@@ -139,14 +139,14 @@ export type NotificationListItem = NotificationItem & { target: NotificationTarg
 async function fetchDeliverableActionMap(ids: string[]): Promise<Map<string, string>> {
   const map = new Map<string, string>();
   if (ids.length === 0) return map;
-  const { data, error } = await client()
-    .from("deliverables")
-    .select("id, action_id")
-    .in("id", ids);
+  const { data, error } = await client().from("deliverables").select("id, action_id").in("id", ids);
   if (error) {
     emitEvent({
       event_name: "backend.request.failure",
-      context: { operation: "notifications.resolve_deliverable_links", supabase_error: sanitize(error) },
+      context: {
+        operation: "notifications.resolve_deliverable_links",
+        supabase_error: sanitize(error),
+      },
     });
     return map;
   }
