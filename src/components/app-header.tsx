@@ -23,6 +23,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { NotificationBadge } from "@/components/notification-badge";
+import { useUnreadNotifications } from "@/hooks/use-unread-notifications";
 import { signOut } from "@/lib/auth";
 
 const LABELS: Record<string, string> = {
@@ -54,6 +55,7 @@ export function AppHeader({ displayName, organizationName, email }: HeaderProps)
   const router = useRouter();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const [busy, setBusy] = useState(false);
+  const unread = useUnreadNotifications();
 
   const crumbs = useMemo(() => {
     const parts = pathname.split("/").filter(Boolean);
@@ -125,10 +127,22 @@ export function AppHeader({ displayName, organizationName, email }: HeaderProps)
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" asChild aria-label="Notificações">
+              <Button
+                variant="ghost"
+                size="icon"
+                asChild
+                aria-label={
+                  unread && unread > 0
+                    ? `Notificações (${unread} não lidas)`
+                    : "Notificações"
+                }
+              >
                 <Link to="/notifications" className="relative">
                   <Bell className="h-5 w-5" />
-                  <NotificationBadge className="absolute -right-0.5 -top-0.5 h-4 min-w-4 text-[9px]" />
+                  <NotificationBadge
+                    decorative
+                    className="absolute -right-0.5 -top-0.5 h-4 min-w-4 text-[9px]"
+                  />
                 </Link>
               </Button>
             </TooltipTrigger>
