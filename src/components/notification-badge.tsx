@@ -7,12 +7,18 @@ import { cn } from "@/lib/utils";
  * `count`: pill com o número (99+ acima de 99). `dot`: indicador mínimo para
  * a sidebar colapsada. Renderiza `null` quando não há não lidas ou a contagem
  * ainda não está disponível.
+ *
+ * `decorative` marca o badge como `aria-hidden` — usar quando o elemento pai
+ * (link/botão) já anuncia a contagem no seu próprio `aria-label`, evitando
+ * leitura duplicada ou rótulo aninhado ignorado pelo leitor de tela.
  */
 export function NotificationBadge({
   variant = "count",
+  decorative = false,
   className,
 }: {
   variant?: "count" | "dot";
+  decorative?: boolean;
   className?: string;
 }) {
   const count = useUnreadNotifications();
@@ -21,7 +27,9 @@ export function NotificationBadge({
   if (variant === "dot") {
     return (
       <span
-        aria-label="Há notificações não lidas"
+        {...(decorative
+          ? { "aria-hidden": true }
+          : { "aria-label": "Há notificações não lidas" })}
         className={cn(
           "absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-destructive",
           className,
@@ -32,9 +40,11 @@ export function NotificationBadge({
 
   return (
     <span
-      aria-label={`${count} notificações não lidas`}
+      {...(decorative
+        ? { "aria-hidden": true }
+        : { "aria-label": `${count} notificações não lidas` })}
       className={cn(
-        "inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground",
+        "inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground tabular-nums",
         className,
       )}
     >
