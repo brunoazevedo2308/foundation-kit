@@ -27,9 +27,7 @@ export function NotificationBadge({
   if (variant === "dot") {
     return (
       <span
-        {...(decorative
-          ? { "aria-hidden": true }
-          : { "aria-label": "Há notificações não lidas" })}
+        {...(decorative ? { "aria-hidden": true } : { "aria-label": "Há notificações não lidas" })}
         className={cn(
           "absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-destructive",
           className,

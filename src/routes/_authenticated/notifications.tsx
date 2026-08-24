@@ -70,9 +70,7 @@ function NotificationsPage() {
     try {
       await markAsRead(notification.id);
       const readAt = new Date().toISOString();
-      setItems((current) =>
-        current.map((n) => (n.id === notification.id ? { ...n, readAt } : n)),
-      );
+      setItems((current) => current.map((n) => (n.id === notification.id ? { ...n, readAt } : n)));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível atualizar a notificação.");
     } finally {

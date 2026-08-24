@@ -42,6 +42,25 @@ Itens fora do escopo da US-004:
 - **Acessibilidade**: `Select` rotulado com `Label`/ID, `aria-live="polite"` no estado de carregamento, `role="status"` no aviso de recorte filtrado e grid responsivo (`sm`/`lg`) em filtros, KPIs, distribuições e rankings.
 - **Testes**: 11 testes determinísticos cobrem contagem de filtros ativos, filtros individuais e combinados, janelas de prazo (inclusive limites e itens sem prazo), herança de escopo dos entregáveis, consistência do recorte em KPIs/rankings/atenção e opções derivadas dos dados carregados.
 
+## Notificações e Central de Alertas (US-006 — 1º ciclo)
+
+- **Escopo do ciclo**: apenas **leitura e interação in-app**. Nenhuma DDL, nenhum trigger de geração automática, nenhum uso de `service_role`.
+- **Camada de dados** (`src/lib/notifications.ts`): lista as notificações do usuário (`listNotifications`), conta as não lidas server-side (`fetchUnreadCount`, `count: "exact", head: true`) e marca leitura individual (`markAsRead`) ou em massa (`markAllAsRead`). Erros do Supabase são registrados sanitizados via `emitEvent` (`backend.request.failure`) e devolvidos à UI como mensagem PT-BR.
+- **RLS como fonte da verdade**: nenhuma query filtra por usuário no cliente. `public.notifications` só expõe linhas do próprio recipient dentro do tenant (`notifications_select_own_recipient`) e só permite UPDATE do próprio recipient (`notifications_update_recipient_only`, com `WITH CHECK` impedindo troca de `recipient_user_id`/`organization_id`).
+- **Idempotência**: `markAsRead` e `markAllAsRead` aplicam `.is("read_at", null)` no UPDATE — reexecutar é no-op (zero linhas afetadas), nunca reescreve o carimbo de leitura já existente e nunca alcança linhas de outro usuário.
+- **Badge sem polling** (`src/hooks/use-unread-notifications.ts` + `src/components/notification-badge.tsx`): store de módulo compartilhado com deduplicação por promise em voo — header e sidebar montam o mesmo hook e geram **uma única** requisição por gatilho. Gatilhos: montagem, mudança de rota e o evento de janela `dp-suite:notifications-changed`, disparado após cada mutação de leitura. Não há `setInterval`.
+- **Links de origem**: `entity_type = "action"` navega para `/actions/$actionId`; `entity_type = "deliverable"` resolve a ação pai via `deliverables.action_id` (consulta em lote, tenant-scoped) e só então gera link. Falha nessa resolução não derruba a lista: os links ficam indisponíveis. Tipos sem rota suportada não geram link — não inventamos schema.
+- **UI** (`src/routes/_authenticated/notifications.tsx`): destaque visual de não lidas, estados de loading/erro (`role="alert"`)/vazio distintos, "Marcar todas como lidas" com contador e ações individuais com estado ocupado. O badge do header é decorativo (`aria-hidden`) porque a contagem já é anunciada no `aria-label` do próprio link.
+- **Testes**: `src/lib/notifications.test.ts` cobre mapping de linhas, `isUnread`/`countUnread`, resolução de destino (action, deliverable com e sem mapa, tipos desconhecidos) e formatação PT-BR — determinístico, sem rede.
+
+### Gaps reais para o ciclo de geração automática
+
+- **`notifications_insert_same_org` precisa de hardening**: hoje qualquer usuário autenticado da organização pode inserir notificação para qualquer outro recipient do mesmo tenant (risco de spoofing de `actor_user_id`/`title`). Antes de qualquer geração automática, a criação deve migrar para triggers/funções `SECURITY DEFINER` no banco e a policy de INSERT direta deve ser restringida ou removida.
+- **Sem geração automática**: nenhuma notificação é criada pelo app neste ciclo; a central só exibe o que já existir na tabela.
+- **Sem realtime**: a atualização depende de navegação/mutação local; assinatura Realtime fica como evolução futura.
+- **Sem paginação**: a lista carrega as 50 mais recentes; paginação/filtros por tipo ficam para o próximo ciclo.
+- **Sem preferências/e-mail**: canais externos e preferências por tipo estão fora do escopo.
+
 ## Casca do aplicativo (TT-006)
 
 - **Layout responsivo**: `SidebarProvider` + `AppShell` (`src/components/app-shell.tsx`) envolvem toda rota sob `/_authenticated/`. Em telas pequenas a barra lateral colapsa para _offcanvas_; em telas grandes é fixa e minimizável ao modo ícone.

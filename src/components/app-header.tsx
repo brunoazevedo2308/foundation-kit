@@ -132,9 +132,7 @@ export function AppHeader({ displayName, organizationName, email }: HeaderProps)
                 size="icon"
                 asChild
                 aria-label={
-                  unread && unread > 0
-                    ? `Notificações (${unread} não lidas)`
-                    : "Notificações"
+                  unread && unread > 0 ? `Notificações (${unread} não lidas)` : "Notificações"
                 }
               >
                 <Link to="/notifications" className="relative">
