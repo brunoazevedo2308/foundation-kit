@@ -42,7 +42,7 @@ Itens fora do escopo da US-004:
 - **Acessibilidade**: `Select` rotulado com `Label`/ID, `aria-live="polite"` no estado de carregamento, `role="status"` no aviso de recorte filtrado e grid responsivo (`sm`/`lg`) em filtros, KPIs, distribuições e rankings.
 - **Testes**: 11 testes determinísticos cobrem contagem de filtros ativos, filtros individuais e combinados, janelas de prazo (inclusive limites e itens sem prazo), herança de escopo dos entregáveis, consistência do recorte em KPIs/rankings/atenção e opções derivadas dos dados carregados.
 
-## Notificações e Central de Alertas (US-006 — 1º ciclo)
+## Notificações e Central de Alertas (US-006 — ciclos 1 e 2)
 
 - **Escopo do ciclo**: apenas **leitura e interação in-app**. Nenhuma DDL, nenhum trigger de geração automática, nenhum uso de `service_role`.
 - **Camada de dados** (`src/lib/notifications.ts`): lista as notificações do usuário (`listNotifications`), conta as não lidas server-side (`fetchUnreadCount`, `count: "exact", head: true`) e marca leitura individual (`markAsRead`) ou em massa (`markAllAsRead`). Erros do Supabase são registrados sanitizados via `emitEvent` (`backend.request.failure`) e devolvidos à UI como mensagem PT-BR.
@@ -53,13 +53,24 @@ Itens fora do escopo da US-004:
 - **UI** (`src/routes/_authenticated/notifications.tsx`): destaque visual de não lidas, estados de loading/erro (`role="alert"`)/vazio distintos, "Marcar todas como lidas" com contador e ações individuais com estado ocupado. O badge do header é decorativo (`aria-hidden`) porque a contagem já é anunciada no `aria-label` do próprio link.
 - **Testes**: `src/lib/notifications.test.ts` cobre mapping de linhas, `isUnread`/`countUnread`, resolução de destino (action, deliverable com e sem mapa, tipos desconhecidos) e formatação PT-BR — determinístico, sem rede.
 
-### Gaps reais para o ciclo de geração automática
+### Ciclo 2 — hardening + geração automática (estado real)
 
-- **`notifications_insert_same_org` precisa de hardening**: hoje qualquer usuário autenticado da organização pode inserir notificação para qualquer outro recipient do mesmo tenant (risco de spoofing de `actor_user_id`/`title`). Antes de qualquer geração automática, a criação deve migrar para triggers/funções `SECURITY DEFINER` no banco e a policy de INSERT direta deve ser restringida ou removida.
-- **Sem geração automática**: nenhuma notificação é criada pelo app neste ciclo; a central só exibe o que já existir na tabela.
-- **Sem realtime**: a atualização depende de navegação/mutação local; assinatura Realtime fica como evolução futura.
-- **Sem paginação**: a lista carrega as 50 mais recentes; paginação/filtros por tipo ficam para o próximo ciclo.
-- **Sem preferências/e-mail**: canais externos e preferências por tipo estão fora do escopo.
+- **Migration versionada** `db/migrations/20260824190000_us006_notifications_hardening_and_triggers.sql` espelha **exatamente** o DDL já aplicado no Supabase Development (nenhum DDL foi aplicado pelo Lovable).
+- **Sem INSERT pelo cliente**: a policy `notifications_insert_same_org` foi removida e `INSERT` revogado de `authenticated`; permanecem apenas `SELECT`/`UPDATE` (RLS own-recipient). O frontend não contém nenhum `insert` em `notifications` — a criação é exclusivamente server-side.
+- **Triggers/funções privadas** (`SECURITY DEFINER`, `search_path = pg_catalog, public, private`, `EXECUTE` revogado de public/anon/authenticated):
+  - `private.notify_action_assignment()` → `trg_actions_notify_assignment`, tipo `action.assigned`, título `Ação atribuída a você`, `entity_type = action`.
+  - `private.notify_deliverable_assignment()` → `trg_deliverables_notify_assignment`, tipo `deliverable.assigned`, título `Entregável atribuído a você`, `entity_type = deliverable`.
+  - `private.notify_comment_created()` → `trg_comments_notify_created`, tipo `comment.created`, notifica o responsável do deliverable/action comentado, preservando `entity_type` (`deliverable` ou `action`) e body truncado a 240 chars.
+- **Regras compartilhadas**: linhas com `deleted_at` não nulo são ignoradas; ninguém é notificado da própria ação (`actor_user_id = auth.uid()` apenas quando diferente do recipient, caso contrário `null`); em `UPDATE`, só dispara quando `responsible_user_id` muda de fato.
+- **UI por tipo**: `notificationTypeLabel()` traduz os tipos reais (`Ação atribuída`, `Entregável atribuído`, `Novo comentário`) com fallback genérico, exibido como badge no item. Links continuam resolvendo `action` direto e `deliverable` via ação pai.
+- **Testes**: `src/lib/notifications.test.ts` cobre rótulos por tipo e os targets dos três tipos gerados automaticamente, além do mapping/contagem/formatação do ciclo 1 — determinístico, sem rede.
+
+### Fora de escopo (permanece)
+
+- **Lembretes por prazo/scheduler**: nenhum `pg_cron`, job ou lembrete de vencimento foi criado — continua fora de escopo.
+- **Sem e-mail, push externo ou Realtime**: a atualização depende de navegação/mutação local.
+- **Sem paginação**: a lista carrega as 50 mais recentes; paginação/filtros por tipo ficam para um ciclo futuro.
+- **Sem preferências por tipo**: canais e preferências por usuário estão fora do escopo.
 
 ## Casca do aplicativo (TT-006)
 

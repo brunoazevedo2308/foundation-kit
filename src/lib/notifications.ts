@@ -124,7 +124,6 @@ export function notificationTarget(
   return null;
 }
 
-
 /** Data/hora local em PT-BR; entrada inválida devolve string vazia. */
 export function formatNotificationTimestamp(iso: string): string {
   const date = new Date(iso);
