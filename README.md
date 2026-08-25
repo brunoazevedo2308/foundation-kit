@@ -66,7 +66,7 @@ Itens fora do escopo da US-004:
 - **UI por tipo**: `notificationTypeLabel()` traduz os tipos reais (`Ação atribuída`, `Entregável atribuído`, `Novo comentário`) com fallback genérico, exibido como badge no item. Links continuam resolvendo `action` direto e `deliverable` via ação pai.
 - **Testes**: `src/lib/notifications.test.ts` cobre rótulos por tipo e os targets dos três tipos gerados automaticamente, além do mapping/contagem/formatação do ciclo 1 — determinístico, sem rede.
 
-### Fora de escopo (permanece)
+### Fora de escopo (evoluções futuras, não bloqueiam o MVP)
 
 - **Lembretes por prazo/scheduler**: nenhum `pg_cron`, job ou lembrete de vencimento foi criado — continua fora de escopo.
 - **Sem e-mail, push externo ou Realtime**: a atualização depende de navegação/mutação local.
