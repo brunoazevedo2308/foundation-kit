@@ -2,7 +2,7 @@ import { emitEvent, sanitize } from "./observability";
 import { supabase } from "./supabase";
 
 /**
- * US-006 (1º ciclo) — Central de Notificações: leitura e interação in-app.
+ * US-006 (ciclo 2) — Central de Notificações: leitura e interação in-app.
  *
  * Usa exclusivamente `public.notifications` (TT-003.5) com as policies
  * atuais:
@@ -10,9 +10,10 @@ import { supabase } from "./supabase";
  *   (`notifications_select_own_recipient`);
  * - UPDATE: somente o próprio recipient (`notifications_update_recipient_only`),
  *   sem poder trocar `recipient_user_id`/`organization_id` (WITH CHECK);
- * - INSERT: qualquer autenticado same-org (`notifications_insert_same_org`) —
- *   este ciclo NÃO insere notificações; a geração automática (triggers) fica
- *   para um ciclo futuro e deve revisar essa policy.
+ * - INSERT: revogado de `authenticated` (hardening do ciclo 2). As linhas são
+ *   criadas apenas por triggers `SECURITY DEFINER` em `private`
+ *   (action.assigned, deliverable.assigned, comment.created). O frontend
+ *   NUNCA insere notificações.
  *
  * Nenhuma service_role, nenhum DDL. As funções puras de mapping/link são
  * testáveis sem rede.
