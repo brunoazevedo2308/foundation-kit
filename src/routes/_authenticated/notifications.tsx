@@ -11,6 +11,7 @@ import {
   listNotifications,
   markAllAsRead,
   markAsRead,
+  notificationTypeLabel,
   type NotificationListItem,
 } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
@@ -163,6 +164,9 @@ function NotificationsPage() {
                       >
                         {notification.title}
                       </p>
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                        {notificationTypeLabel(notification.notificationType)}
+                      </span>
                       <span className="text-xs text-muted-foreground">
                         {formatNotificationTimestamp(notification.createdAt)}
                       </span>

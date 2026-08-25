@@ -6,6 +6,7 @@ import {
   isUnread,
   mapNotification,
   notificationTarget,
+  notificationTypeLabel,
   type NotificationItem,
 } from "./notifications";
 
@@ -118,5 +119,55 @@ describe("formatNotificationTimestamp", () => {
   it("devolve string vazia para entrada inválida", () => {
     expect(formatNotificationTimestamp("not-a-date")).toBe("");
     expect(formatNotificationTimestamp("")).toBe("");
+  });
+});
+
+describe("notificationTypeLabel", () => {
+  it("rotula os tipos reais gerados pelos triggers do ciclo 2", () => {
+    expect(notificationTypeLabel("action.assigned")).toBe("Ação atribuída");
+    expect(notificationTypeLabel("deliverable.assigned")).toBe("Entregável atribuído");
+    expect(notificationTypeLabel("comment.created")).toBe("Novo comentário");
+  });
+
+  it("usa rótulo genérico para tipos desconhecidos", () => {
+    expect(notificationTypeLabel("system.announcement")).toBe("Notificação");
+    expect(notificationTypeLabel("")).toBe("Notificação");
+  });
+});
+
+describe("targets dos tipos gerados automaticamente", () => {
+  it("action.assigned linka direto para a ação", () => {
+    expect(
+      notificationTarget(
+        item({ notificationType: "action.assigned", entityType: "action", entityId: "a1" }),
+      ),
+    ).toEqual({ type: "action", actionId: "a1" });
+  });
+
+  it("deliverable.assigned linka para a ação pai via mapa resolvido", () => {
+    expect(
+      notificationTarget(
+        item({
+          notificationType: "deliverable.assigned",
+          entityType: "deliverable",
+          entityId: "d1",
+        }),
+        new Map([["d1", "a7"]]),
+      ),
+    ).toEqual({ type: "action", actionId: "a7" });
+  });
+
+  it("comment.created preserva entity_type action ou deliverable", () => {
+    expect(
+      notificationTarget(
+        item({ notificationType: "comment.created", entityType: "action", entityId: "a2" }),
+      ),
+    ).toEqual({ type: "action", actionId: "a2" });
+    expect(
+      notificationTarget(
+        item({ notificationType: "comment.created", entityType: "deliverable", entityId: "d2" }),
+        new Map([["d2", "a3"]]),
+      ),
+    ).toEqual({ type: "action", actionId: "a3" });
   });
 });
