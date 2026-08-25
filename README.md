@@ -42,9 +42,10 @@ Itens fora do escopo da US-004:
 - **Acessibilidade**: `Select` rotulado com `Label`/ID, `aria-live="polite"` no estado de carregamento, `role="status"` no aviso de recorte filtrado e grid responsivo (`sm`/`lg`) em filtros, KPIs, distribuições e rankings.
 - **Testes**: 11 testes determinísticos cobrem contagem de filtros ativos, filtros individuais e combinados, janelas de prazo (inclusive limites e itens sem prazo), herança de escopo dos entregáveis, consistência do recorte em KPIs/rankings/atenção e opções derivadas dos dados carregados.
 
-## Notificações e Central de Alertas (US-006 — ciclos 1 e 2)
+## Notificações e Central de Alertas (US-006 — ciclos 1 e 2, escopo MVP **concluído**)
 
-- **Escopo do ciclo**: apenas **leitura e interação in-app**. Nenhuma DDL, nenhum trigger de geração automática, nenhum uso de `service_role`.
+- **Status**: escopo MVP da US-006 validado e encerrado (leitura/interação in-app + hardening + geração automática por triggers). Itens listados em "Fora de escopo" seguem como evoluções futuras.
+- **Escopo do ciclo 1**: apenas **leitura e interação in-app**. Nenhuma DDL, nenhum trigger de geração automática, nenhum uso de `service_role`.
 - **Camada de dados** (`src/lib/notifications.ts`): lista as notificações do usuário (`listNotifications`), conta as não lidas server-side (`fetchUnreadCount`, `count: "exact", head: true`) e marca leitura individual (`markAsRead`) ou em massa (`markAllAsRead`). Erros do Supabase são registrados sanitizados via `emitEvent` (`backend.request.failure`) e devolvidos à UI como mensagem PT-BR.
 - **RLS como fonte da verdade**: nenhuma query filtra por usuário no cliente. `public.notifications` só expõe linhas do próprio recipient dentro do tenant (`notifications_select_own_recipient`) e só permite UPDATE do próprio recipient (`notifications_update_recipient_only`, com `WITH CHECK` impedindo troca de `recipient_user_id`/`organization_id`).
 - **Idempotência**: `markAsRead` e `markAllAsRead` aplicam `.is("read_at", null)` no UPDATE — reexecutar é no-op (zero linhas afetadas), nunca reescreve o carimbo de leitura já existente e nunca alcança linhas de outro usuário.
