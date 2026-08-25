@@ -87,6 +87,21 @@ export function countUnread(items: Pick<NotificationItem, "readAt">[]): number {
 }
 
 /**
+ * Rótulo amigável por `notification_type` real gerado pelos triggers
+ * (`action.assigned`, `deliverable.assigned`, `comment.created`). Tipos
+ * desconhecidos caem em um rótulo genérico — nunca quebram a UI.
+ */
+const NOTIFICATION_TYPE_LABELS: Readonly<Record<string, string>> = {
+  "action.assigned": "Ação atribuída",
+  "deliverable.assigned": "Entregável atribuído",
+  "comment.created": "Novo comentário",
+};
+
+export function notificationTypeLabel(notificationType: string): string {
+  return NOTIFICATION_TYPE_LABELS[notificationType] ?? "Notificação";
+}
+
+/**
  * Destino navegável de uma notificação. Hoje só `action` tem rota própria;
  * `deliverable` aponta para a ação pai (onde entregáveis são exibidos) e só é
  * resolvido quando o mapa deliverable→action foi carregado — nunca inventamos
@@ -108,6 +123,7 @@ export function notificationTarget(
   }
   return null;
 }
+
 
 /** Data/hora local em PT-BR; entrada inválida devolve string vazia. */
 export function formatNotificationTimestamp(iso: string): string {
