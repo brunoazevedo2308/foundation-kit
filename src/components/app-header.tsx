@@ -115,10 +115,25 @@ export function AppHeader({ displayName, organizationName, email }: HeaderProps)
           </BreadcrumbList>
         </Breadcrumb>
         <nav aria-label="Ações rápidas" className="flex items-center gap-1">
+          <form role="search" onSubmit={handleSearchSubmit} className="hidden sm:block">
+            <label htmlFor="global-search" className="sr-only">
+              Buscar no DP Suite
+            </label>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="global-search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Buscar..."
+                className="h-9 w-40 pl-8 md:w-64"
+              />
+            </div>
+          </form>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" asChild aria-label="Buscar">
-                <Link to="/search">
+                <Link to="/search" search={{ q: "" }} className="sm:hidden">
                   <Search className="h-5 w-5" />
                 </Link>
               </Button>
@@ -126,6 +141,7 @@ export function AppHeader({ displayName, organizationName, email }: HeaderProps)
             <TooltipContent side="bottom">Buscar</TooltipContent>
           </Tooltip>
           <Tooltip>
+
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
