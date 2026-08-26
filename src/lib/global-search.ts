@@ -254,7 +254,7 @@ function reportFailure(group: SearchGroupKey, error: unknown) {
 
 async function runGroup<T>(
   group: SearchGroupKey,
-  run: () => Promise<{ data: unknown; error: unknown }>,
+  run: () => PromiseLike<{ data: unknown; error: unknown }>,
 ): Promise<{ rows: T[]; failed: boolean }> {
   try {
     const { data, error } = await run();
