@@ -92,7 +92,9 @@ export function isQueryTooShort(raw: string): boolean {
  * `%`/`_` são curingas do LIKE e `,`/`(`/`)` quebram a sintaxe do `or=`.
  */
 export function escapeLikeTerm(raw: string): string {
-  return normalizeTerm(raw).replace(/[%_\\]/g, (m) => `\\${m}`).replace(/[,()]/g, " ");
+  return normalizeTerm(raw)
+    .replace(/[%_\\]/g, (m) => `\\${m}`)
+    .replace(/[,()]/g, " ");
 }
 
 /** Monta o filtro `or(...)` do PostgREST para as colunas informadas. */

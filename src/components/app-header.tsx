@@ -19,6 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -55,6 +56,7 @@ export function AppHeader({ displayName, organizationName, email }: HeaderProps)
   const router = useRouter();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const [busy, setBusy] = useState(false);
+  const [query, setQuery] = useState("");
   const unread = useUnreadNotifications();
 
   const crumbs = useMemo(() => {
@@ -74,6 +76,11 @@ export function AppHeader({ displayName, organizationName, email }: HeaderProps)
     .slice(0, 2)
     .join("")
     .toUpperCase();
+
+  function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void router.navigate({ to: "/search", search: { q: query.trim() } });
+  }
 
   async function handleSignOut() {
     setBusy(true);
@@ -141,7 +148,6 @@ export function AppHeader({ displayName, organizationName, email }: HeaderProps)
             <TooltipContent side="bottom">Buscar</TooltipContent>
           </Tooltip>
           <Tooltip>
-
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
