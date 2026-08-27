@@ -8,6 +8,7 @@ import {
   escapeLikeTerm,
   groupLabel,
   isQueryTooShort,
+  isSearchable,
   mapActionResult,
   mapClientResult,
   mapDeliverableResult,
@@ -187,5 +188,33 @@ describe("agrupamento", () => {
 
   it("usa limite por grupo", () => {
     expect(GROUP_LIMIT).toBe(10);
+  });
+});
+
+describe("isSearchable (regressão US-007)", () => {
+  it("rejeita termos abaixo do mínimo", () => {
+    expect(isSearchable("a")).toBe(false);
+    expect(isSearchable("   ")).toBe(false);
+  });
+
+  it("rejeita termos que virariam o padrão vazio %% após o escaping", () => {
+    expect(isQueryTooShort("(,)")).toBe(false);
+    expect(escapeLikeTerm("(,)")).toBe("");
+    expect(isSearchable("(,)")).toBe(false);
+    expect(isSearchable(", ,")).toBe(false);
+  });
+
+  it("aceita termos válidos, inclusive com caracteres especiais", () => {
+    expect(isSearchable("dp")).toBe(true);
+    expect(isSearchable("100%")).toBe(true);
+    expect(isSearchable("ROV (classe 2)")).toBe(true);
+  });
+
+  it("mantém o filtro or seguro para termos com caracteres especiais", () => {
+    const filter = buildOrFilter(["title", "description"], "  ROV, (classe_2) 100%  ");
+    expect(filter).toBe(
+      "title.ilike.%ROV classe\\_2 100\\%%,description.ilike.%ROV classe\\_2 100\\%%",
+    );
+    expect(filter.split(",").length).toBe(2);
   });
 });

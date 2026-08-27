@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import {
   MIN_QUERY_LENGTH,
   globalSearch,
-  isQueryTooShort,
+  isSearchable,
   normalizeTerm,
   type GlobalSearchResult,
   type SearchResultItem,
@@ -116,7 +116,7 @@ function SearchPage() {
   }, [q]);
 
   useEffect(() => {
-    if (isQueryTooShort(q)) {
+    if (!isSearchable(q)) {
       setResult(null);
       setError(null);
       setLoading(false);
@@ -146,7 +146,7 @@ function SearchPage() {
     void navigate({ to: "/search", search: { q: normalizeTerm(term) } });
   }
 
-  const tooShort = isQueryTooShort(q);
+  const tooShort = !isSearchable(q);
   const failedGroups = result?.groups.filter((g) => g.failed) ?? [];
 
   return (
