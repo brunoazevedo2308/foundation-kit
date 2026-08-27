@@ -73,7 +73,7 @@ Itens fora do escopo da US-004:
 - **Sem paginação**: a lista carrega as 50 mais recentes; paginação/filtros por tipo ficam para um ciclo futuro.
 - **Sem preferências por tipo**: canais e preferências por usuário estão fora do escopo.
 
-## Busca Global (US-007 — ciclo 1)
+## Busca Global (US-007 — MVP concluído)
 
 - **Escopo**: busca lexical MVP, **sem DDL** (nenhuma tabela/índice de busca, sem FTS/`tsvector`), **sem `service_role`** no frontend. Tudo roda com o cliente Supabase da sessão.
 - **Camada de dados** (`src/lib/global-search.ts`): cinco grupos consultados em paralelo — Ações, Entregáveis, Evidências, Clientes e Embarcações — cada um na sua tabela via filtro `or(...)` com `ilike` nas colunas textuais relevantes.
@@ -87,7 +87,9 @@ Itens fora do escopo da US-004:
 - **Header/mobile** (`src/components/app-header.tsx`): campo de busca inline em `sm+` e botão-ícone que leva a `/search` em telas pequenas.
 - **Observabilidade**: falhas por grupo emitem `backend.request.failure` via `emitEvent` com `sanitize()` — sem PII e sem termo bruto em logs.
 - **Testes**: `src/lib/global-search.test.ts` cobre normalização, termo mínimo, escaping, montagem do filtro `or`, mapping/subtítulos/truncamento por grupo, resolução de alvo (inclusive casos sem link) e ordenação/contagem — determinístico, sem rede.
-- **Fora de escopo**: embeddings/busca semântica, Algolia, Elasticsearch, Meilisearch, OCR de anexos, ranking por relevância, paginação e histórico de buscas.
+- **Guarda de termo degenerado**: termos formados só por delimitadores (ex.: `(,)`) passariam no mínimo de 2 caracteres mas virariam o padrão `%%` (casaria tudo); `isSearchable` bloqueia esse caso e a UI mostra a orientação de termo mínimo.
+- **Status**: **MVP concluído** — todos os critérios de aceite da US-007 validados (termo mínimo sem requisições, normalização de espaços, caracteres especiais sem quebrar o filtro PostgREST, `deleted_at IS NULL` em todos os grupos, falha isolada por grupo, links apenas para rotas existentes, resolução da ação pai para entregáveis/evidências, header desktop/mobile, estados de carregando/vazio/erro/falha parcial, sem `service_role` e sem efeitos colaterais de notificação).
+- **Fora de escopo (evoluções futuras)**: embeddings/busca semântica, Algolia, Elasticsearch, Meilisearch, OCR de anexos, ranking por relevância/FTS, paginação, histórico de buscas e índice dedicado.
 
 ## Casca do aplicativo (TT-006)
 
