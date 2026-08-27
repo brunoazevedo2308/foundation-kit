@@ -88,6 +88,16 @@ export function isQueryTooShort(raw: string): boolean {
 }
 
 /**
+ * Um termo só é pesquisável se, além do tamanho mínimo, sobrar conteúdo útil
+ * após o escaping. Termos compostos apenas por delimitadores (`,`, `(`, `)`)
+ * virariam o padrão `%%`, que casaria com todas as linhas visíveis — por isso
+ * são tratados como não pesquisáveis.
+ */
+export function isSearchable(raw: string): boolean {
+  return !isQueryTooShort(raw) && escapeLikeTerm(raw) !== "";
+}
+
+/**
  * Escapa caracteres com significado especial no filtro PostgREST:
  * `%`/`_` são curingas do LIKE e `,`/`(`/`)` quebram a sintaxe do `or=`.
  */
@@ -289,7 +299,7 @@ async function fetchDeliverableActionMap(ids: string[]): Promise<Map<string, str
  */
 export async function globalSearch(rawTerm: string): Promise<GlobalSearchResult> {
   const term = normalizeTerm(rawTerm);
-  if (term.length < MIN_QUERY_LENGTH) {
+  if (!isSearchable(term)) {
     return {
       term,
       groups: SEARCH_GROUP_ORDER.map((key) => ({
@@ -353,9 +363,11 @@ export async function globalSearch(rawTerm: string): Promise<GlobalSearchResult>
     ),
   ]);
 
-  const deliverableIds = evidences.rows
-    .map((row) => row.deliverable_id)
-    .filter((id): id is string => Boolean(id));
+  const deliverableIds = [
+    ...new Set(
+      evidences.rows.map((row) => row.deliverable_id).filter((id): id is string => Boolean(id)),
+    ),
+  ];
   const actionMap = await fetchDeliverableActionMap(deliverableIds);
 
   const groups: SearchGroupResult[] = sortGroups([
