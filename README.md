@@ -73,6 +73,22 @@ Itens fora do escopo da US-004:
 - **Sem paginação**: a lista carrega as 50 mais recentes; paginação/filtros por tipo ficam para um ciclo futuro.
 - **Sem preferências por tipo**: canais e preferências por usuário estão fora do escopo.
 
+## Busca Global (US-007 — ciclo 1)
+
+- **Escopo**: busca lexical MVP, **sem DDL** (nenhuma tabela/índice de busca, sem FTS/`tsvector`), **sem `service_role`** no frontend. Tudo roda com o cliente Supabase da sessão.
+- **Camada de dados** (`src/lib/global-search.ts`): cinco grupos consultados em paralelo — Ações, Entregáveis, Evidências, Clientes e Embarcações — cada um na sua tabela via filtro `or(...)` com `ilike` nas colunas textuais relevantes.
+- **Termo mínimo**: 2 caracteres após normalização (`normalizeTerm` colapsa espaços). Abaixo disso nenhuma consulta é disparada e a UI orienta o usuário.
+- **Sanitização do filtro**: `escapeLikeTerm` escapa `%`, `_` e `\` (curingas do LIKE) e neutraliza `,`, `(`, `)` — que quebrariam a sintaxe do `or=` do PostgREST — normalizando os espaços resultantes. Nenhum termo do usuário chega cru ao filtro.
+- **Soft delete**: todas as consultas aplicam `.is("deleted_at", null)`.
+- **RLS como fonte da verdade**: nenhuma query filtra por organização no cliente; o escopo tenant/permissões vem exclusivamente das policies.
+- **Limite**: `GROUP_LIMIT = 10` resultados por grupo; o resultado marca `truncated` quando algum grupo atinge o teto.
+- **Links seguros**: só geramos link para rotas existentes — ação (`/actions/$actionId`), cliente (`/clients/$clientId/edit`) e embarcação (`/vessels/$vesselId/edit`). Entregável navega para a ação pai; evidência resolve a ação via mapa `deliverable → action` (consulta em lote, tenant-scoped). Sem alvo resolvível, o item aparece sem link — não inventamos rota.
+- **UI** (`src/routes/_authenticated/search.tsx`): termo na query string (`?q=`), estados distintos de termo curto, carregando, vazio e erro (`role="alert"`), agrupamento na ordem canônica com contagem, e aviso quando algum grupo falha isoladamente (falha de um grupo não derruba os demais).
+- **Header/mobile** (`src/components/app-header.tsx`): campo de busca inline em `sm+` e botão-ícone que leva a `/search` em telas pequenas.
+- **Observabilidade**: falhas por grupo emitem `backend.request.failure` via `emitEvent` com `sanitize()` — sem PII e sem termo bruto em logs.
+- **Testes**: `src/lib/global-search.test.ts` cobre normalização, termo mínimo, escaping, montagem do filtro `or`, mapping/subtítulos/truncamento por grupo, resolução de alvo (inclusive casos sem link) e ordenação/contagem — determinístico, sem rede.
+- **Fora de escopo**: embeddings/busca semântica, Algolia, Elasticsearch, Meilisearch, OCR de anexos, ranking por relevância, paginação e histórico de buscas.
+
 ## Casca do aplicativo (TT-006)
 
 - **Layout responsivo**: `SidebarProvider` + `AppShell` (`src/components/app-shell.tsx`) envolvem toda rota sob `/_authenticated/`. Em telas pequenas a barra lateral colapsa para _offcanvas_; em telas grandes é fixa e minimizável ao modo ícone.
