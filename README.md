@@ -127,6 +127,18 @@ Regras aplicadas:
 
 Teste transacional reproduzível: `db/tests/tt005_auto_profile_on_signup.sql` (cobre organização válida/ausente/malformada/desconhecida/soft-deletada, precedência `profile_status`→`status`, fallback de valores inseguros, derivação de `full_name` e no-op sobre perfil pré-existente; encerra em `ROLLBACK`).
 
+## Anexos (US-008 — MVP concluído)
+
+- **Bucket dedicado**: `attachments-private`, privado, 25 MiB por objeto e whitelist documental (PDF, JPEG, PNG, WEBP, TXT, CSV, DOCX, XLSX). **Nunca** reutiliza `evidences-private` — domínios, caminhos e policies são independentes. DDL versionado em `db/migrations/20260828143000_us008_attachments_private_bucket.sql`, **já aplicado no Development**.
+- **Caminho canônico**: `{organization_id}/{attachment_id}/{safe_file_name}` (exatamente 3 segmentos). A policy valida o caminho contra a linha ativa de `public.attachments` e o vínculo organizacional do chamador, via `private.can_access_attachment_object`.
+- **Metadata-first + compensação**: `src/lib/attachment-storage.ts` cria a linha em `public.attachments`, envia o objeto e, se o upload falhar, soft-deleta o metadata. Falha de compensação é emitida como evento `critical` sanitizado.
+- **Download**: signed URL de 120s (teto de 1h), gerada com a sessão do usuário — RLS do Storage é a fonte da verdade. Sem `service_role` no frontend.
+- **Exclusão lógica apenas**: `deleted_at` no metadata; o objeto permanece no bucket para auditoria. Não existem policies de UPDATE/DELETE em `storage.objects` — o frontend não pode remover nem sobrescrever objetos (`upsert: false`).
+- **UI**: `src/components/attachments-section.tsx` está plugado no detalhe da Ação (`/actions/$actionId`) e em cada Entregável (`deliverables-section.tsx`). Leitura liberada a qualquer perfil ativo da organização; upload/exclusão gated por `canManageOperationalData`, com a RLS revalidando.
+- **Comentários**: `public.attachments.comment_id` e a lib suportam o vínculo, mas ele **não é exposto na UI do MVP** — comentários são criados por qualquer perfil ativo e um anexo por comentário exigiria um gate de escrita próprio. Fica documentado como evolução futura.
+- **Testes**: `src/lib/attachment-storage.test.ts` e `src/lib/attachments.test.ts` cobrem sanitização de nome, caminho canônico, MIME/tamanho, mapeamento de contexto, ordem metadata-first, soft-delete compensatório, TTL do signed URL e mapping de linhas — determinísticos, sem rede.
+- **Evolução futura (fora do MVP)**: anexos em comentários na UI, versionamento de anexo, limpeza de objetos órfãos e antivírus/scan de conteúdo.
+
 ## Autenticação e sessão (TT-005)
 
 - **Provedor**: Supabase Auth com e-mail + senha (chave publishable no cliente).

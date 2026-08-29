@@ -1,57 +1,62 @@
-# Attachments — bloqueio de storage (US-004, 5º ciclo)
+# Attachments — storage (gap RESOLVIDO na US-008)
 
-## Situação atual (verificada no Supabase remoto)
+> **Status:** resolvido para o MVP. Este documento nasceu na US-004 descrevendo
+> o bloqueio de infraestrutura de anexos; na US-008 o bloqueio foi removido.
 
-O bucket privado `evidences-private` possui **somente** duas policies em
-`storage.objects`:
+## Histórico do bloqueio (US-004)
 
-- `evidence_objects_insert_authorized`
-- `evidence_objects_select_authorized`
+Até a US-004 existia apenas o bucket privado `evidences-private`, cujas policies
+validam o caminho canônico de Evidences. Não havia bucket nem policy de
+`storage.objects` que aceitasse um caminho de attachment, então **nenhuma UI de
+upload de anexos foi criada** — reaproveitar `evidences-private` teria burlado a
+policy e gerado falhas silenciosas ou objetos órfãos.
 
-Ambas validam o **caminho canônico de Evidences**
-(`organization/{org}/actions/{action}/deliverables/{deliverable}/evidences/{evidence}/{arquivo}`)
-e a cadeia organização → action → deliverable → evidence.
+## Resolução (US-008)
 
-Não existe bucket próprio para `public.attachments`, nem policy de
-`storage.objects` que aceite um caminho de attachment.
+Migration versionada `db/migrations/20260828143000_us008_attachments_private_bucket.sql`,
+**aplicada no Supabase Development**. O arquivo do repositório espelha o estado
+aplicado e é idempotente.
 
-## Consequência
+- **Bucket separado**: `attachments-private` — privado, `file_size_limit`
+  26214400 bytes (25 MiB), whitelist de MIME documental (PDF, JPEG, PNG, WEBP,
+  TXT, CSV, DOCX, XLSX). `evidences-private` permanece intocado.
+- **Caminho canônico**: `{organization_id}/{attachment_id}/{safe_file_name}` —
+  exatamente três segmentos, validados pela policy.
+- **Autorização centralizada**: `private.can_access_attachment_object(name, require_uploader)`
+  (`security definer`, `search_path` fixo) confere a linha ativa em
+  `public.attachments`, o perfil `active` do chamador e a mesma organização.
+  No INSERT, exige também `uploaded_by = auth.uid()`.
+- **Policies**: `attachment_objects_select_authorized` e
+  `attachment_objects_insert_authorized`. **Não existem** policies de UPDATE ou
+  DELETE, por design.
 
-**Upload de anexos está bloqueado por infraestrutura**, não por código:
+## Contrato de aplicação
 
-- Reaproveitar `evidences-private` para attachments seria burlar a
-  policy (o caminho não passaria na validação) e produziria falhas
-  silenciosas ou objetos órfãos.
-- Criar bucket/policy exige DDL no Supabase, fora do escopo deste ciclo.
+- **Metadata-first + compensação**: insere em `public.attachments`, envia o
+  objeto e, em caso de falha no Storage, soft-deleta o metadata
+  (`src/lib/attachment-storage.ts`). Falha de compensação vira evento
+  `critical` sanitizado.
+- **Download**: signed URL de 120s (teto 1h), gerada com a sessão do usuário.
+- **Sem DELETE físico**: exclusão é lógica (`deleted_at`); o objeto permanece
+  para auditoria. `upsert: false` no upload impede sobrescrita.
+- **Sem `service_role` no frontend**: apenas a chave publishable + sessão; a RLS
+  é a única fonte da verdade.
 
-Por isso **não há UI de upload de anexos** no DP Suite hoje. Nenhum
-fluxo "parcial" foi criado: um formulário que sempre falha no POST do
-objeto é pior que a ausência dele.
+## Cobertura de UI
 
-## O que já é possível sem storage
+| Vínculo | Coluna | Exposto na UI |
+| --- | --- | --- |
+| Ação | `action_id` | Sim — `/actions/$actionId` |
+| Entregável | `deliverable_id` | Sim — `deliverables-section.tsx` |
+| Comentário | `comment_id` | Não (suportado pela lib e pelo modelo) |
 
-`public.attachments` está criada, com RLS multi-tenant e auditoria
-(`20260809113000_harden_evidences_attachments_admin_writes_and_audit.sql`).
-Isso permite, sem nenhuma mudança de banco, **leitura de metadata** de
-anexos que venham a ser criados por outro caminho (importação
-administrativa, backfill). Enquanto não houver linhas nem storage, essa
-leitura não tem valor de produto e permanece não exposta na UI.
+Anexos de comentário ficam fora do MVP: comentar é permitido a qualquer perfil
+ativo, enquanto anexar é gated por `canManageOperationalData`; expor o upload no
+comentário exigiria um gate próprio e uma UX distinta. O caminho está pronto na
+lib (`AttachmentContext = { commentId }`) e no banco.
 
-## Desbloqueio (proposta, requer aprovação e DDL)
+## Evolução futura
 
-1. Criar bucket privado `attachments-private` (limite e MIME próprios).
-2. Definir caminho canônico, por exemplo
-   `organization/{org}/attachments/{attachment_id}/{arquivo}`.
-3. Criar policies `INSERT`/`SELECT` em `storage.objects` espelhando o
-   padrão de Evidences (validando organização e vínculo do attachment).
-4. Só então implementar o módulo de upload, reaproveitando o fluxo
-   metadata-first com rollback compensatório de `src/lib/evidence-storage.ts`.
-
-Até lá, Evidences continua sendo o único artefato com arquivo no DP Suite.
-
-## Situação no fechamento da US-004
-
-Este é o **único bloqueio funcional de infraestrutura restante** da US-004.
-Todos os demais módulos (clients, vessels, actions, deliverables, evidences,
-comments) estão completos e auditados. O item "leaked password protection"
-do Security Advisor **não** pertence à US-004: é Production Readiness.
+Anexos em comentários na UI, versionamento de anexo, rotina de limpeza de
+objetos órfãos e verificação antivírus/conteúdo. Nada disso é pré-requisito do
+MVP da US-008.
