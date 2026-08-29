@@ -121,9 +121,7 @@ export function AttachmentsSection({
                 await createAttachment({ context, file });
                 await reload();
               } catch (err) {
-                setError(
-                  err instanceof Error ? err.message : "Não foi possível enviar o anexo.",
-                );
+                setError(err instanceof Error ? err.message : "Não foi possível enviar o anexo.");
               } finally {
                 setBusy(false);
               }

@@ -198,11 +198,7 @@ function ActionDetailPage() {
       ) : null}
 
       {action ? (
-        <AttachmentsSection
-          context={{ actionId }}
-          canManage={canManage}
-          title="Anexos da ação"
-        />
+        <AttachmentsSection context={{ actionId }} canManage={canManage} title="Anexos da ação" />
       ) : null}
 
       {action ? (

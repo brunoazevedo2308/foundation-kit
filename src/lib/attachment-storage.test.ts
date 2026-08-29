@@ -74,9 +74,7 @@ describe("validateAttachmentFile", () => {
     expect(() => validateAttachmentFile(fileLike("a.pdf", 1024, "application/pdf"))).not.toThrow();
   });
   it("rejects empty files", () => {
-    expect(() => validateAttachmentFile(fileLike("a.pdf", 0, "application/pdf"))).toThrow(
-      /vazio/i,
-    );
+    expect(() => validateAttachmentFile(fileLike("a.pdf", 0, "application/pdf"))).toThrow(/vazio/i);
   });
   it("rejects files above 25 MiB", () => {
     expect(() =>
@@ -84,9 +82,9 @@ describe("validateAttachmentFile", () => {
     ).toThrow(AttachmentStorageError);
   });
   it("rejects disallowed MIME types", () => {
-    expect(() =>
-      validateAttachmentFile(fileLike("a.exe", 10, "application/x-msdownload")),
-    ).toThrow(/não permitido/i);
+    expect(() => validateAttachmentFile(fileLike("a.exe", 10, "application/x-msdownload"))).toThrow(
+      /não permitido/i,
+    );
   });
 });
 
@@ -245,7 +243,9 @@ describe("createAttachmentSignedUrl", () => {
     }));
     const client = {
       from: () => ({}),
-      storage: { from: () => ({ upload: async () => ({ data: null, error: null }), createSignedUrl: spy }) },
+      storage: {
+        from: () => ({ upload: async () => ({ data: null, error: null }), createSignedUrl: spy }),
+      },
     } as unknown as AttachmentSupabaseLike;
 
     const url = await createAttachmentSignedUrl(`${ORG}/${ATTACH}/a.pdf`, undefined, client);
@@ -260,7 +260,9 @@ describe("createAttachmentSignedUrl", () => {
     }));
     const client = {
       from: () => ({}),
-      storage: { from: () => ({ upload: async () => ({ data: null, error: null }), createSignedUrl: spy }) },
+      storage: {
+        from: () => ({ upload: async () => ({ data: null, error: null }), createSignedUrl: spy }),
+      },
     } as unknown as AttachmentSupabaseLike;
 
     await createAttachmentSignedUrl(`${ORG}/${ATTACH}/a.pdf`, 999999, client);

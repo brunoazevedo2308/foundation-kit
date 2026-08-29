@@ -44,11 +44,11 @@ aplicado e é idempotente.
 
 ## Cobertura de UI
 
-| Vínculo | Coluna | Exposto na UI |
-| --- | --- | --- |
-| Ação | `action_id` | Sim — `/actions/$actionId` |
-| Entregável | `deliverable_id` | Sim — `deliverables-section.tsx` |
-| Comentário | `comment_id` | Não (suportado pela lib e pelo modelo) |
+| Vínculo    | Coluna           | Exposto na UI                          |
+| ---------- | ---------------- | -------------------------------------- |
+| Ação       | `action_id`      | Sim — `/actions/$actionId`             |
+| Entregável | `deliverable_id` | Sim — `deliverables-section.tsx`       |
+| Comentário | `comment_id`     | Não (suportado pela lib e pelo modelo) |
 
 Anexos de comentário ficam fora do MVP: comentar é permitido a qualquer perfil
 ativo, enquanto anexar é gated por `canManageOperationalData`; expor o upload no
