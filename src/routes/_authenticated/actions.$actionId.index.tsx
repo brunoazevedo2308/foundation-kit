@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ListChecks, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { AttachmentsSection } from "@/components/attachments-section";
 import { CommentsSection } from "@/components/comments-section";
 import { DeliverablesSection } from "@/components/deliverables-section";
 import { PageHeader } from "@/components/page-header";
@@ -194,6 +195,14 @@ function ActionDetailPage() {
             </dl>
           </CardContent>
         </Card>
+      ) : null}
+
+      {action ? (
+        <AttachmentsSection
+          context={{ actionId }}
+          canManage={canManage}
+          title="Anexos da ação"
+        />
       ) : null}
 
       {action ? (

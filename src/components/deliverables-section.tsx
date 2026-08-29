@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { CommentsSection } from "@/components/comments-section";
 import { DeliverableForm, emptyDeliverableForm } from "@/components/deliverable-form";
+import { AttachmentsSection } from "@/components/attachments-section";
 import { EvidencesSection } from "@/components/evidences-section";
 import { SoftDeleteDialog } from "@/components/soft-delete-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -178,6 +179,11 @@ export function DeliverablesSection({
                       actionId={actionId}
                       deliverableId={item.id}
                       canManage={canManage}
+                    />
+                    <AttachmentsSection
+                      context={{ deliverableId: item.id }}
+                      canManage={canManage}
+                      title={`Anexos — ${item.title}`}
                     />
                     <CommentsSection
                       context={{ deliverableId: item.id }}
