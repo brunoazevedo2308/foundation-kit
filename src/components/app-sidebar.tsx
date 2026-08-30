@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   ListChecks,
+  FileSpreadsheet,
   Building2,
   Ship,
   Users,
@@ -41,6 +42,7 @@ type NavItem = { title: string; url: string; icon: typeof LayoutDashboard };
 const operational: NavItem[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Ações", url: "/actions", icon: ListChecks },
+  { title: "Relatórios", url: "/reports", icon: FileSpreadsheet },
   { title: "Notificações", url: "/notifications", icon: Bell },
   { title: "Busca", url: "/search", icon: Search },
 ];

@@ -45,6 +45,9 @@ export type EventName =
   | "storage.signed_url.failure"
   // Notificações (reservado para futura instrumentação)
   | "notifications.dispatch.failure"
+  // Relatórios / exportação (US-009)
+  | "report.export.success"
+  | "report.export.failure"
   // Erros de renderização
   | "ui.error_boundary.caught"
   // Diagnóstico controlado (dev only)
@@ -287,7 +290,8 @@ function defaultSeverityFor(name: EventName): Severity {
     name === "backend.request.failure" ||
     name === "storage.upload.failure" ||
     name === "storage.signed_url.failure" ||
-    name === "notifications.dispatch.failure"
+    name === "notifications.dispatch.failure" ||
+    name === "report.export.failure"
   ) {
     return "error";
   }
