@@ -181,7 +181,7 @@ TypeScript · React 19 · TanStack Start · Tailwind CSS v4 · shadcn/ui · Supa
 
 ## Requisitos
 
-- Node.js ≥ 22.12
+- Node.js ≥ 22.13
 - pnpm 11.19 (fixado no campo `packageManager`)
 - Acesso ao projeto Supabase **dp-suite-dev** (Development)
 

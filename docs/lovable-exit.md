@@ -15,7 +15,7 @@ Desde 2026-08-30, o DP Suite pode ser instalado, desenvolvido, testado e compila
 ## Fluxo operacional
 
 1. Criar uma branch `codex/*` ou outra branch de feature a partir da branch principal.
-2. Executar `pnpm install --frozen-lockfile` com Node.js 22.12 ou superior.
+2. Executar `pnpm install --frozen-lockfile` com Node.js 22.13 ou superior.
 3. Antes de abrir PR, executar `pnpm lint`, `pnpm typecheck`, `pnpm test` e `pnpm build`.
 4. Publicar o bundle Nitro `cloudflare-module` somente a partir de uma branch revisada e com variáveis do ambiente de destino configuradas.
 5. Alterações de banco devem ser aditivas, versionadas e validadas primeiro fora de produção. O histórico remoto nunca deve ser reescrito.
