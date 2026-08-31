@@ -2,6 +2,8 @@
 
 Plataforma SaaS de governança e conformidade para operações de Dynamic Positioning.
 
+> O projeto é mantido diretamente por GitHub + Supabase e não depende da Lovable para instalar, desenvolver, testar, compilar ou publicar. A transição e os limites atuais estão documentados em [`docs/lovable-exit.md`](./docs/lovable-exit.md).
+
 > Estado atual: fundação técnica (TT-001), ambientes Development e Staging (TT-002), schema versionado com RLS e integridade cross-organization (TT-003 e TT-004), autenticação e sessão via Supabase (TT-005), casca do aplicativo com navegação lateral, cabeçalho, rota dinâmica de Ações e páginas base dos módulos (TT-006), estrutura operacional com Clientes, Embarcações e Ações — criação, edição e exclusão lógica (US-004).
 
 ## Estrutura operacional (US-004)
@@ -56,7 +58,7 @@ Itens fora do escopo da US-004:
 
 ### Ciclo 2 — hardening + geração automática (estado real)
 
-- **Migration versionada** `db/migrations/20260824190000_us006_notifications_hardening_and_triggers.sql` espelha **exatamente** o DDL já aplicado no Supabase Development (nenhum DDL foi aplicado pelo Lovable).
+- **Migration versionada** `db/migrations/20260824190000_us006_notifications_hardening_and_triggers.sql` espelha **exatamente** o DDL já aplicado no Supabase Development.
 - **Sem INSERT pelo cliente**: a policy `notifications_insert_same_org` foi removida e `INSERT` revogado de `authenticated`; permanecem apenas `SELECT`/`UPDATE` (RLS own-recipient). O frontend não contém nenhum `insert` em `notifications` — a criação é exclusivamente server-side.
 - **Triggers/funções privadas** (`SECURITY DEFINER`, `search_path = pg_catalog, public, private`, `EXECUTE` revogado de public/anon/authenticated):
   - `private.notify_action_assignment()` → `trg_actions_notify_assignment`, tipo `action.assigned`, título `Ação atribuída a você`, `entity_type = action`.
@@ -179,7 +181,8 @@ TypeScript · React 19 · TanStack Start · Tailwind CSS v4 · shadcn/ui · Supa
 
 ## Requisitos
 
-- [Bun](https://bun.sh) ≥ 1.1 (ou Node 20+ com npm/pnpm equivalentes)
+- Node.js ≥ 22.12
+- pnpm 11.19 (fixado no campo `packageManager`)
 - Acesso ao projeto Supabase **dp-suite-dev** (Development)
 
 ## Variáveis de ambiente
@@ -199,9 +202,10 @@ versionados** — são fornecidos por configuração segura de ambiente.
 ## Execução local
 
 ```bash
-bun install
+corepack enable
+pnpm install --frozen-lockfile
 cp .env.example .env.local   # preencha com os valores do dp-suite-dev
-bun run dev                  # http://localhost:8080
+pnpm dev                     # http://localhost:8080
 ```
 
 ## Ambientes
@@ -237,9 +241,10 @@ Reservado. Mesma superfície de configuração dos ambientes anteriores.
 ## Scripts
 
 ```bash
-bun run dev        # servidor de desenvolvimento
-bun run build      # build de produção
-bun run lint       # ESLint
-bun run typecheck  # TypeScript (tsgo --noEmit)
-bun run format     # Prettier
+pnpm dev        # servidor de desenvolvimento
+pnpm build      # build de produção para Cloudflare Workers
+pnpm lint       # ESLint
+pnpm typecheck  # TypeScript (tsc --noEmit)
+pnpm test       # Vitest
+pnpm format     # Prettier
 ```

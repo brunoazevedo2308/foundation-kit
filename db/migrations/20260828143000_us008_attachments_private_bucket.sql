@@ -1,8 +1,8 @@
 -- DP Suite — US-008 (1º ciclo)
 -- Versioned migration: Attachments private storage.
 --
--- STATUS: NOT APPLIED to remote. Review before applying to Supabase
--- Development. Idempotent and safe to re-run.
+-- STATUS: Already applied to Supabase Development. This file mirrors the
+-- current remote state and remains idempotent for environment bootstrap.
 --
 -- Scope:
 --   * Private bucket `attachments-private` (25 MiB per object, explicit
