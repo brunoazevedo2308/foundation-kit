@@ -139,6 +139,20 @@ Teste transacional reproduzível: `db/tests/tt005_auto_profile_on_signup.sql` (c
 - **Testes**: `src/lib/attachment-storage.test.ts` e `src/lib/attachments.test.ts` cobrem sanitização de nome, caminho canônico, MIME/tamanho, mapeamento de contexto, ordem metadata-first, soft-delete compensatório, TTL do signed URL e mapping de linhas — determinísticos, sem rede.
 - **Evolução futura (fora do MVP)**: anexos em comentários na UI, versionamento de anexo, limpeza de objetos órfãos e antivírus/scan de conteúdo.
 
+## Relatórios e Exportação (US-009 — MVP concluído)
+
+- **Rota**: `/reports` (autenticada, sob `_authenticated`), com entrada "Relatórios" na navegação lateral.
+- **Arquitetura**: sem DDL, sem views e sem RPCs novos. A rota reaproveita exatamente o carregamento tenant-scoped do dashboard (`fetchDashboardData`), os filtros (`DashboardFiltersCard`, `applyFilters`, `buildFilterOptions`) e os helpers de vencimento/abertura. A camada pura de agregação e serialização vive em `src/lib/reports.ts`.
+- **RLS como fonte da verdade**: leitura feita com a sessão do usuário; `deleted_at IS NULL` já é aplicado na origem. Nenhum uso de `service_role` no frontend. `member` visualiza e exporta exatamente o que a RLS já permite, sem nenhuma nova permissão de escrita.
+- **Filtros**: cliente, embarcação, responsável, status, prioridade e janela de prazo. O mesmo recorte alimenta, de forma idêntica, os indicadores, a tabela e a exportação CSV.
+- **Indicadores do recorte**: total, abertas, vencidas (data local, apenas ações em aberto), concluídas/canceladas e críticas (criticidade alta/crítica em aberto), além do total de entregáveis pendentes vinculados.
+- **Progresso de entregáveis**: por ação, `concluídos/total (%)`, derivado dos entregáveis já carregados.
+- **Exportação**: CSV gerado 100% no navegador (`Blob` + `URL.createObjectURL`), somente sobre o recorte filtrado. Cabeçalhos PT-BR, UTF-8 com BOM e quebras CRLF para o Excel, escaping robusto de vírgula/aspas/quebra de linha, datas em `DD/MM/AAAA` (e `DD/MM/AAAA HH:mm` para timestamps) e nome de arquivo previsível `dp-suite-relatorio-acoes-AAAA-MM-DD.csv`. Nenhum dado é enviado a serviço externo.
+- **Estados**: carregando, organização sem ações, filtros sem resultado, erro com "Tentar novamente"; sucesso/falha da exportação registrados como `report.export.success` / `report.export.failure` na observabilidade sanitizada.
+- **Drill-down / acessibilidade / responsividade**: cada linha liga para `/actions/$actionId` via `Link` tipado; tabela com `thead`/`scope="col"` e rolagem horizontal em telas estreitas; regiões com `aria-label`/`aria-live`/`role="status"`.
+- **Testes**: `src/lib/reports.test.ts` cobre progresso, métricas, vencimento local, filtros combinados e serialização CSV (BOM, cabeçalhos, aspas/vírgula/newline, recorte filtrado, filename seguro) — determinísticos, sem rede.
+- **Limites do MVP (fora de escopo)**: exportação em PDF/XLSX, relatórios agendados ou enviados por e-mail, relatórios de entregáveis/evidências/anexos como entidade própria, gráficos históricos e paginação/streaming server-side para volumes muito grandes.
+
 ## Autenticação e sessão (TT-005)
 
 - **Provedor**: Supabase Auth com e-mail + senha (chave publishable no cliente).
