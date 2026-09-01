@@ -38,3 +38,12 @@ dist-ssr
 .env.development
 .env.staging
 .env.production
+
+# Legacy Lovable editor artifacts (removed from the application)
+/src/lib/mcp/
+/src/routes/\[.mcp\]/
+/src/routes/\[.well-known\]/oauth-protected-resource.ts
+/src/routes/mcp.ts
+/src/lib/lovable-error-reporting.ts
+/bun.lock
+/bunfig.toml
