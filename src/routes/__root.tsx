@@ -10,7 +10,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { supabase } from "../lib/supabase";
-import { reportLovableError } from "../lib/lovable-error-reporting";
+import { emitEvent, sanitize } from "../lib/observability";
 import { NotFoundPage } from "../components/status-pages";
 import { GlobalErrorBoundary } from "../components/global-error-boundary";
 
@@ -26,7 +26,14 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    emitEvent({
+      event_name: "ui.error_boundary.caught",
+      severity: "error",
+      context: {
+        boundary: "tanstack_root_error_component",
+        error: sanitize(error),
+      },
+    });
   }, [error]);
 
   return (

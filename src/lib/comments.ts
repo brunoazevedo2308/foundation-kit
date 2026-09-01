@@ -149,12 +149,15 @@ export async function createComment(
     throw new Error("Sessão expirada. Entre novamente para comentar.");
   }
 
-  const { column, value } = contextColumn(context);
+  const contextValues =
+    "actionId" in context
+      ? { action_id: context.actionId }
+      : { deliverable_id: context.deliverableId };
   const { data, error } = await c
     .from("comments")
     .insert({
       organization_id: organizationId,
-      [column]: value,
+      ...contextValues,
       author_user_id: authData.user.id,
       body: parsed.body,
     })

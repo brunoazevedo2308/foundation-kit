@@ -133,9 +133,7 @@ export function validateAttachmentFile(file: AttachmentFileLike): void {
 // -----------------------------------------------------------------------------
 
 export type AttachmentContext =
-  | { actionId: string }
-  | { deliverableId: string }
-  | { commentId: string };
+  { actionId: string } | { deliverableId: string } | { commentId: string };
 
 export interface AttachmentLinkColumns {
   action_id: string | null;

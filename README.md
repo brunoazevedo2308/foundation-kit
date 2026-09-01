@@ -2,7 +2,28 @@
 
 Plataforma SaaS de governança e conformidade para operações de Dynamic Positioning.
 
-> Estado atual: fundação técnica (TT-001), ambientes Development e Staging (TT-002), schema versionado com RLS e integridade cross-organization (TT-003 e TT-004), autenticação e sessão via Supabase (TT-005), casca do aplicativo com navegação lateral, cabeçalho, rota dinâmica de Ações e páginas base dos módulos (TT-006), estrutura operacional com Clientes, Embarcações e Ações — criação, edição e exclusão lógica (US-004).
+> O projeto é mantido diretamente por GitHub + Supabase e não depende da Lovable para instalar, desenvolver, testar, compilar ou publicar. A transição e os limites atuais estão documentados em [`docs/lovable-exit.md`](./docs/lovable-exit.md).
+
+> Estado atual: fundação técnica e Development operacionais; Staging ainda é um gate pendente. O schema tem RLS e integridade cross-organization, a autenticação usa Supabase e os módulos principais já possuem implementação funcional. A validação integral do MVP continua sendo acompanhada no PRD e no backlog.
+
+## Desenvolvimento local
+
+Requisitos: Node.js 22.13 ou superior e pnpm 11.19.
+
+```bash
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+O app abre em `http://127.0.0.1:8080`. Para validação completa com a stack local do Supabase, também é necessário um runtime compatível com Docker:
+
+```bash
+pnpm db:start
+pnpm db:reset
+pnpm db:status
+```
+
+O Supabase CLI está fixado em `2.116.0`. A configuração versionada fica em `supabase/config.toml`, e a cadeia executável de 26 migrations fica em `supabase/migrations`. Os arquivos em `db/migrations` permanecem apenas como espelhos históricos do desenvolvimento anterior. Consulte [`docs/database-migration-reconciliation.md`](./docs/database-migration-reconciliation.md) antes de promover qualquer DDL.
 
 ## Estrutura operacional (US-004)
 
@@ -56,7 +77,7 @@ Itens fora do escopo da US-004:
 
 ### Ciclo 2 — hardening + geração automática (estado real)
 
-- **Migration versionada** `db/migrations/20260824190000_us006_notifications_hardening_and_triggers.sql` espelha **exatamente** o DDL já aplicado no Supabase Development (nenhum DDL foi aplicado pelo Lovable).
+- **Migration versionada** `db/migrations/20260824190000_us006_notifications_hardening_and_triggers.sql` espelha **exatamente** o DDL já aplicado no Supabase Development.
 - **Sem INSERT pelo cliente**: a policy `notifications_insert_same_org` foi removida e `INSERT` revogado de `authenticated`; permanecem apenas `SELECT`/`UPDATE` (RLS own-recipient). O frontend não contém nenhum `insert` em `notifications` — a criação é exclusivamente server-side.
 - **Triggers/funções privadas** (`SECURITY DEFINER`, `search_path = pg_catalog, public, private`, `EXECUTE` revogado de public/anon/authenticated):
   - `private.notify_action_assignment()` → `trg_actions_notify_assignment`, tipo `action.assigned`, título `Ação atribuída a você`, `entity_type = action`.
@@ -179,7 +200,8 @@ TypeScript · React 19 · TanStack Start · Tailwind CSS v4 · shadcn/ui · Supa
 
 ## Requisitos
 
-- [Bun](https://bun.sh) ≥ 1.1 (ou Node 20+ com npm/pnpm equivalentes)
+- Node.js ≥ 22.13
+- pnpm 11.19 (fixado no campo `packageManager`)
 - Acesso ao projeto Supabase **dp-suite-dev** (Development)
 
 ## Variáveis de ambiente
@@ -199,9 +221,10 @@ versionados** — são fornecidos por configuração segura de ambiente.
 ## Execução local
 
 ```bash
-bun install
+corepack enable
+pnpm install --frozen-lockfile
 cp .env.example .env.local   # preencha com os valores do dp-suite-dev
-bun run dev                  # http://localhost:8080
+pnpm dev                     # http://localhost:8080
 ```
 
 ## Ambientes
@@ -237,9 +260,10 @@ Reservado. Mesma superfície de configuração dos ambientes anteriores.
 ## Scripts
 
 ```bash
-bun run dev        # servidor de desenvolvimento
-bun run build      # build de produção
-bun run lint       # ESLint
-bun run typecheck  # TypeScript (tsgo --noEmit)
-bun run format     # Prettier
+pnpm dev        # servidor de desenvolvimento
+pnpm build      # build de produção para Cloudflare Workers
+pnpm lint       # ESLint
+pnpm typecheck  # TypeScript (tsc --noEmit)
+pnpm test       # Vitest
+pnpm format     # Prettier
 ```
