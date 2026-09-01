@@ -25,7 +25,7 @@ O workflow `.github/workflows/ci.yml` repete os quatro checks em todo pull reque
 ## Pendências antes de produção
 
 - Provisionar um projeto Supabase separado para Staging.
-- Capturar uma baseline canônica do banco com Supabase CLI; os arquivos atuais em `db/migrations` são espelhos históricos e seus timestamps não coincidem integralmente com o histórico remoto. Consulte `docs/database-migration-reconciliation.md`.
+- Validar por replay a cadeia canônica em `supabase/migrations`; os arquivos em `db/migrations` permanecem como espelhos históricos. Consulte `docs/database-migration-reconciliation.md`.
 - Executar E2E autenticado com perfis `system_admin`, `organization_admin` e `member`.
 - Definir o domínio e o pipeline de deploy do Cloudflare; o build já gera `dist/server/wrangler.json`, mas nenhum deploy é automático.
 - Ativar proteção contra senhas vazadas no Supabase Auth antes da abertura pública.

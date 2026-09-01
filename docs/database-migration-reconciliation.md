@@ -2,9 +2,9 @@
 
 ## Resultado da auditoria
 
-Em 2026-08-30, o projeto remoto `dp-suite-dev` tinha 26 migrations aplicadas e schema operacional saudável. O repositório tinha 24 arquivos em `db/migrations`. A maior parte representa o mesmo DDL com timestamps ou nomes diferentes; alguns passos remotos foram consolidados em um único arquivo local.
+Em 2026-08-30, o projeto remoto `dp-suite-dev` tinha 26 migrations aplicadas e schema operacional saudável. A auditoria inicial encontrou 24 arquivos em `db/migrations`; o espelho ausente de Deliverables foi recuperado depois, totalizando 25 arquivos históricos. A maior parte representa o mesmo DDL com timestamps ou nomes diferentes; alguns passos remotos foram consolidados em um único arquivo local.
 
-Por isso, `db/migrations` deve ser tratado como um conjunto de espelhos históricos, não como uma cadeia ainda segura para `supabase db push` em um projeto vazio.
+Por isso, `db/migrations` continua sendo um conjunto de espelhos históricos. A cadeia executável fica em `supabase/migrations`, com os 26 timestamps e nomes do histórico remoto.
 
 ## Divergências relevantes
 
@@ -14,15 +14,23 @@ Por isso, `db/migrations` deve ser tratado como um conjunto de espelhos históri
 - A migration local de Evidências e Attachments combina hardening e auditoria que aparecem separadamente no histórico remoto.
 - O cabeçalho da migration do bucket `attachments-private` estava desatualizado; o bucket já está aplicado no Development.
 
-## Procedimento de normalização
+## Estado da normalização
+
+- Supabase CLI `2.116.0` está fixada nas dependências de desenvolvimento.
+- `supabase/config.toml` define Postgres 17, Data API sem exposição automática e Auth local na porta do app (`8080`).
+- `supabase/migrations` contém as 26 versões remotas em ordem.
+- A etapa remota separada `20260721064853_harden_create_organization_rpc_grants.sql` foi recuperada do histórico aplicado.
+- Ainda falta o gate decisivo: replay completo em banco vazio seguido dos testes SQL.
+
+## Procedimento de validação
 
 Antes da primeira migration nova de schema:
 
-1. Instalar e autenticar a Supabase CLI.
-2. Fazer `supabase link --project-ref lyxonmqsldtsixdhcaww` em um ambiente seguro.
-3. Executar `supabase db pull` para capturar uma baseline gerada pela CLI a partir do estado remoto.
-4. Preservar `db/migrations` como histórico e colocar a cadeia executável no diretório padrão `supabase/migrations`.
-5. Validar a baseline em um projeto/branch Supabase vazio e executar os testes SQL de `db/tests`.
+1. Autenticar a Supabase CLI em um ambiente seguro.
+2. Fazer `supabase link --project-ref lyxonmqsldtsixdhcaww` somente para comparação.
+3. Confirmar com `supabase migration list` que as 26 versões locais correspondem ao histórico remoto.
+4. Validar `supabase/migrations` em um projeto/branch Supabase vazio e executar os testes SQL de `db/tests`.
+5. Comparar o schema reconstruído com Development e registrar qualquer diferença antes de promover DDL novo.
 6. Só então criar migrations novas com `supabase migration new <nome>` e promover Development → Staging → Production.
 
 Não use `migration repair`, reset de banco ou alteração manual da tabela de histórico sem revisão explícita: essas operações podem mascarar drift ou perder dados.

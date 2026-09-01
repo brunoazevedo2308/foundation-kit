@@ -4,7 +4,26 @@ Plataforma SaaS de governança e conformidade para operações de Dynamic Positi
 
 > O projeto é mantido diretamente por GitHub + Supabase e não depende da Lovable para instalar, desenvolver, testar, compilar ou publicar. A transição e os limites atuais estão documentados em [`docs/lovable-exit.md`](./docs/lovable-exit.md).
 
-> Estado atual: fundação técnica (TT-001), ambientes Development e Staging (TT-002), schema versionado com RLS e integridade cross-organization (TT-003 e TT-004), autenticação e sessão via Supabase (TT-005), casca do aplicativo com navegação lateral, cabeçalho, rota dinâmica de Ações e páginas base dos módulos (TT-006), estrutura operacional com Clientes, Embarcações e Ações — criação, edição e exclusão lógica (US-004).
+> Estado atual: fundação técnica e Development operacionais; Staging ainda é um gate pendente. O schema tem RLS e integridade cross-organization, a autenticação usa Supabase e os módulos principais já possuem implementação funcional. A validação integral do MVP continua sendo acompanhada no PRD e no backlog.
+
+## Desenvolvimento local
+
+Requisitos: Node.js 22.13 ou superior e pnpm 11.19.
+
+```bash
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+O app abre em `http://127.0.0.1:8080`. Para validação completa com a stack local do Supabase, também é necessário um runtime compatível com Docker:
+
+```bash
+pnpm db:start
+pnpm db:reset
+pnpm db:status
+```
+
+O Supabase CLI está fixado em `2.116.0`. A configuração versionada fica em `supabase/config.toml`, e a cadeia executável de 26 migrations fica em `supabase/migrations`. Os arquivos em `db/migrations` permanecem apenas como espelhos históricos do desenvolvimento anterior. Consulte [`docs/database-migration-reconciliation.md`](./docs/database-migration-reconciliation.md) antes de promover qualquer DDL.
 
 ## Estrutura operacional (US-004)
 
