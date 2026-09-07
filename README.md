@@ -4,7 +4,7 @@ Plataforma SaaS de governança e conformidade para operações de Dynamic Positi
 
 > O projeto é mantido diretamente por GitHub + Supabase e não depende da Lovable para instalar, desenvolver, testar, compilar ou publicar. A transição e os limites atuais estão documentados em [`docs/lovable-exit.md`](./docs/lovable-exit.md).
 
-> Estado atual: fundação técnica e Development operacionais; Staging ainda é um gate pendente. O schema tem RLS e integridade cross-organization, a autenticação usa Supabase e os módulos principais já possuem implementação funcional. A validação integral do MVP continua sendo acompanhada no PRD e no backlog.
+> Estado atual: fundação técnica, Development e a branch de Staging operacionais. O schema tem RLS e integridade cross-organization, a autenticação usa Supabase e os módulos principais já possuem implementação funcional. A validação integral do MVP continua sendo acompanhada no PRD e no backlog.
 
 ## Desenvolvimento local
 
@@ -23,7 +23,7 @@ pnpm db:reset
 pnpm db:status
 ```
 
-O Supabase CLI está fixado em `2.116.0`. A configuração versionada fica em `supabase/config.toml`, e a cadeia executável de 26 migrations fica em `supabase/migrations`. Os arquivos em `db/migrations` permanecem apenas como espelhos históricos do desenvolvimento anterior. Consulte [`docs/database-migration-reconciliation.md`](./docs/database-migration-reconciliation.md) antes de promover qualquer DDL.
+O Supabase CLI está fixado em `2.116.0`. A configuração versionada fica em `supabase/config.toml`, e a cadeia executável de 28 migrations fica em `supabase/migrations`. Os arquivos em `db/migrations` permanecem apenas como espelhos históricos do desenvolvimento anterior. Consulte [`docs/database-migration-reconciliation.md`](./docs/database-migration-reconciliation.md) antes de promover qualquer DDL.
 
 ## Estrutura operacional (US-004)
 
@@ -160,6 +160,20 @@ Teste transacional reproduzível: `db/tests/tt005_auto_profile_on_signup.sql` (c
 - **Testes**: `src/lib/attachment-storage.test.ts` e `src/lib/attachments.test.ts` cobrem sanitização de nome, caminho canônico, MIME/tamanho, mapeamento de contexto, ordem metadata-first, soft-delete compensatório, TTL do signed URL e mapping de linhas — determinísticos, sem rede.
 - **Evolução futura (fora do MVP)**: anexos em comentários na UI, versionamento de anexo, limpeza de objetos órfãos e antivírus/scan de conteúdo.
 
+## Relatórios e Exportação (US-009 — MVP concluído)
+
+- **Rota**: `/reports` (autenticada, sob `_authenticated`), com entrada "Relatórios" na navegação lateral.
+- **Arquitetura**: sem DDL, sem views e sem RPCs novos. A rota reaproveita exatamente o carregamento tenant-scoped do dashboard (`fetchDashboardData`), os filtros (`DashboardFiltersCard`, `applyFilters`, `buildFilterOptions`) e os helpers de vencimento/abertura. A camada pura de agregação e serialização vive em `src/lib/reports.ts`.
+- **RLS como fonte da verdade**: leitura feita com a sessão do usuário; `deleted_at IS NULL` já é aplicado na origem. Nenhum uso de `service_role` no frontend. `member` visualiza e exporta exatamente o que a RLS já permite, sem nenhuma nova permissão de escrita.
+- **Filtros**: cliente, embarcação, responsável, status, prioridade e janela de prazo. O mesmo recorte alimenta, de forma idêntica, os indicadores, a tabela e a exportação CSV.
+- **Indicadores do recorte**: total, abertas, vencidas (data local, apenas ações em aberto), concluídas/canceladas e críticas (criticidade alta/crítica em aberto), além do total de entregáveis pendentes vinculados.
+- **Progresso de entregáveis**: por ação, `concluídos/total (%)`, derivado dos entregáveis já carregados.
+- **Exportação**: CSV gerado 100% no navegador (`Blob` + `URL.createObjectURL`), somente sobre o recorte filtrado. Cabeçalhos PT-BR, UTF-8 com BOM e quebras CRLF para o Excel, escaping robusto de vírgula/aspas/quebra de linha, datas em `DD/MM/AAAA` (e `DD/MM/AAAA HH:mm` para timestamps) e nome de arquivo previsível `dp-suite-relatorio-acoes-AAAA-MM-DD.csv`. Nenhum dado é enviado a serviço externo.
+- **Estados**: carregando, organização sem ações, filtros sem resultado, erro com "Tentar novamente"; sucesso/falha da exportação registrados como `report.export.success` / `report.export.failure` na observabilidade sanitizada.
+- **Drill-down / acessibilidade / responsividade**: cada linha liga para `/actions/$actionId` via `Link` tipado; tabela com `thead`/`scope="col"` e rolagem horizontal em telas estreitas; regiões com `aria-label`/`aria-live`/`role="status"`.
+- **Testes**: `src/lib/reports.test.ts` cobre progresso, métricas, vencimento local, filtros combinados e serialização CSV (BOM, cabeçalhos, aspas/vírgula/newline, recorte filtrado, filename seguro) — determinísticos, sem rede.
+- **Limites do MVP (fora de escopo)**: exportação em PDF/XLSX, relatórios agendados ou enviados por e-mail, relatórios de entregáveis/evidências/anexos como entidade própria, gráficos históricos e paginação/streaming server-side para volumes muito grandes.
+
 ## Autenticação e sessão (TT-005)
 
 - **Provedor**: Supabase Auth com e-mail + senha (chave publishable no cliente).
@@ -202,7 +216,8 @@ TypeScript · React 19 · TanStack Start · Tailwind CSS v4 · shadcn/ui · Supa
 
 - Node.js ≥ 22.13
 - pnpm 11.19 (fixado no campo `packageManager`)
-- Acesso ao projeto Supabase **dp-suite-dev** (Development)
+- Acesso ao projeto Supabase **dp-suite-dev** (Development) e à branch
+  **dp-suite-staging** (Staging)
 
 ## Variáveis de ambiente
 
@@ -235,14 +250,17 @@ pnpm dev                     # http://localhost:8080
 `dp-suite-dev` são injetadas via variáveis de ambiente seguras (arquivo local
 `.env.local` fora do Git, ou o cofre de segredos da plataforma de hosting).
 
-### Staging
+### Staging (`dp-suite-staging`)
 
-`VITE_APP_ENV=staging`. O projeto Supabase de Staging **ainda não existe**.
-A aplicação está preparada por **contrato de configuração**: quando o
-ambiente for provisionado, basta injetar `VITE_SUPABASE_URL` e
-`VITE_SUPABASE_PUBLISHABLE_KEY` do novo projeto — nenhum código precisa mudar.
-Enquanto os valores não são fornecidos, a página inicial indica que o backend
-não está configurado.
+`VITE_APP_ENV=staging`. A branch Supabase foi provisionada a partir de
+`dp-suite-dev`, sem copiar dados de usuários ou dados operacionais. Seu project
+ref é `ggehwncqjetinynwlqhj` e a URL pública é
+`https://ggehwncqjetinynwlqhj.supabase.co`.
+
+A publishable key deve ser injetada por configuração segura em
+`VITE_SUPABASE_PUBLISHABLE_KEY`; nenhum segredo é versionado. A branch é
+temporária (`persistent: false`) e gera cobrança enquanto estiver ativa. O
+merge ou a exclusão deve ser uma decisão explícita depois da homologação.
 
 ### Production
 
