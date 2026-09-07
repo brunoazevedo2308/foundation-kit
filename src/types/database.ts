@@ -781,6 +781,62 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      admin_update_organization_settings: {
+        Args: {
+          _date_format: string;
+          _default_language: string;
+          _legal_name: string;
+          _name: string;
+          _primary_email: string;
+          _timezone: string;
+        };
+        Returns: {
+          country_code: string;
+          created_at: string;
+          date_format: string;
+          default_language: string;
+          deleted_at: string | null;
+          id: string;
+          legal_name: string;
+          name: string;
+          primary_email: string;
+          slug: string;
+          status: Database["public"]["Enums"]["organization_status"];
+          timezone: string;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "organizations";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      admin_update_profile_access: {
+        Args: {
+          _profile_id: string;
+          _role: Database["public"]["Enums"]["app_role"];
+          _status: Database["public"]["Enums"]["profile_status"];
+        };
+        Returns: {
+          avatar_url: string | null;
+          created_at: string;
+          deleted_at: string | null;
+          full_name: string | null;
+          id: string;
+          last_login_at: string | null;
+          organization_id: string | null;
+          role: Database["public"]["Enums"]["app_role"];
+          status: Database["public"]["Enums"]["profile_status"];
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "profiles";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       assert_same_org: {
         Args: { _actual: string; _expected: string; _label: string };
         Returns: undefined;
