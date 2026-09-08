@@ -23,7 +23,7 @@ pnpm db:reset
 pnpm db:status
 ```
 
-O Supabase CLI está fixado em `2.116.0`. A configuração versionada fica em `supabase/config.toml`, e a cadeia executável de 28 migrations fica em `supabase/migrations`. Os arquivos em `db/migrations` permanecem apenas como espelhos históricos do desenvolvimento anterior. Consulte [`docs/database-migration-reconciliation.md`](./docs/database-migration-reconciliation.md) antes de promover qualquer DDL.
+O Supabase CLI está fixado em `2.116.0`. A configuração versionada fica em `supabase/config.toml`, e a cadeia executável de 29 migrations fica em `supabase/migrations`. Os arquivos em `db/migrations` permanecem apenas como espelhos históricos do desenvolvimento anterior. Consulte [`docs/database-migration-reconciliation.md`](./docs/database-migration-reconciliation.md) antes de promover qualquer DDL.
 
 ## Estrutura operacional (US-004)
 
@@ -262,6 +262,13 @@ A publishable key deve ser injetada por configuração segura em
 temporária (`persistent: false`) e gera cobrança enquanto estiver ativa. O
 merge ou a exclusão deve ser uma decisão explícita depois da homologação.
 
+O bundle de homologação é gerado manualmente pelo workflow
+`.github/workflows/build-staging.yml`, após configurar o GitHub Environment
+`staging`. Ele usa o preset portátil `node-server` e não depende de Cloudflare
+ou de outro provedor específico. O procedimento completo e o checklist E2E
+estão em
+[`docs/staging-runbook.md`](./docs/staging-runbook.md).
+
 ### Production
 
 Reservado. Mesma superfície de configuração dos ambientes anteriores.
@@ -279,7 +286,7 @@ Reservado. Mesma superfície de configuração dos ambientes anteriores.
 
 ```bash
 pnpm dev        # servidor de desenvolvimento
-pnpm build      # build de produção para Cloudflare Workers
+pnpm build      # build de produção para servidor Node (preset configurável)
 pnpm lint       # ESLint
 pnpm typecheck  # TypeScript (tsc --noEmit)
 pnpm test       # Vitest

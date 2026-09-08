@@ -25,15 +25,13 @@ export default defineConfig(({ command }) => ({
     }),
     ...(command === "build"
       ? nitro({
-          preset: "cloudflare-module",
+          // A Node server is the portable default. A hosting provider can
+          // override it with NITRO_PRESET without changing application code.
+          preset: process.env.NITRO_PRESET || "node-server",
           output: {
             dir: "dist",
             serverDir: "dist/server",
             publicDir: "dist/client",
-          },
-          cloudflare: {
-            nodeCompat: true,
-            deployConfig: true,
           },
         })
       : []),

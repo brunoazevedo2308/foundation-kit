@@ -17,17 +17,23 @@ Desde 2026-08-30, o DP Suite pode ser instalado, desenvolvido, testado e compila
 1. Criar uma branch `codex/*` ou outra branch de feature a partir da branch principal.
 2. Executar `pnpm install --frozen-lockfile` com Node.js 22.13 ou superior.
 3. Antes de abrir PR, executar `pnpm lint`, `pnpm typecheck`, `pnpm test` e `pnpm build`.
-4. Publicar o bundle Nitro `cloudflare-module` somente a partir de uma branch revisada e com variáveis do ambiente de destino configuradas.
+4. Gerar o bundle Nitro `node-server` somente a partir de uma branch revisada e com variáveis do ambiente de destino configuradas. O preset pode ser substituído por `NITRO_PRESET` quando um provedor for escolhido.
 5. Alterações de banco devem ser aditivas, versionadas e validadas primeiro fora de produção. O histórico remoto nunca deve ser reescrito.
 
 O workflow `.github/workflows/ci.yml` repete os quatro checks em todo pull request e em pushes para `main`.
 
 ## Pendências antes de produção
 
-- Provisionar um projeto Supabase separado para Staging.
-- Validar por replay a cadeia canônica em `supabase/migrations`; os arquivos em `db/migrations` permanecem como espelhos históricos. Consulte `docs/database-migration-reconciliation.md`.
+- ~~Provisionar um projeto Supabase separado para Staging.~~ Concluído com a
+  branch `dp-suite-staging` (`ggehwncqjetinynwlqhj`).
+- ~~Validar por replay a cadeia canônica em `supabase/migrations`.~~
+  Concluído com 29 migrations aplicadas e Security Advisor sem alertas; os
+  arquivos em `db/migrations` permanecem como espelhos históricos.
 - Executar E2E autenticado com perfis `system_admin`, `organization_admin` e `member`.
-- Definir o domínio e o pipeline de deploy do Cloudflare; o build já gera `dist/server/wrangler.json`, mas nenhum deploy é automático.
+- Configurar a variable e o secret do GitHub Environment `staging` e executar
+  `.github/workflows/build-staging.yml`. O workflow valida e preserva o bundle;
+  a publicação e o domínio serão definidos quando o provedor de hospedagem for
+  escolhido.
 - Ativar proteção contra senhas vazadas no Supabase Auth antes da abertura pública.
 
 ## Compatibilidade temporária
