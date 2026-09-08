@@ -10,7 +10,7 @@ passo depende da Lovable, Cloudflare ou de outro provedor de hospedagem.
 - URL: `https://ggehwncqjetinynwlqhj.supabase.co`
 - Dados de Production/Development: não copiados
 - Persistência da branch: temporária
-- Schema: 29 migrations, 12 tabelas públicas com RLS
+- Schema: 30 migrations, 12 tabelas públicas com RLS
 - Storage: buckets privados `evidences-private` e `attachments-private`
 
 ## 1. Configurar o GitHub Environment

@@ -27,7 +27,7 @@ O workflow `.github/workflows/ci.yml` repete os quatro checks em todo pull reque
 - ~~Provisionar um projeto Supabase separado para Staging.~~ Concluído com a
   branch `dp-suite-staging` (`ggehwncqjetinynwlqhj`).
 - ~~Validar por replay a cadeia canônica em `supabase/migrations`.~~
-  Concluído com 29 migrations aplicadas e Security Advisor sem alertas; os
+  Concluído com 30 migrations aplicadas e Security Advisor sem alertas; os
   arquivos em `db/migrations` permanecem como espelhos históricos.
 - Executar E2E autenticado com perfis `system_admin`, `organization_admin` e `member`.
 - Configurar a variable e o secret do GitHub Environment `staging` e executar

@@ -1,6 +1,6 @@
--- The MVP uses soft deletion (`deleted_at`) exclusively. Physical DELETE is
--- not part of the authenticated client contract, so remove the inherited
--- table privilege as an additional boundary beyond RLS.
+-- MVP domain entities use soft deletion (`deleted_at`). Remove inherited
+-- physical DELETE privileges as an additional boundary beyond RLS. The
+-- user_vessels association exception is restored by the following migration.
 revoke delete on table
   public.organizations,
   public.profiles,
