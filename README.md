@@ -269,6 +269,11 @@ ou de outro provedor específico. O procedimento completo e o checklist E2E
 estão em
 [`docs/staging-runbook.md`](./docs/staging-runbook.md).
 
+A hospedagem escolhida para a Preview é a Vercel. O arquivo `vercel.json`
+declara oficialmente o framework `tanstack-start`; durante um build na Vercel,
+o Nitro detecta a plataforma e gera Vercel Functions. Fora dela, o target pode
+continuar sendo definido por `NITRO_PRESET`, sem acoplar a aplicação.
+
 ### Production
 
 Reservado. Mesma superfície de configuração dos ambientes anteriores.

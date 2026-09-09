@@ -25,9 +25,9 @@ export default defineConfig(({ command }) => ({
     }),
     ...(command === "build"
       ? nitro({
-          // A Node server is the portable default. A hosting provider can
-          // override it with NITRO_PRESET without changing application code.
-          preset: process.env.NITRO_PRESET || "node-server",
+          // CI requests node-server explicitly. When unset, Nitro detects the
+          // hosting platform (including Vercel) and selects its native preset.
+          preset: process.env.NITRO_PRESET || undefined,
           output: {
             dir: "dist",
             serverDir: "dist/server",

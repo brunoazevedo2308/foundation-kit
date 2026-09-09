@@ -30,10 +30,11 @@ O workflow `.github/workflows/ci.yml` repete os quatro checks em todo pull reque
   Concluído com 30 migrations aplicadas e Security Advisor sem alertas; os
   arquivos em `db/migrations` permanecem como espelhos históricos.
 - Executar E2E autenticado com perfis `system_admin`, `organization_admin` e `member`.
-- Configurar a variable e o secret do GitHub Environment `staging` e executar
-  `.github/workflows/build-staging.yml`. O workflow valida e preserva o bundle;
-  a publicação e o domínio serão definidos quando o provedor de hospedagem for
-  escolhido.
+- ~~Configurar a variable e o secret do GitHub Environment `staging` e executar
+  `.github/workflows/build-staging.yml`.~~ Concluído no run #1, com artifact
+  validado e preservado por 14 dias.
+- Importar o repositório na Vercel, configurar as variáveis de Preview e
+  publicar a URL de homologação.
 - Ativar proteção contra senhas vazadas no Supabase Auth antes da abertura pública.
 
 ## Compatibilidade temporária

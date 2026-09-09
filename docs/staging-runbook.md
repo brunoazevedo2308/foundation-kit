@@ -41,10 +41,27 @@ O workflow:
 5. armazena o diretório `dist/` como artifact por 14 dias.
 
 O artifact não é uma URL pública. Ele é um pacote validado e independente de
-provedor, pronto para uma plataforma que execute Node.js 22. A publicação só
-será adicionada depois que uma hospedagem for escolhida.
+provedor, pronto para uma plataforma que execute Node.js 22.
 
-## 3. Configurar URLs do Supabase Auth
+## 3. Publicar a Preview na Vercel
+
+Importe o repositório `brunoazevedo2308/foundation-kit` na Vercel e confirme o
+Framework Preset **TanStack Start**. O arquivo `vercel.json` torna essa detecção
+explícita; não configure Output Directory manualmente.
+
+No ambiente **Preview** da Vercel, configure:
+
+- `VITE_APP_ENV=staging`;
+- `VITE_SUPABASE_URL=https://ggehwncqjetinynwlqhj.supabase.co`;
+- `VITE_SUPABASE_PUBLISHABLE_KEY` com a publishable key da branch.
+
+Esses valores são públicos por contrato do Vite. Nunca adicione uma
+`service_role`, secret key ou credencial do banco com prefixo `VITE_`.
+
+Cada atualização da branch do PR cria uma Preview imutável. O merge em `main`
+continua separado da homologação e não deve ocorrer antes do E2E.
+
+## 4. Configurar URLs do Supabase Auth
 
 Depois que existir uma URL HTTPS pública, configure no painel da branch:
 
@@ -54,7 +71,7 @@ Depois que existir uma URL HTTPS pública, configure no painel da branch:
 Não use URLs de Development em Staging. Valide recuperação de senha somente
 depois dessas URLs estarem salvas.
 
-## 4. Bootstrap dos usuários de homologação
+## 5. Bootstrap dos usuários de homologação
 
 Siga `db/bootstrap/first_admin.sql.template` para criar a organização inicial
 e o primeiro `system_admin`. Crie os usuários pela Auth Admin API ou pelo
@@ -69,7 +86,7 @@ Use contas dedicadas e identificáveis:
 
 Senhas, e-mails reais e chaves não devem ser registrados neste repositório.
 
-## 5. Checklist E2E do MVP
+## 6. Checklist E2E do MVP
 
 ### Sessão e acesso
 
@@ -106,7 +123,7 @@ Senhas, e-mails reais e chaves não devem ser registrados neste repositório.
 - uploads respeitam MIME/tamanho e downloads usam signed URLs;
 - relatórios exibem o mesmo escopo permitido pela RLS.
 
-## 6. Encerramento
+## 7. Encerramento
 
 Registre evidências da homologação no PR. Enquanto a branch Supabase estiver
 ativa, ela continua gerando cobrança. Não faça merge no banco nem exclua a
