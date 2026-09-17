@@ -28,11 +28,15 @@ export default defineConfig(({ command }) => ({
           // CI requests node-server explicitly. When unset, Nitro detects the
           // hosting platform (including Vercel) and selects its native preset.
           preset: process.env.NITRO_PRESET || undefined,
-          output: {
-            dir: "dist",
-            serverDir: "dist/server",
-            publicDir: "dist/client",
-          },
+          ...(process.env.NITRO_PRESET === "node-server"
+            ? {
+                output: {
+                  dir: "dist",
+                  serverDir: "dist/server",
+                  publicDir: "dist/client",
+                },
+              }
+            : {}),
         })
       : []),
     react(),
