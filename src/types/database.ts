@@ -874,6 +874,24 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      list_organizations: {
+        Args: never;
+        Returns: {
+          country_code: string;
+          created_at: string;
+          date_format: string;
+          default_language: string;
+          deleted_at: string | null;
+          id: string;
+          legal_name: string;
+          name: string;
+          primary_email: string;
+          slug: string;
+          status: Database["public"]["Enums"]["organization_status"];
+          timezone: string;
+          updated_at: string;
+        }[];
+      };
       record_profile_login: {
         Args: never;
         Returns: Database["public"]["Enums"]["profile_status"];
