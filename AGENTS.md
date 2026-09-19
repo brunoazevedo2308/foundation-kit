@@ -1,12 +1,7 @@
-<!-- LOVABLE:BEGIN -->
+# DP Suite repository guidance
 
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-
-<!-- LOVABLE:END -->
+- GitHub is the source of truth for application code and versioned database migrations.
+- Supabase is the source of truth for runtime data, authentication, storage, and the applied migration state.
+- Do not rewrite shared Git history. Use feature branches and reviewed pull requests.
+- Never commit secrets or a Supabase `service_role` key. Browser code may use only the publishable key.
+- Preserve tenant isolation: database changes must include explicit RLS and cross-organization tests.

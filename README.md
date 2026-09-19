@@ -2,7 +2,28 @@
 
 Plataforma SaaS de governança e conformidade para operações de Dynamic Positioning.
 
-> Estado atual: fundação técnica (TT-001), ambientes Development e Staging (TT-002), schema versionado com RLS e integridade cross-organization (TT-003 e TT-004), autenticação e sessão via Supabase (TT-005), casca do aplicativo com navegação lateral, cabeçalho, rota dinâmica de Ações e páginas base dos módulos (TT-006), estrutura operacional com Clientes, Embarcações e Ações — criação, edição e exclusão lógica (US-004).
+> O projeto é mantido diretamente por GitHub + Supabase e não depende da Lovable para instalar, desenvolver, testar, compilar ou publicar. A transição e os limites atuais estão documentados em [`docs/lovable-exit.md`](./docs/lovable-exit.md).
+
+> Estado atual: fundação técnica, Development e a branch de Staging operacionais. O schema tem RLS e integridade cross-organization, a autenticação usa Supabase e os módulos principais já possuem implementação funcional. A validação integral do MVP continua sendo acompanhada no PRD e no backlog.
+
+## Desenvolvimento local
+
+Requisitos: Node.js 22.13 ou superior e pnpm 11.19.
+
+```bash
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+O app abre em `http://127.0.0.1:8080`. Para validação completa com a stack local do Supabase, também é necessário um runtime compatível com Docker:
+
+```bash
+pnpm db:start
+pnpm db:reset
+pnpm db:status
+```
+
+O Supabase CLI está fixado em `2.116.0`. A configuração versionada fica em `supabase/config.toml`, e a cadeia executável de 30 migrations fica em `supabase/migrations`. Os arquivos em `db/migrations` permanecem apenas como espelhos históricos do desenvolvimento anterior. Consulte [`docs/database-migration-reconciliation.md`](./docs/database-migration-reconciliation.md) antes de promover qualquer DDL.
 
 ## Estrutura operacional (US-004)
 
@@ -56,7 +77,7 @@ Itens fora do escopo da US-004:
 
 ### Ciclo 2 — hardening + geração automática (estado real)
 
-- **Migration versionada** `db/migrations/20260824190000_us006_notifications_hardening_and_triggers.sql` espelha **exatamente** o DDL já aplicado no Supabase Development (nenhum DDL foi aplicado pelo Lovable).
+- **Migration versionada** `db/migrations/20260824190000_us006_notifications_hardening_and_triggers.sql` espelha **exatamente** o DDL já aplicado no Supabase Development.
 - **Sem INSERT pelo cliente**: a policy `notifications_insert_same_org` foi removida e `INSERT` revogado de `authenticated`; permanecem apenas `SELECT`/`UPDATE` (RLS own-recipient). O frontend não contém nenhum `insert` em `notifications` — a criação é exclusivamente server-side.
 - **Triggers/funções privadas** (`SECURITY DEFINER`, `search_path = pg_catalog, public, private`, `EXECUTE` revogado de public/anon/authenticated):
   - `private.notify_action_assignment()` → `trg_actions_notify_assignment`, tipo `action.assigned`, título `Ação atribuída a você`, `entity_type = action`.
@@ -193,8 +214,10 @@ TypeScript · React 19 · TanStack Start · Tailwind CSS v4 · shadcn/ui · Supa
 
 ## Requisitos
 
-- [Bun](https://bun.sh) ≥ 1.1 (ou Node 20+ com npm/pnpm equivalentes)
-- Acesso ao projeto Supabase **dp-suite-dev** (Development)
+- Node.js ≥ 22.13
+- pnpm 11.19 (fixado no campo `packageManager`)
+- Acesso ao projeto Supabase **dp-suite-dev** (Development) e à branch
+  **dp-suite-staging** (Staging)
 
 ## Variáveis de ambiente
 
@@ -213,9 +236,10 @@ versionados** — são fornecidos por configuração segura de ambiente.
 ## Execução local
 
 ```bash
-bun install
+corepack enable
+pnpm install --frozen-lockfile
 cp .env.example .env.local   # preencha com os valores do dp-suite-dev
-bun run dev                  # http://localhost:8080
+pnpm dev                     # http://localhost:8080
 ```
 
 ## Ambientes
@@ -226,14 +250,29 @@ bun run dev                  # http://localhost:8080
 `dp-suite-dev` são injetadas via variáveis de ambiente seguras (arquivo local
 `.env.local` fora do Git, ou o cofre de segredos da plataforma de hosting).
 
-### Staging
+### Staging (`dp-suite-staging`)
 
-`VITE_APP_ENV=staging`. O projeto Supabase de Staging **ainda não existe**.
-A aplicação está preparada por **contrato de configuração**: quando o
-ambiente for provisionado, basta injetar `VITE_SUPABASE_URL` e
-`VITE_SUPABASE_PUBLISHABLE_KEY` do novo projeto — nenhum código precisa mudar.
-Enquanto os valores não são fornecidos, a página inicial indica que o backend
-não está configurado.
+`VITE_APP_ENV=staging`. A branch Supabase foi provisionada a partir de
+`dp-suite-dev`, sem copiar dados de usuários ou dados operacionais. Seu project
+ref é `ggehwncqjetinynwlqhj` e a URL pública é
+`https://ggehwncqjetinynwlqhj.supabase.co`.
+
+A publishable key deve ser injetada por configuração segura em
+`VITE_SUPABASE_PUBLISHABLE_KEY`; nenhum segredo é versionado. A branch é
+temporária (`persistent: false`) e gera cobrança enquanto estiver ativa. O
+merge ou a exclusão deve ser uma decisão explícita depois da homologação.
+
+O bundle de homologação é gerado manualmente pelo workflow
+`.github/workflows/build-staging.yml`, após configurar o GitHub Environment
+`staging`. Ele usa o preset portátil `node-server` e não depende de Cloudflare
+ou de outro provedor específico. O procedimento completo e o checklist E2E
+estão em
+[`docs/staging-runbook.md`](./docs/staging-runbook.md).
+
+A hospedagem escolhida para a Preview é a Vercel. O arquivo `vercel.json`
+declara oficialmente o framework `tanstack-start`; durante um build na Vercel,
+o Nitro detecta a plataforma e gera Vercel Functions. Fora dela, o target pode
+continuar sendo definido por `NITRO_PRESET`, sem acoplar a aplicação.
 
 ### Production
 
@@ -251,9 +290,10 @@ Reservado. Mesma superfície de configuração dos ambientes anteriores.
 ## Scripts
 
 ```bash
-bun run dev        # servidor de desenvolvimento
-bun run build      # build de produção
-bun run lint       # ESLint
-bun run typecheck  # TypeScript (tsgo --noEmit)
-bun run format     # Prettier
+pnpm dev        # servidor de desenvolvimento
+pnpm build      # build de produção para servidor Node (preset configurável)
+pnpm lint       # ESLint
+pnpm typecheck  # TypeScript (tsc --noEmit)
+pnpm test       # Vitest
+pnpm format     # Prettier
 ```

@@ -1,0 +1,78 @@
+name: Build Staging
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - labeled
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dp-suite-staging-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-and-build:
+    name: Validate and build
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'build-staging'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: staging
+    env:
+      VITE_APP_ENV: staging
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      NITRO_PRESET: node-server
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.0
+          cache: pnpm
+
+      - name: Validate Staging configuration
+        shell: bash
+        run: |
+          test -n "$VITE_SUPABASE_URL"
+          test -n "$VITE_SUPABASE_PUBLISHABLE_KEY"
+          test "$VITE_SUPABASE_URL" = "https://ggehwncqjetinynwlqhj.supabase.co"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Validate Node server bundle
+        run: test -f dist/server/index.mjs
+
+      - name: Upload Staging bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: dp-suite-staging-${{ github.sha }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Record artifact
+        run: echo "Bundle dp-suite-staging-${GITHUB_SHA} validado e armazenado por 14 dias." >> "$GITHUB_STEP_SUMMARY"

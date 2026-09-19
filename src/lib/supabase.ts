@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { env, isSupabaseConfigured } from "./env";
+import type { Database } from "../types/database";
 
 /**
  * Centralized Supabase client for DP Suite.
@@ -9,6 +10,6 @@ import { env, isSupabaseConfigured } from "./env";
  * provisioned), `supabase` is `null` and features must degrade gracefully.
  */
 
-export const supabase: SupabaseClient | null = isSupabaseConfigured
-  ? createClient(env.supabaseUrl!, env.supabasePublishableKey!)
+export const supabase: SupabaseClient<Database> | null = isSupabaseConfigured
+  ? createClient<Database>(env.supabaseUrl!, env.supabasePublishableKey!)
   : null;
