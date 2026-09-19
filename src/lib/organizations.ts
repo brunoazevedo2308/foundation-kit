@@ -124,6 +124,30 @@ export type CreatedOrganization = {
   date_format: string;
 };
 
+export type OrganizationListItem = CreatedOrganization & {
+  created_at: string;
+};
+
+/**
+ * Lista todas as organizações visíveis ao System Admin pela RPC protegida.
+ * A função no banco usa SECURITY DEFINER e valida `private.is_system_admin()`
+ * antes de ultrapassar o recorte normal de tenant imposto pela RLS.
+ */
+export async function listOrganizations(): Promise<OrganizationListItem[]> {
+  if (!supabase) {
+    throw new Error("Backend indisponível. Contate o administrador do sistema.");
+  }
+
+  const { data, error } = await supabase.rpc("list_organizations");
+  if (error) {
+    const mapped = mapCreateOrganizationError(error as PostgrestLikeError);
+    if (mapped.kind === "denied") throw mapped;
+    throw new Error("Não foi possível carregar as organizações.");
+  }
+
+  return (data ?? []) as OrganizationListItem[];
+}
+
 /**
  * Executa a RPC oficial. Nunca insere diretamente em `organizations`.
  * A RPC remota retorna uma única linha composta de `public.organizations`
