@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus, Users } from "lucide-react";
+import { Pencil, Plus, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { PageHeader } from "@/components/page-header";
@@ -38,6 +38,7 @@ const STATUS_LABELS = {
 } as const;
 
 function UsersPage() {
+  const { user: currentUser, profile } = Route.useRouteContext();
   const [users, setUsers] = useState<UserListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -107,6 +108,7 @@ function UsersPage() {
                 <TableHead>Papel</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Último acesso</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -129,6 +131,24 @@ function UsersPage() {
                           timeStyle: "short",
                         }).format(new Date(user.lastLoginAt))
                       : "Nunca"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {user.id !== currentUser.id &&
+                    !(profile.role === "organization_admin" && user.role === "system_admin") ? (
+                      <Button
+                        asChild
+                        variant="ghost"
+                        size="sm"
+                        aria-label={`Editar acesso de ${user.fullName ?? "usuário"}`}
+                      >
+                        <Link to="/users/$userId/edit" params={{ userId: user.id }}>
+                          <Pencil className="h-4 w-4" />
+                          <span className="sr-only">Editar acesso</span>
+                        </Link>
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
