@@ -32,6 +32,7 @@ import { Route as AuthenticatedActionsNewRouteImport } from './routes/_authentic
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients.index'
 import { Route as AuthenticatedClientsNewRouteImport } from './routes/_authenticated/clients.new'
 import { Route as AuthenticatedDevObservabilityRouteImport } from './routes/_authenticated/dev.observability'
+import { Route as AuthenticatedOrganizationsIndexRouteImport } from './routes/_authenticated/organizations.index'
 import { Route as AuthenticatedOrganizationsNewRouteImport } from './routes/_authenticated/organizations.new'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users.index'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users.new'
@@ -161,6 +162,12 @@ const AuthenticatedDevObservabilityRoute =
     path: '/dev/observability',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedOrganizationsIndexRoute =
+  AuthenticatedOrganizationsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedOrganizationsRoute,
+  } as any)
 const AuthenticatedOrganizationsNewRoute =
   AuthenticatedOrganizationsNewRouteImport.update({
     id: '/new',
@@ -239,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/vessels/new': typeof AuthenticatedVesselsNewRoute
   '/actions/': typeof AuthenticatedActionsIndexRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
+  '/organizations/': typeof AuthenticatedOrganizationsIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/vessels/': typeof AuthenticatedVesselsIndexRoute
   '/actions/$actionId/edit': typeof AuthenticatedActionsActionIdEditRoute
@@ -256,7 +264,6 @@ export interface FileRoutesByTo {
   '/app': typeof AuthenticatedAppRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
-  '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/reports': typeof AuthenticatedReportsRoute
   '/search': typeof AuthenticatedSearchRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -268,6 +275,7 @@ export interface FileRoutesByTo {
   '/vessels/new': typeof AuthenticatedVesselsNewRoute
   '/actions': typeof AuthenticatedActionsIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
+  '/organizations': typeof AuthenticatedOrganizationsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/vessels': typeof AuthenticatedVesselsIndexRoute
   '/actions/$actionId/edit': typeof AuthenticatedActionsActionIdEditRoute
@@ -303,6 +311,7 @@ export interface FileRoutesById {
   '/_authenticated/vessels/new': typeof AuthenticatedVesselsNewRoute
   '/_authenticated/actions/': typeof AuthenticatedActionsIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
+  '/_authenticated/organizations/': typeof AuthenticatedOrganizationsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/vessels/': typeof AuthenticatedVesselsIndexRoute
   '/_authenticated/actions/$actionId/edit': typeof AuthenticatedActionsActionIdEditRoute
@@ -338,6 +347,7 @@ export interface FileRouteTypes {
     | '/vessels/new'
     | '/actions/'
     | '/clients/'
+    | '/organizations/'
     | '/users/'
     | '/vessels/'
     | '/actions/$actionId/edit'
@@ -355,7 +365,6 @@ export interface FileRouteTypes {
     | '/app'
     | '/dashboard'
     | '/notifications'
-    | '/organizations'
     | '/reports'
     | '/search'
     | '/settings'
@@ -367,6 +376,7 @@ export interface FileRouteTypes {
     | '/vessels/new'
     | '/actions'
     | '/clients'
+    | '/organizations'
     | '/users'
     | '/vessels'
     | '/actions/$actionId/edit'
@@ -401,6 +411,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vessels/new'
     | '/_authenticated/actions/'
     | '/_authenticated/clients/'
+    | '/_authenticated/organizations/'
     | '/_authenticated/users/'
     | '/_authenticated/vessels/'
     | '/_authenticated/actions/$actionId/edit'
@@ -582,6 +593,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDevObservabilityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/organizations/': {
+      id: '/_authenticated/organizations/'
+      path: '/'
+      fullPath: '/organizations/'
+      preLoaderRoute: typeof AuthenticatedOrganizationsIndexRouteImport
+      parentRoute: typeof AuthenticatedOrganizationsRoute
+    }
     '/_authenticated/organizations/new': {
       id: '/_authenticated/organizations/new'
       path: '/new'
@@ -683,11 +701,13 @@ const AuthenticatedClientsRouteWithChildren =
 
 interface AuthenticatedOrganizationsRouteChildren {
   AuthenticatedOrganizationsNewRoute: typeof AuthenticatedOrganizationsNewRoute
+  AuthenticatedOrganizationsIndexRoute: typeof AuthenticatedOrganizationsIndexRoute
 }
 
 const AuthenticatedOrganizationsRouteChildren: AuthenticatedOrganizationsRouteChildren =
   {
     AuthenticatedOrganizationsNewRoute: AuthenticatedOrganizationsNewRoute,
+    AuthenticatedOrganizationsIndexRoute: AuthenticatedOrganizationsIndexRoute,
   }
 
 const AuthenticatedOrganizationsRouteWithChildren =
