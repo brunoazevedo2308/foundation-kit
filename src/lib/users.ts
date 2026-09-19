@@ -46,6 +46,13 @@ export type InvitedUser = {
   role: AppRole;
 };
 
+export const UserAccessSchema = z.object({
+  role: z.enum(["system_admin", "organization_admin", "member"]),
+  status: z.enum(["active", "inactive", "blocked"]),
+});
+
+export type UserAccessInput = z.infer<typeof UserAccessSchema>;
+
 type InviteFunctionBody = {
   ok?: boolean;
   code?: string;
@@ -102,6 +109,35 @@ export async function listUsers(): Promise<UserListItem[]> {
       lastLoginAt: row.last_login_at,
     };
   });
+}
+
+export async function getUser(profileId: string): Promise<UserListItem> {
+  const rows = await listUsers();
+  const user = rows.find((item) => item.id === profileId);
+  if (!user) throw new Error("Usuário não encontrado nesta organização.");
+  return user;
+}
+
+export async function updateUserAccess(profileId: string, input: UserAccessInput): Promise<void> {
+  const parsed = UserAccessSchema.parse(input);
+  const { error } = await client().rpc("admin_update_profile_access", {
+    _profile_id: profileId,
+    _role: parsed.role,
+    _status: parsed.status,
+  });
+  if (!error) return;
+
+  emitEvent({
+    event_name: "backend.request.failure",
+    context: { operation: "profiles.access.update", supabase_error: sanitize(error) },
+  });
+  if (error.code === "42501") {
+    throw new Error("Você não tem permissão para alterar o acesso deste usuário.");
+  }
+  if (error.code === "23514") {
+    throw new Error("A organização deve manter ao menos um administrador ativo.");
+  }
+  throw new Error("Não foi possível atualizar o acesso do usuário.");
 }
 
 export async function listAssignableOrganizations(
