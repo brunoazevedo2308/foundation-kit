@@ -3,7 +3,9 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const APP_URL = (Deno.env.get("APP_URL") ?? "https://dp-suite-staging-git-codex-mvp-hardening-nobru2.vercel.app").replace(/\/$/, "");
+const APP_URL = (
+  Deno.env.get("APP_URL") ?? "https://dp-suite-staging-git-codex-mvp-hardening-nobru2.vercel.app"
+).replace(/\/$/, "");
 const ENVIRONMENT = Deno.env.get("APP_ENV") ?? "development";
 
 const allowedRoles = new Set(["system_admin", "organization_admin", "member"]);
@@ -36,7 +38,7 @@ function json(status: number, body: Record<string, unknown>, origin?: string | n
       "access-control-allow-origin": allowOrigin,
       "access-control-allow-headers": "authorization, x-client-info, apikey, content-type",
       "access-control-allow-methods": "POST, OPTIONS",
-      "vary": "Origin",
+      vary: "Origin",
     },
   });
 }
@@ -49,16 +51,18 @@ function logEvent(input: {
   organization_id?: string;
   context?: Record<string, unknown>;
 }) {
-  console.log(JSON.stringify({
-    event_name: input.event_name,
-    severity: input.severity,
-    timestamp: new Date().toISOString(),
-    environment: ENVIRONMENT,
-    correlation_id: input.correlation_id,
-    actor_user_id: input.actor_user_id,
-    organization_id: input.organization_id,
-    context: input.context,
-  }));
+  console.log(
+    JSON.stringify({
+      event_name: input.event_name,
+      severity: input.severity,
+      timestamp: new Date().toISOString(),
+      environment: ENVIRONMENT,
+      correlation_id: input.correlation_id,
+      actor_user_id: input.actor_user_id,
+      organization_id: input.organization_id,
+      context: input.context,
+    }),
+  );
 }
 
 function normalizeEmail(value: unknown): string | null {
@@ -79,10 +83,16 @@ Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin");
 
   if (req.method === "OPTIONS") return json(200, { ok: true }, origin);
-  if (req.method !== "POST") return json(405, { ok: false, code: "validation_error", correlation_id: cid }, origin);
+  if (req.method !== "POST")
+    return json(405, { ok: false, code: "validation_error", correlation_id: cid }, origin);
 
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY) {
-    logEvent({ event_name: "users.invite.failure", severity: "error", correlation_id: cid, context: { stage: "configuration" } });
+    logEvent({
+      event_name: "users.invite.failure",
+      severity: "error",
+      correlation_id: cid,
+      context: { stage: "configuration" },
+    });
     return json(500, { ok: false, code: "temporary_error", correlation_id: cid }, origin);
   }
 
@@ -127,12 +137,27 @@ Deno.serve(async (req: Request) => {
     .eq("id", actorId)
     .maybeSingle();
 
-  if (actorError || !actorProfile || actorProfile.deleted_at || actorProfile.status !== "active" || !["system_admin", "organization_admin"].includes(actorProfile.role)) {
-    logEvent({ event_name: "users.invite.failure", severity: "warning", correlation_id: cid, actor_user_id: actorId, context: { stage: "authorization" } });
+  if (
+    actorError ||
+    !actorProfile ||
+    actorProfile.deleted_at ||
+    actorProfile.status !== "active" ||
+    !["system_admin", "organization_admin"].includes(actorProfile.role)
+  ) {
+    logEvent({
+      event_name: "users.invite.failure",
+      severity: "warning",
+      correlation_id: cid,
+      actor_user_id: actorId,
+      context: { stage: "authorization" },
+    });
     return json(403, { ok: false, code: "forbidden", correlation_id: cid }, origin);
   }
 
-  if (actorProfile.role === "organization_admin" && (actorProfile.organization_id !== organizationId || !adminAssignableRoles.has(role))) {
+  if (
+    actorProfile.role === "organization_admin" &&
+    (actorProfile.organization_id !== organizationId || !adminAssignableRoles.has(role))
+  ) {
     return json(403, { ok: false, code: "forbidden", correlation_id: cid }, origin);
   }
 
@@ -142,21 +167,48 @@ Deno.serve(async (req: Request) => {
     .eq("id", organizationId)
     .maybeSingle();
 
-  if (organizationError || !organization || organization.deleted_at || organization.status !== "active") {
+  if (
+    organizationError ||
+    !organization ||
+    organization.deleted_at ||
+    organization.status !== "active"
+  ) {
     return json(400, { ok: false, code: "validation_error", correlation_id: cid }, origin);
   }
 
-  logEvent({ event_name: "users.invite.attempt", severity: "info", correlation_id: cid, actor_user_id: actorId, organization_id: organizationId, context: { role } });
-
-  const { data: invited, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${APP_URL}/reset-password`,
-    data: { full_name: fullName },
+  logEvent({
+    event_name: "users.invite.attempt",
+    severity: "info",
+    correlation_id: cid,
+    actor_user_id: actorId,
+    organization_id: organizationId,
+    context: { role },
   });
 
+  const { data: invited, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(
+    email,
+    {
+      redirectTo: `${APP_URL}/reset-password`,
+      data: { full_name: fullName },
+    },
+  );
+
   if (inviteError || !invited.user) {
-    const conflict = inviteError?.status === 422 || /already|registered|exists/i.test(inviteError?.message ?? "");
-    logEvent({ event_name: "users.invite.failure", severity: "warning", correlation_id: cid, actor_user_id: actorId, organization_id: organizationId, context: { stage: "auth_invite", code: conflict ? "email_conflict" : "temporary_error" } });
-    return json(conflict ? 409 : 503, { ok: false, code: conflict ? "email_conflict" : "temporary_error", correlation_id: cid }, origin);
+    const conflict =
+      inviteError?.status === 422 || /already|registered|exists/i.test(inviteError?.message ?? "");
+    logEvent({
+      event_name: "users.invite.failure",
+      severity: "warning",
+      correlation_id: cid,
+      actor_user_id: actorId,
+      organization_id: organizationId,
+      context: { stage: "auth_invite", code: conflict ? "email_conflict" : "temporary_error" },
+    });
+    return json(
+      conflict ? 409 : 503,
+      { ok: false, code: conflict ? "email_conflict" : "temporary_error", correlation_id: cid },
+      origin,
+    );
   }
 
   const invitedUserId = invited.user.id;
@@ -170,7 +222,14 @@ Deno.serve(async (req: Request) => {
 
   if (profileError) {
     await adminClient.auth.admin.deleteUser(invitedUserId);
-    logEvent({ event_name: "users.invite.failure", severity: "error", correlation_id: cid, actor_user_id: actorId, organization_id: organizationId, context: { stage: "profile_insert", compensated: true } });
+    logEvent({
+      event_name: "users.invite.failure",
+      severity: "error",
+      correlation_id: cid,
+      actor_user_id: actorId,
+      organization_id: organizationId,
+      context: { stage: "profile_insert", compensated: true },
+    });
     return json(503, { ok: false, code: "temporary_error", correlation_id: cid }, origin);
   }
 
@@ -186,21 +245,39 @@ Deno.serve(async (req: Request) => {
   if (auditError) {
     await adminClient.from("profiles").delete().eq("id", invitedUserId);
     await adminClient.auth.admin.deleteUser(invitedUserId);
-    logEvent({ event_name: "users.invite.failure", severity: "error", correlation_id: cid, actor_user_id: actorId, organization_id: organizationId, context: { stage: "audit_insert", compensated: true } });
+    logEvent({
+      event_name: "users.invite.failure",
+      severity: "error",
+      correlation_id: cid,
+      actor_user_id: actorId,
+      organization_id: organizationId,
+      context: { stage: "audit_insert", compensated: true },
+    });
     return json(503, { ok: false, code: "temporary_error", correlation_id: cid }, origin);
   }
 
-  logEvent({ event_name: "users.invite.success", severity: "info", correlation_id: cid, actor_user_id: actorId, organization_id: organizationId, context: { invited_user_id: invitedUserId, role } });
-  return json(201, {
-    ok: true,
+  logEvent({
+    event_name: "users.invite.success",
+    severity: "info",
     correlation_id: cid,
-    user: {
-      id: invitedUserId,
-      full_name: fullName,
-      email_domain: email.split("@")[1],
-      organization_id: organizationId,
-      organization_name: organization.name,
-      role,
+    actor_user_id: actorId,
+    organization_id: organizationId,
+    context: { invited_user_id: invitedUserId, role },
+  });
+  return json(
+    201,
+    {
+      ok: true,
+      correlation_id: cid,
+      user: {
+        id: invitedUserId,
+        full_name: fullName,
+        email_domain: email.split("@")[1],
+        organization_id: organizationId,
+        organization_name: organization.name,
+        role,
+      },
     },
-  }, origin);
+    origin,
+  );
 });
