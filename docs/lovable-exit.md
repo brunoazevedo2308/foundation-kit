@@ -27,8 +27,10 @@ O workflow `.github/workflows/ci.yml` repete os quatro checks em todo pull reque
 - ~~Provisionar um projeto Supabase separado para Staging.~~ Concluído com a
   branch `dp-suite-staging` (`ggehwncqjetinynwlqhj`).
 - ~~Validar por replay a cadeia canônica em `supabase/migrations`.~~
-  Concluído com 30 migrations aplicadas e Security Advisor sem alertas; os
-  arquivos em `db/migrations` permanecem como espelhos históricos.
+  Concluído com 32 migrations aplicadas; os arquivos em `db/migrations`
+  permanecem como espelhos históricos. O único aviso atual do Security Advisor
+  é o uso intencional de `SECURITY DEFINER` por `list_organizations()`, cuja
+  execução faz a checagem interna de `system_admin` e tem grants restritos.
 - ~~Executar E2E autenticado com perfis `system_admin`, `organization_admin` e
   `member`.~~ Concluído em 2026-09-20 no preview da Vercel, incluindo gates de
   rota/UI, RLS, comentários, uploads privados e downloads por URL assinada.
@@ -46,7 +48,8 @@ O workflow `.github/workflows/ci.yml` repete os quatro checks em todo pull reque
   o usuário Suporte no preview; perfis ausentes e soft-deleted validados pelo
   teste SQL transacional TT-005, com rollback. O perfil Suporte foi restaurado
   para `active` ao final.
-- Ativar proteção contra senhas vazadas no Supabase Auth antes da abertura pública.
+- ~~Ativar proteção contra senhas vazadas no Supabase Auth antes da abertura
+  pública.~~ Concluído em 2026-09-20 e confirmado pelo Security Advisor.
 
 ## Compatibilidade temporária
 
