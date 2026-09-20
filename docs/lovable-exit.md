@@ -41,8 +41,11 @@ O workflow `.github/workflows/ci.yml` repete os quatro checks em todo pull reque
 - ~~Validar manualmente recuperação de senha.~~ Concluído em 2026-09-20:
   e-mail recebido, token de recuperação aceito, nova senha salva e retorno ao
   login sem erros de navegador.
-- Validar os gates de login para perfis `inactive`, `blocked`, ausentes ou
-  soft-deleted.
+- ~~Validar os gates de login para perfis `inactive`, `blocked`, ausentes ou
+  soft-deleted.~~ Concluído em 2026-09-20: `inactive` e `blocked` validados com
+  o usuário Suporte no preview; perfis ausentes e soft-deleted validados pelo
+  teste SQL transacional TT-005, com rollback. O perfil Suporte foi restaurado
+  para `active` ao final.
 - Ativar proteção contra senhas vazadas no Supabase Auth antes da abertura pública.
 
 ## Compatibilidade temporária
