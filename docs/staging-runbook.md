@@ -141,6 +141,8 @@ as regras de escrita/tenant, também por testes SQL transacionais com rollback.
 - teste SQL `db/tests/us004_comment_permissions.sql`: aprovado com rollback.
 - gates SQL de perfil ausente e soft-deleted (TT-005): aprovados com rollback;
 - usuário Suporte restaurado para `active` após os testes manuais.
+- proteção contra senhas vazadas ativada no Supabase Auth e confirmada pelo
+  Security Advisor.
 
 ## 7. Encerramento
 
