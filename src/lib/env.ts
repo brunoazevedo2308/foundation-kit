@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { resolveEnvironment } from "./env-config";
 
 /**
  * Environment configuration for DP Suite.
@@ -25,24 +26,21 @@ const EnvSchema = z.object({
     .or(z.literal("").transform(() => undefined)),
 });
 
-// Defaults for the Development project `dp-suite-dev`. Publishable (anon) keys
-// are safe to ship in the frontend bundle — access is protected by RLS.
-// Override via `.env.local` or hosting env vars for other environments.
-const DEV_SUPABASE_URL = "https://lyxonmqsldtsixdhcaww.supabase.co";
-const DEV_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_9x93Tl3V-cb-OuhfxzBP5g_TeEzNd-8";
-
-const raw = {
-  VITE_APP_ENV: import.meta.env.VITE_APP_ENV,
-  VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL || DEV_SUPABASE_URL,
-  VITE_SUPABASE_PUBLISHABLE_KEY:
-    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || DEV_SUPABASE_PUBLISHABLE_KEY,
-};
-
-const parsed = EnvSchema.safeParse(raw);
+// Development may use the checked-in publishable defaults. Staging and
+// Production remain unconfigured until their own values are supplied.
+const parsed = EnvSchema.safeParse(
+  resolveEnvironment({
+    VITE_APP_ENV: import.meta.env.VITE_APP_ENV,
+    VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+    VITE_SUPABASE_PUBLISHABLE_KEY: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+  }),
+);
 
 if (!parsed.success) {
   // Fail fast with a readable error — never log the values themselves.
-  const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
+  const issues = parsed.error.issues
+    .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+    .join("; ");
   throw new Error(`Invalid environment configuration: ${issues}`);
 }
 
