@@ -29,12 +29,17 @@ O workflow `.github/workflows/ci.yml` repete os quatro checks em todo pull reque
 - ~~Validar por replay a cadeia canônica em `supabase/migrations`.~~
   Concluído com 30 migrations aplicadas e Security Advisor sem alertas; os
   arquivos em `db/migrations` permanecem como espelhos históricos.
-- Executar E2E autenticado com perfis `system_admin`, `organization_admin` e `member`.
+- ~~Executar E2E autenticado com perfis `system_admin`, `organization_admin` e
+  `member`.~~ Concluído em 2026-09-20 no preview da Vercel, incluindo gates de
+  rota/UI, RLS, comentários, uploads privados e downloads por URL assinada.
 - ~~Configurar a variable e o secret do GitHub Environment `staging` e executar
   `.github/workflows/build-staging.yml`.~~ Concluído no run #1, com artifact
   validado e preservado por 14 dias.
-- Importar o repositório na Vercel, configurar as variáveis de Preview e
-  publicar a URL de homologação.
+- ~~Importar o repositório na Vercel, configurar as variáveis de Preview e
+  publicar a URL de homologação.~~ Concluído em
+  `dp-suite-staging-git-codex-mvp-hardening-nobru2.vercel.app`.
+- Validar manualmente recuperação de senha e os gates de login para perfis
+  `inactive`, `blocked`, ausentes ou soft-deleted.
 - Ativar proteção contra senhas vazadas no Supabase Auth antes da abertura pública.
 
 ## Compatibilidade temporária

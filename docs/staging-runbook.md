@@ -10,7 +10,7 @@ passo depende da Lovable, Cloudflare ou de outro provedor de hospedagem.
 - URL: `https://ggehwncqjetinynwlqhj.supabase.co`
 - Dados de Production/Development: não copiados
 - Persistência da branch: temporária
-- Schema: 30 migrations, 12 tabelas públicas com RLS
+- Schema: 32 migrations, 12 tabelas públicas com RLS
 - Storage: buckets privados `evidences-private` e `attachments-private`
 
 ## 1. Configurar o GitHub Environment
@@ -88,40 +88,54 @@ Senhas, e-mails reais e chaves não devem ser registrados neste repositório.
 
 ## 6. Checklist E2E do MVP
 
+Última homologação: 2026-09-20, preview Vercel da branch
+`codex/mvp-hardening`. Os itens marcados foram validados no navegador e, para
+as regras de escrita/tenant, também por testes SQL transacionais com rollback.
+
 ### Sessão e acesso
 
-- login válido redireciona para `/dashboard`;
-- logout encerra a sessão;
-- recuperação de senha retorna a `/reset-password`;
-- perfis inactive, blocked, ausentes ou soft-deleted não acessam rotas privadas.
+- [x] login válido redireciona para `/dashboard`;
+- [x] logout encerra a sessão;
+- [ ] recuperação de senha retorna a `/reset-password`;
+- [ ] perfis inactive, blocked, ausentes ou soft-deleted não acessam rotas privadas.
 
 ### System Admin
 
-- lista organizações;
-- cria uma organização;
-- não acessa dados de outro tenant por consultas comuns.
+- [x] lista organizações;
+- [x] cria uma organização;
+- [x] não acessa dados de outro tenant por consultas comuns.
 
 ### Organization Admin
 
-- atualiza configurações da própria organização;
-- cria e altera usuários da própria organização;
-- gerencia clientes, embarcações, ações, entregáveis, evidências e anexos;
-- não consegue referenciar entidades de outra organização.
+- [x] atualiza configurações da própria organização;
+- [x] cria e altera usuários da própria organização;
+- [x] gerencia clientes, embarcações, ações, entregáveis, evidências e anexos;
+- [x] não consegue referenciar entidades de outra organização.
 
 ### Member
 
-- consulta dados autorizados da própria organização;
-- cria comentários quando permitido;
-- não vê controles administrativos;
-- INSERT/UPDATE administrativos são recusados pela RLS mesmo com chamada direta.
+- [x] consulta dados autorizados da própria organização;
+- [x] cria e exclui logicamente o próprio comentário quando permitido;
+- [x] não vê controles administrativos;
+- [x] INSERT/UPDATE administrativos são recusados pela RLS mesmo com chamada direta;
+- [x] não altera comentários de outro usuário ou de outra organização.
 
 ### Operação
 
-- dashboard e filtros usam o mesmo recorte;
-- busca global não retorna linhas soft-deleted ou de outro tenant;
-- notificações só aparecem ao destinatário;
-- uploads respeitam MIME/tamanho e downloads usam signed URLs;
-- relatórios exibem o mesmo escopo permitido pela RLS.
+- [x] dashboard e filtros usam o mesmo recorte;
+- [x] busca global não retorna linhas soft-deleted ou de outro tenant;
+- [x] notificações só aparecem ao destinatário;
+- [x] uploads respeitam MIME/tamanho e downloads usam signed URLs;
+- [x] relatórios exibem o mesmo escopo permitido pela RLS.
+
+### Resultado automatizado
+
+- GitHub Actions CI run #54: sucesso;
+- Vercel preview do commit `f93b978`: pronto;
+- Vitest: 216 testes aprovados;
+- lint: 0 erros (10 avisos preexistentes de Fast Refresh);
+- typecheck e build de produção: aprovados;
+- teste SQL `db/tests/us004_comment_permissions.sql`: aprovado com rollback.
 
 ## 7. Encerramento
 
