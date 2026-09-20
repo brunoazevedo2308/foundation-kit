@@ -38,8 +38,11 @@ O workflow `.github/workflows/ci.yml` repete os quatro checks em todo pull reque
 - ~~Importar o repositório na Vercel, configurar as variáveis de Preview e
   publicar a URL de homologação.~~ Concluído em
   `dp-suite-staging-git-codex-mvp-hardening-nobru2.vercel.app`.
-- Validar manualmente recuperação de senha e os gates de login para perfis
-  `inactive`, `blocked`, ausentes ou soft-deleted.
+- ~~Validar manualmente recuperação de senha.~~ Concluído em 2026-09-20:
+  e-mail recebido, token de recuperação aceito, nova senha salva e retorno ao
+  login sem erros de navegador.
+- Validar os gates de login para perfis `inactive`, `blocked`, ausentes ou
+  soft-deleted.
 - Ativar proteção contra senhas vazadas no Supabase Auth antes da abertura pública.
 
 ## Compatibilidade temporária

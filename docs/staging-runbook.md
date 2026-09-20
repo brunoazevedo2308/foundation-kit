@@ -96,7 +96,8 @@ as regras de escrita/tenant, também por testes SQL transacionais com rollback.
 
 - [x] login válido redireciona para `/dashboard`;
 - [x] logout encerra a sessão;
-- [ ] recuperação de senha retorna a `/reset-password`;
+- [x] recuperação de senha retorna a `/reset-password`, atualiza a senha e
+  encerra em `/login`;
 - [ ] perfis inactive, blocked, ausentes ou soft-deleted não acessam rotas privadas.
 
 ### System Admin
