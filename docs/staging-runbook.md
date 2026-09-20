@@ -98,7 +98,9 @@ as regras de escrita/tenant, também por testes SQL transacionais com rollback.
 - [x] logout encerra a sessão;
 - [x] recuperação de senha retorna a `/reset-password`, atualiza a senha e
   encerra em `/login`;
-- [ ] perfis inactive, blocked, ausentes ou soft-deleted não acessam rotas privadas.
+- [x] perfis inactive, blocked, ausentes ou soft-deleted não acessam rotas
+  privadas (`inactive`/`blocked` no navegador; ausente/soft-deleted por TT-005
+  transacional com rollback).
 
 ### System Admin
 
@@ -137,6 +139,8 @@ as regras de escrita/tenant, também por testes SQL transacionais com rollback.
 - lint: 0 erros (10 avisos preexistentes de Fast Refresh);
 - typecheck e build de produção: aprovados;
 - teste SQL `db/tests/us004_comment_permissions.sql`: aprovado com rollback.
+- gates SQL de perfil ausente e soft-deleted (TT-005): aprovados com rollback;
+- usuário Suporte restaurado para `active` após os testes manuais.
 
 ## 7. Encerramento
 
