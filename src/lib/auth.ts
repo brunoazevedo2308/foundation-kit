@@ -1,4 +1,5 @@
 import { emitEvent, sanitize } from "./observability";
+import { passwordUpdateErrorMessage } from "./auth-errors";
 import { supabase } from "./supabase";
 
 /**
@@ -69,7 +70,11 @@ export async function requestPasswordReset(email: string) {
 export async function updatePassword(newPassword: string) {
   const { error } = await client().auth.updateUser({ password: newPassword });
   if (error) {
-    throw new Error("Não foi possível atualizar a senha.");
+    emitEvent({
+      event_name: "backend.request.failure",
+      context: { operation: "auth.updatePassword", supabase_error: sanitize(error) },
+    });
+    throw new Error(passwordUpdateErrorMessage(error));
   }
 }
 
