@@ -1,4 +1,9 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Outlet,
+  redirect,
+  type ErrorComponentProps,
+} from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { LoadingPage, NotFoundPage } from "@/components/status-pages";
 import { fetchProfileHeader, fetchProfileStatus } from "@/lib/auth";
@@ -81,7 +86,7 @@ function AuthenticatedLayout() {
   );
 }
 
-function AuthenticatedErrorBoundary({ error, reset }: { error: Error; reset: () => void }) {
+function AuthenticatedErrorBoundary({ error, reset }: ErrorComponentProps) {
   console.error(error);
   reportError(error, { event_name: "backend.request.failure", severity: "error" });
   return (
