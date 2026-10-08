@@ -114,6 +114,39 @@ Exemplo: usuário reporta que "o upload de evidência falhou".
    `deleted_at`. Se cleanup também falhou, o evento vem com contexto
    `{ uploadError, cleanupError }` e é caso para admin reconciliar.
 
+## Monitoramento de produção
+
+O endpoint público `GET /api/health` valida duas camadas sem autenticar um
+usuário e sem consultar dados de negócio:
+
+- processo web do DP Suite;
+- disponibilidade do Supabase Auth pelo endpoint oficial `/auth/v1/health`.
+
+Ele retorna HTTP `200` quando ambas estão disponíveis e HTTP `503` quando a
+dependência está degradada. A resposta nunca inclui chaves, payloads do
+Supabase ou detalhes do erro upstream; contém apenas estado, ambiente,
+timestamp e latência.
+
+O workflow `.github/workflows/production-monitoring.yml` executa esse teste e
+verifica a entrada pública `https://app.callyvon.com/` a cada 30 minutos. Uma
+falha aparece em **GitHub → Actions → Production Monitoring** e segue as
+preferências de notificação de Actions do repositório. Também é possível
+executá-lo manualmente com **Run workflow**.
+
+### Resposta inicial a um alerta
+
+1. Confirme a falha executando novamente o workflow manualmente.
+2. Consulte os Runtime Logs da implantação Production na Vercel, usando o
+   horário UTC indicado pelo run.
+3. Se `supabase_auth` estiver `error`, verifique o status do projeto e os logs
+   de Auth no Supabase antes de alterar o aplicativo.
+4. Se o endpoint não responder, verifique a implantação e o domínio na Vercel.
+5. Registre início, impacto, causa e encerramento do incidente sem copiar
+   tokens, e-mails ou dados de clientes.
+
+Web Analytics e Speed Insights permanecem desativados até a revisão de LGPD,
+pois medem uso de visitantes e não são necessários para disponibilidade.
+
 ## Checklists
 
 ### Development
@@ -136,6 +169,14 @@ Exemplo: usuário reporta que "o upload de evidência falhou".
 - [ ] Fumaça: login inválido, login válido, perfil inativo, upload
       OK, upload com falha simulada. Confirmar correlation IDs
       correspondentes nos logs do Supabase (Auth/API/Storage).
+
+### Production
+
+- [x] Endpoint `/api/health` sem cache e sem dados sensíveis.
+- [x] Verificação externa da aplicação e do Supabase Auth a cada 30 minutos.
+- [x] Procedimento inicial de triagem documentado.
+- [ ] Transport seguro para erros do frontend; até sua definição, a apuração
+      usa correlation ID informado pelo usuário e logs Vercel/Supabase.
 
 ## Limitações conhecidas
 

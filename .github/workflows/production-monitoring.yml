@@ -1,0 +1,64 @@
+name: Production Monitoring
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dp-suite-production-monitoring
+  cancel-in-progress: true
+
+jobs:
+  health-check:
+    name: Check production health
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check application and Supabase Auth
+        shell: bash
+        run: |
+          response_file="$(mktemp)"
+          http_code="$(curl \
+            --silent \
+            --show-error \
+            --retry 2 \
+            --retry-all-errors \
+            --retry-delay 5 \
+            --connect-timeout 10 \
+            --max-time 30 \
+            --output "$response_file" \
+            --write-out "%{http_code}" \
+            https://app.callyvon.com/api/health)"
+
+          test "$http_code" = "200"
+
+          node -e '
+            const fs = require("node:fs");
+            const payload = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+            if (payload.status !== "ok") throw new Error(`Unexpected status: ${payload.status}`);
+            if (payload.checks?.app?.status !== "ok") throw new Error("Application check failed");
+            if (payload.checks?.supabase_auth?.status !== "ok") throw new Error("Supabase Auth check failed");
+          ' "$response_file"
+
+      - name: Check public entrypoint
+        run: |
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            --location \
+            --retry 2 \
+            --retry-all-errors \
+            --retry-delay 5 \
+            --connect-timeout 10 \
+            --max-time 30 \
+            --output /dev/null \
+            https://app.callyvon.com/
+
+      - name: Record success
+        run: echo "DP Suite e Supabase Auth responderam normalmente em $(date -u +'%Y-%m-%dT%H:%M:%SZ')." >> "$GITHUB_STEP_SUMMARY"
