@@ -27,6 +27,7 @@ import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedVesselsRouteImport } from './routes/_authenticated/vessels'
+import { Route as ApiHealthRouteImport } from './routes/api.health'
 import { Route as AuthenticatedActionsIndexRouteImport } from './routes/_authenticated/actions.index'
 import { Route as AuthenticatedActionsNewRouteImport } from './routes/_authenticated/actions.new'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients.index'
@@ -134,6 +135,11 @@ const AuthenticatedVesselsRoute = AuthenticatedVesselsRouteImport.update({
   id: '/vessels',
   path: '/vessels',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedActionsIndexRoute =
   AuthenticatedActionsIndexRouteImport.update({
@@ -245,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRouteWithChildren
   '/vessels': typeof AuthenticatedVesselsRouteWithChildren
+  '/api/health': typeof ApiHealthRoute
   '/actions/new': typeof AuthenticatedActionsNewRoute
   '/clients/new': typeof AuthenticatedClientsNewRoute
   '/dev/observability': typeof AuthenticatedDevObservabilityRoute
@@ -275,6 +282,7 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/search': typeof AuthenticatedSearchRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/api/health': typeof ApiHealthRoute
   '/actions/new': typeof AuthenticatedActionsNewRoute
   '/clients/new': typeof AuthenticatedClientsNewRoute
   '/dev/observability': typeof AuthenticatedDevObservabilityRoute
@@ -312,6 +320,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRouteWithChildren
   '/_authenticated/vessels': typeof AuthenticatedVesselsRouteWithChildren
+  '/api/health': typeof ApiHealthRoute
   '/_authenticated/actions/new': typeof AuthenticatedActionsNewRoute
   '/_authenticated/clients/new': typeof AuthenticatedClientsNewRoute
   '/_authenticated/dev/observability': typeof AuthenticatedDevObservabilityRoute
@@ -349,6 +358,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users'
     | '/vessels'
+    | '/api/health'
     | '/actions/new'
     | '/clients/new'
     | '/dev/observability'
@@ -379,6 +389,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/search'
     | '/settings'
+    | '/api/health'
     | '/actions/new'
     | '/clients/new'
     | '/dev/observability'
@@ -415,6 +426,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/users'
     | '/_authenticated/vessels'
+    | '/api/health'
     | '/_authenticated/actions/new'
     | '/_authenticated/clients/new'
     | '/_authenticated/dev/observability'
@@ -441,6 +453,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiHealthRoute: typeof ApiHealthRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -570,6 +583,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/vessels'
       preLoaderRoute: typeof AuthenticatedVesselsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/actions/': {
       id: '/_authenticated/actions/'
@@ -806,6 +826,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiHealthRoute: ApiHealthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
