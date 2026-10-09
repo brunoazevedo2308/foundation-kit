@@ -77,7 +77,11 @@ Revisar e registrar finalidade, localização, suboperadores, prazo, exclusão, 
 
 Antes do lançamento comercial, celebrar/validar contratos e anexos de tratamento de dados, inclusive as cláusulas exigidas pela regulamentação brasileira de transferência internacional.
 
-## Pendências organizacionais para conformidade
+## Pendências organizacionais para a etapa jurídica final
+
+Estas pendências foram conscientemente adiadas para o gate final de lançamento;
+não bloqueiam o desenvolvimento técnico do MVP, mas precisam ser concluídas
+antes da operação comercial com dados reais de clientes.
 
 - preencher CNPJ e endereço da Callyvon no aviso e nos contratos;
 - definir e publicar o canal/responsável de privacidade (o e-mail atual é provisório);
