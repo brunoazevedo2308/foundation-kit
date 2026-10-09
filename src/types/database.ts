@@ -242,6 +242,60 @@ export type Database = {
           },
         ];
       };
+      data_subject_requests: {
+        Row: {
+          created_at: string;
+          details: string;
+          id: string;
+          organization_id: string;
+          request_type: string;
+          requester_user_id: string;
+          resolved_at: string | null;
+          response_summary: string | null;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          details: string;
+          id?: string;
+          organization_id: string;
+          request_type: string;
+          requester_user_id: string;
+          resolved_at?: string | null;
+          response_summary?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          details?: string;
+          id?: string;
+          organization_id?: string;
+          request_type?: string;
+          requester_user_id?: string;
+          resolved_at?: string | null;
+          response_summary?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "data_subject_requests_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "data_subject_requests_requester_user_id_fkey";
+            columns: ["requester_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       clients: {
         Row: {
           code: string | null;
