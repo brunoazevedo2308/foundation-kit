@@ -15,7 +15,7 @@ concurrency:
 jobs:
   backup:
     name: Back up Supabase Storage
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_STORAGE_ACCESS_KEY_ID }}
@@ -112,7 +112,7 @@ jobs:
       # This repository is public. Never upload the plaintext archive or a
       # manifest that exposes object names; only ciphertext leaves the runner.
       - name: Upload encrypted backup
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dp-suite-storage-${{ github.run_id }}
           path: |
