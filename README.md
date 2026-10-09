@@ -23,7 +23,11 @@ pnpm db:reset
 pnpm db:status
 ```
 
-O Supabase CLI está fixado em `2.116.0`. A configuração versionada fica em `supabase/config.toml`, e a cadeia executável de 30 migrations fica em `supabase/migrations`. Os arquivos em `db/migrations` permanecem apenas como espelhos históricos do desenvolvimento anterior. Consulte [`docs/database-migration-reconciliation.md`](./docs/database-migration-reconciliation.md) antes de promover qualquer DDL.
+O Supabase CLI está fixado em `2.116.0`. A configuração versionada fica em `supabase/config.toml`, e a cadeia executável de 32 migrations fica em `supabase/migrations`. Os arquivos em `db/migrations` permanecem apenas como espelhos históricos do desenvolvimento anterior. Consulte [`docs/database-migration-reconciliation.md`](./docs/database-migration-reconciliation.md) antes de promover qualquer DDL.
+
+O procedimento de continuidade, as limitações dos backups físicos e o teste
+somente leitura para bancos restaurados estão em
+[`docs/backup-restore.md`](./docs/backup-restore.md).
 
 ## Estrutura operacional (US-004)
 
