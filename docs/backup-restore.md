@@ -1,6 +1,6 @@
 # DP Suite — Backup e restauração
 
-Última revisão: 2026-10-08.
+Última revisão: 2026-10-09.
 
 ## Objetivo e limites
 
@@ -31,43 +31,43 @@ ativado após aprovação explícita de custo.
 - 32 migrations, com última versão `20260919222852`;
 - 12 tabelas de domínio esperadas e todas com RLS;
 - buckets privados `evidences-private` e `attachments-private` presentes;
-- sem objetos no Storage na auditoria de 2026-10-08.
+- dados operacionais de homologação migrados em 2026-10-09;
+- dois objetos no Storage, ambos com 225 bytes e MD5
+  `464aeb7c273d598b85ce115648496a49`;
+- `db/tests/backup_restore_readiness.sql` aprovado após a migração;
+- `app.callyvon.com` auditado apontando para este projeto.
 
 ### Branch — `dp-suite-staging`
 
 - project ref: `ggehwncqjetinynwlqhj`;
 - tipo informado pela API: preview não persistente (`persistent=false`);
-- contém os dados usados na homologação e no lançamento inicial;
+- preserva temporariamente a origem dos dados usados na homologação;
 - 32 migrations, com última versão `20260919222852`;
 - 12 tabelas esperadas e todas com RLS;
 - dois objetos no Storage na auditoria de 2026-10-08.
 
-Trate essa branch como banco ativo até auditar as variáveis Production da
-Vercel. Branches de preview são ambientes temporários: apagar, recriar ou
-resetar a branch pode eliminar seus dados. Por isso, não executar
-`reset_branch`, `delete_branch`, merge ou restore nela durante a migração.
+Essa branch não é mais o banco ativo da aplicação. Mantenha-a intacta durante a
+janela de retenção pós-migração. Branches de preview são ambientes temporários:
+apagar, recriar ou resetar a branch pode eliminar seus dados.
 
-## Risco bloqueador antes de dados reais
+## Migração concluída
 
-O projeto com backups diários confirmados e a branch que contém o dataset do
-lançamento não são o mesmo ambiente. O fluxo recomendado, sem contratar um
-novo projeto mensal, é:
+Em 2026-10-09, o dataset operacional foi migrado de `ggeh...` para
+`lyxon...`. A operação:
 
-1. auditar qual project ref está configurado no ambiente Production da Vercel;
-2. abrir uma janela de manutenção e interromper novas escritas;
-3. gerar export lógico completo da branch `ggeh...` (roles, schema, dados e
-   histórico de migrations);
-4. preservar os dois objetos do Storage separadamente;
-5. restaurar o export no projeto principal `lyxon...` somente após confirmar um
-   ponto de retorno do estado atual;
-6. executar `db/tests/backup_restore_readiness.sql` no destino;
-7. testar login, isolamento RLS, download dos dois objetos e fluxos críticos;
-8. trocar as variáveis Production da Vercel para o destino validado;
-9. manter a origem intacta por pelo menos 72 horas antes de desativá-la.
+1. preservou os quatro usuários, senhas e sessões existentes em Production;
+2. remapeou referências de usuário por e-mail e a organização pelo slug
+   `callyvon`;
+3. transferiu cliente, embarcação, ação, entregável, comentários, notificações
+   e eventos de auditoria;
+4. recriou o anexo e a evidência nos buckets privados do projeto principal;
+5. conferiu tamanho e checksum dos objetos contra a origem;
+6. validou migrations, tabelas, RLS, buckets, integridade referencial e o
+   dashboard autenticado.
 
-A restauração no projeto principal é destrutiva e pode deixar o serviço
-indisponível. Ela exige confirmação específica no momento da execução. Nunca
-copie connection strings, senhas do Postgres ou dumps para o GitHub.
+A branch de origem deve permanecer intacta por pelo menos 72 horas após a
+migração. A cópia externa automatizada dos arquivos continua pendente; os
+backups físicos do Supabase não incluem os binários do Storage.
 
 ## Export lógico oficial
 
