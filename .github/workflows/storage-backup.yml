@@ -1,0 +1,135 @@
+name: Storage Backup
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dp-suite-storage-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    name: Back up Supabase Storage
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_STORAGE_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_STORAGE_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-east-2
+      SUPABASE_STORAGE_ENDPOINT: https://lyxonmqsldtsixdhcaww.storage.supabase.co/storage/v1/s3
+      STORAGE_BACKUP_PASSPHRASE: ${{ secrets.STORAGE_BACKUP_PASSPHRASE }}
+
+    steps:
+      - name: Validate backup credentials
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test -n "$AWS_ACCESS_KEY_ID"
+          test -n "$AWS_SECRET_ACCESS_KEY"
+          test -n "$STORAGE_BACKUP_PASSPHRASE"
+          aws --version
+          openssl version
+
+      - name: Download and verify every bucket
+        id: backup
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          backup_root="$RUNNER_TEMP/dp-suite-storage"
+          payload_dir="$backup_root/payload"
+          mkdir -p "$payload_dir/buckets"
+
+          mapfile -t buckets < <(
+            aws s3api list-buckets \
+              --endpoint-url "$SUPABASE_STORAGE_ENDPOINT" \
+              --query 'Buckets[].Name' \
+              --output text | tr '\t' '\n' | sed '/^$/d'
+          )
+
+          if [ "${#buckets[@]}" -eq 0 ]; then
+            echo "No Storage buckets were returned." >&2
+            exit 1
+          fi
+
+          for expected_bucket in attachments-private evidences-private; do
+            if ! printf '%s\n' "${buckets[@]}" | grep -Fxq "$expected_bucket"; then
+              echo "Expected bucket not found: $expected_bucket" >&2
+              exit 1
+            fi
+          done
+
+          for bucket in "${buckets[@]}"; do
+            mkdir -p "$payload_dir/buckets/$bucket"
+            aws s3 sync \
+              "s3://$bucket" \
+              "$payload_dir/buckets/$bucket" \
+              --endpoint-url "$SUPABASE_STORAGE_ENDPOINT" \
+              --only-show-errors
+          done
+
+          object_count="$(find "$payload_dir/buckets" -type f | wc -l | tr -d ' ')"
+          bucket_count="${#buckets[@]}"
+          generated_at="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+
+          find "$payload_dir/buckets" -type f -print0 \
+            | sort -z \
+            | xargs -0 -r sha256sum \
+            | sed "s|$payload_dir/||" \
+            > "$payload_dir/SHA256SUMS"
+
+          node -e '
+            const fs = require("node:fs");
+            const manifest = {
+              generated_at: process.argv[1],
+              project_ref: "lyxonmqsldtsixdhcaww",
+              bucket_count: Number(process.argv[2]),
+              object_count: Number(process.argv[3]),
+            };
+            fs.writeFileSync(process.argv[4], `${JSON.stringify(manifest, null, 2)}\n`);
+          ' "$generated_at" "$bucket_count" "$object_count" "$payload_dir/manifest.json"
+
+          archive="$backup_root/dp-suite-storage-$GITHUB_RUN_ID.tar.gz"
+          encrypted="$archive.enc"
+          tar -C "$payload_dir" -czf "$archive" .
+          openssl enc -aes-256-cbc -salt -pbkdf2 -iter 210000 \
+            -in "$archive" \
+            -out "$encrypted" \
+            -pass env:STORAGE_BACKUP_PASSPHRASE
+          sha256sum "$encrypted" > "$encrypted.sha256"
+          rm -f "$archive"
+
+          echo "artifact_path=$encrypted" >> "$GITHUB_OUTPUT"
+          echo "checksum_path=$encrypted.sha256" >> "$GITHUB_OUTPUT"
+          echo "bucket_count=$bucket_count" >> "$GITHUB_OUTPUT"
+          echo "object_count=$object_count" >> "$GITHUB_OUTPUT"
+
+      # This repository is public. Never upload the plaintext archive or a
+      # manifest that exposes object names; only ciphertext leaves the runner.
+      - name: Upload encrypted backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: dp-suite-storage-${{ github.run_id }}
+          path: |
+            ${{ steps.backup.outputs.artifact_path }}
+            ${{ steps.backup.outputs.checksum_path }}
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+
+      - name: Record success
+        shell: bash
+        run: |
+          {
+            echo "### Backup do Supabase Storage concluído"
+            echo
+            echo "- Buckets: ${{ steps.backup.outputs.bucket_count }}"
+            echo "- Objetos: ${{ steps.backup.outputs.object_count }}"
+            echo "- Retenção do artefato criptografado: 30 dias"
+            echo "- Horário UTC: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          } >> "$GITHUB_STEP_SUMMARY"
