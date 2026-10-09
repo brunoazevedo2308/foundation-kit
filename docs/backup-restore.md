@@ -14,8 +14,9 @@ Metas operacionais iniciais:
 
 - RPO do banco/Auth: até 24 horas, conforme o backup diário;
 - RTO do banco/Auth: até 4 horas para um incidente pequeno do MVP;
-- RPO/RTO de arquivos: não garantido até a cópia externa do Storage estar
-  configurada e testada.
+- RPO de arquivos: até 24 horas após a primeira execução diária aprovada;
+- RTO de arquivos: até 4 horas para o volume inicial do MVP, sujeito a novo
+  ensaio quando o volume crescer.
 
 PITR não faz parte da baseline do MVP. Ele é um add-on pago e só deve ser
 ativado após aprovação explícita de custo.
@@ -66,8 +67,75 @@ Em 2026-10-09, o dataset operacional foi migrado de `ggeh...` para
    dashboard autenticado.
 
 A branch de origem deve permanecer intacta por pelo menos 72 horas após a
-migração. A cópia externa automatizada dos arquivos continua pendente; os
-backups físicos do Supabase não incluem os binários do Storage.
+migração. Os backups físicos do Supabase não incluem os binários do Storage;
+por isso o workflow `Storage Backup` mantém uma cópia diária criptografada fora
+do Supabase.
+
+## Backup automatizado do Storage
+
+O workflow `.github/workflows/storage-backup.yml` executa diariamente às
+03:17 UTC e também aceita execução manual. Ele:
+
+1. enumera todos os buckets pelo endpoint S3 do projeto principal;
+2. baixa todos os objetos para o runner temporário;
+3. gera checksums SHA-256 e um manifesto com data, projeto e contagens;
+4. cria um arquivo `tar.gz` e o criptografa com AES-256-CBC/PBKDF2;
+5. publica somente o arquivo criptografado e seu checksum como artefato do
+   GitHub, com retenção de 30 dias;
+6. elimina o runner temporário automaticamente ao fim da execução.
+
+São necessários três GitHub Actions secrets no repositório:
+
+- `SUPABASE_STORAGE_ACCESS_KEY_ID`;
+- `SUPABASE_STORAGE_SECRET_ACCESS_KEY`;
+- `STORAGE_BACKUP_PASSPHRASE`.
+
+O repositório é público. Portanto, o workflow nunca envia o arquivo aberto, o
+manifesto nem nomes de objetos ao artefato; apenas o conteúdo cifrado deixa o
+runner. Ainda assim, o acesso ao repositório e aos artefatos deve ser revisado
+periodicamente.
+
+As duas primeiras credenciais são geradas em **Supabase > Storage > Settings >
+S3 access keys** e têm acesso total aos buckets, ignorando RLS. Use-as apenas no
+GitHub Actions, restrinja o acesso administrativo ao repositório e faça rotação
+imediata se houver suspeita de exposição. A passphrase deve ser aleatória, ter
+pelo menos 32 caracteres e ser guardada também no cofre administrativo; sem
+ela, o backup não pode ser restaurado.
+
+### Verificação diária
+
+Uma execução só é aprovada quando:
+
+- o job termina em verde;
+- o resumo informa pelo menos os buckets esperados;
+- o artefato contém um `.tar.gz.enc` e um `.sha256`;
+- a execução não exibe credenciais nos logs.
+
+O GitHub envia falhas do workflow conforme as notificações configuradas para o
+repositório. A checagem operacional semanal deve confirmar que há uma execução
+verde com menos de 36 horas.
+
+### Restaurar arquivos em ambiente isolado
+
+Nunca restaure diretamente em Production. Baixe o artefato de uma execução,
+confira o checksum e use um destino S3 isolado:
+
+```bash
+sha256sum --check dp-suite-storage-<run-id>.tar.gz.enc.sha256
+openssl enc -d -aes-256-cbc -pbkdf2 -iter 210000 \
+  -in dp-suite-storage-<run-id>.tar.gz.enc \
+  -out dp-suite-storage-<run-id>.tar.gz \
+  -pass env:STORAGE_BACKUP_PASSPHRASE
+mkdir restored-storage
+tar -xzf dp-suite-storage-<run-id>.tar.gz -C restored-storage
+(cd restored-storage && sha256sum --check SHA256SUMS)
+```
+
+Depois, para cada diretório em `restored-storage/buckets/<bucket>`, use
+`aws s3 sync` contra o endpoint S3 do projeto isolado. Confirme contagem,
+checksums, políticas/RLS e download autenticado antes de aprovar o ensaio. Uma
+restauração em Production exige declaração de incidente e autorização
+explícita, pois pode sobrescrever objetos atuais.
 
 ## Export lógico oficial
 
@@ -128,7 +196,8 @@ Functions, secrets e integrações exigem validação separada.
 
 ## Cadência
 
-- semanal: confirmar que existe backup físico com menos de 36 horas;
+- semanal: confirmar que existem backup físico e artefato de Storage aprovados
+  com menos de 36 horas;
 - mensal: executar a query de readiness nos ambientes ativos;
 - trimestral: restaurar em destino isolado e cronometrar o exercício;
 - após incidente ou mudança estrutural: repetir o ensaio antes do próximo
