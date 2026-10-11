@@ -130,6 +130,10 @@ function LoginPage() {
           <Link to="/forgot-password" className="underline-offset-4 hover:underline">
             Esqueci minha senha
           </Link>
+          <span aria-hidden> · </span>
+          <Link to="/privacy" className="underline-offset-4 hover:underline">
+            Privacidade
+          </Link>
         </div>
       </div>
     </main>

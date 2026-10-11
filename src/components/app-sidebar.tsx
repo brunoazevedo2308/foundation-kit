@@ -11,6 +11,7 @@ import {
   Search,
   Anchor,
   Landmark,
+  ShieldCheck,
 } from "lucide-react";
 
 import type { AppRole } from "@/lib/auth";
@@ -53,7 +54,10 @@ const registry: NavItem[] = [
   { title: "Usuários", url: "/users", icon: Users },
 ];
 
-const account: NavItem[] = [{ title: "Configurações", url: "/settings", icon: Settings }];
+const account: NavItem[] = [
+  { title: "Configurações", url: "/settings", icon: Settings },
+  { title: "Privacidade", url: "/privacy-center", icon: ShieldCheck },
+];
 
 const administration: NavItem[] = [
   { title: "Organizations", url: "/organizations", icon: Landmark },

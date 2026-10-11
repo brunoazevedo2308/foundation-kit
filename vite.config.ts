@@ -6,6 +6,9 @@ import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig(({ command }) => ({
+  test: {
+    include: ["src/**/*.test.{ts,tsx}"],
+  },
   server: {
     host: "::",
     port: 8080,

@@ -28,6 +28,10 @@ O Supabase CLI está fixado em `2.116.0`. A configuração versionada fica em `s
 O procedimento de continuidade, as limitações dos backups físicos e o teste
 somente leitura para bancos restaurados estão em
 [`docs/backup-restore.md`](./docs/backup-restore.md).
+O ciclo completo de implantação, smoke test, incidentes e rollback está em
+[`docs/production-runbook.md`](./docs/production-runbook.md).
+Os cenários Playwright e a configuração segura das contas de homologação estão
+em [`docs/e2e.md`](./docs/e2e.md).
 
 ## Estrutura operacional (US-004)
 
@@ -280,7 +284,9 @@ continuar sendo definido por `NITRO_PRESET`, sem acoplar a aplicação.
 
 ### Production
 
-Reservado. Mesma superfície de configuração dos ambientes anteriores.
+O aplicativo está publicado em `https://app.callyvon.com` e usa o projeto
+Supabase principal `lyxonmqsldtsixdhcaww`. A operação diária, implantação,
+triagem e rollback seguem [`docs/production-runbook.md`](./docs/production-runbook.md).
 
 ## Segurança
 
