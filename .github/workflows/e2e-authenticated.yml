@@ -1,6 +1,7 @@
 name: E2E Authenticated
 
 on:
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -12,6 +13,7 @@ concurrency:
 
 jobs:
   authenticated-flows:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment: staging

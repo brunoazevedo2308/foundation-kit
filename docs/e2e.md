@@ -13,7 +13,7 @@ O Playwright valida o caminho navegador → aplicação → Supabase staging →
 
 Workflow: `.github/workflows/e2e-public.yml`.
 
-### Autenticado, disparado manualmente
+### Autenticado em PRs internos e por disparo manual
 
 - login real como `member` e administrador;
 - carregamento do dashboard e dados tenant-scoped;
@@ -22,7 +22,8 @@ Workflow: `.github/workflows/e2e-public.yml`.
 - acesso administrativo a usuários e clientes;
 - leitura da Central de Privacidade com o escopo correto.
 
-Workflow: `.github/workflows/e2e-authenticated.yml`.
+Workflow: `.github/workflows/e2e-authenticated.yml`. Em PRs originados de forks,
+o job não executa porque os secrets de staging não são compartilhados.
 
 Os testes autenticados são somente leitura. Eles não criam clientes, ações,
 arquivos ou solicitações LGPD e, portanto, podem ser repetidos sem acumular
@@ -42,7 +43,8 @@ Use contas dedicadas e ativas da branch Supabase `dp-suite-staging`. O admin
 pode ser `organization_admin` ou `system_admin`. Nunca use credenciais de
 produção e nunca registre os valores em issue, PR, artifact ou mensagem.
 
-Depois de configurar os secrets, execute **Actions → E2E Authenticated → Run
+Depois de configurar os secrets, o workflow executa automaticamente em PRs
+internos e também pode ser iniciado em **Actions → E2E Authenticated → Run
 workflow**. O job falha cedo quando qualquer secret está ausente, evitando
 resultado verde com cenários ignorados.
 
