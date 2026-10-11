@@ -1,15 +1,39 @@
 import { expect, type Page, test } from "@playwright/test";
+import { createClient } from "@supabase/supabase-js";
 
 const member = credentials("E2E_MEMBER_EMAIL", "E2E_MEMBER_PASSWORD");
 const admin = credentials("E2E_ADMIN_EMAIL", "E2E_ADMIN_PASSWORD");
 
 async function login(page: Page, email: string, password: string) {
-  await page.goto("/login");
-  await page.getByLabel("E-mail").fill(email);
-  await page.getByLabel("Senha").fill(password);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  const supabaseUrl = requiredEnv("VITE_SUPABASE_URL");
+  const supabasePublishableKey = requiredEnv("VITE_SUPABASE_PUBLISHABLE_KEY");
+  const supabase = createClient(supabaseUrl, supabasePublishableKey, {
+    auth: {
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      persistSession: false,
+    },
+  });
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error || !data.session) {
+    throw new Error(`Falha ao autenticar a conta E2E: ${error?.message ?? "sessão ausente"}`);
+  }
+
+  const projectRef = new URL(supabaseUrl).hostname.split(".")[0];
+  await page.addInitScript(
+    ({ storageKey, session }) => {
+      window.localStorage.setItem(storageKey, JSON.stringify(session));
+    },
+    {
+      storageKey: `sb-${projectRef}-auth-token`,
+      session: data.session,
+    },
+  );
+
+  await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^Olá,/ })).toBeVisible();
 }
 
 test.describe("member", () => {
@@ -54,4 +78,10 @@ function credentials(emailName: string, passwordName: string) {
   const email = process.env[emailName]?.trim();
   const password = process.env[passwordName];
   return email && password ? { email, password } : null;
+}
+
+function requiredEnv(name: string) {
+  const value = process.env[name]?.trim();
+  if (!value) throw new Error(`Variável obrigatória ausente: ${name}`);
+  return value;
 }
