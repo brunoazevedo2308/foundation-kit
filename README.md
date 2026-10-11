@@ -30,6 +30,8 @@ somente leitura para bancos restaurados estão em
 [`docs/backup-restore.md`](./docs/backup-restore.md).
 O ciclo completo de implantação, smoke test, incidentes e rollback está em
 [`docs/production-runbook.md`](./docs/production-runbook.md).
+Os cenários Playwright e a configuração segura das contas de homologação estão
+em [`docs/e2e.md`](./docs/e2e.md).
 
 ## Estrutura operacional (US-004)
 
