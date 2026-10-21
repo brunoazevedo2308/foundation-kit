@@ -9,23 +9,27 @@ adicionado depois sem quebrar chamadores.
 
 Nome canônico definido em `src/lib/observability.ts` (tipo `EventName`).
 
-| Evento                                | Severidade padrão | Quando é emitido                                                |
-| ------------------------------------- | ----------------- | --------------------------------------------------------------- |
-| `auth.login.attempt`                  | `info`            | Usuário submete o formulário de login                           |
-| `auth.login.success`                  | `info`            | Login concluído com perfil ativo                                |
-| `auth.login.failure`                  | `error`           | Falha de credencial ou erro do provider                         |
-| `auth.logout`                         | `info`            | Sessão encerrada pelo usuário                                   |
-| `auth.session.restored`               | `info`            | Sessão restaurada em rota protegida                             |
-| `auth.session.invalid`                | `error`           | Sessão ausente/expirada ao acessar rota protegida               |
-| `auth.profile.blocked`                | `error`           | Perfil ausente / `inactive` / `blocked` no gate                 |
-| `backend.request.failure`             | `error`           | Falha genérica em request ao Supabase (auth/db/storage)         |
-| `storage.upload.success`              | `info`            | Upload de evidência concluído                                   |
-| `storage.upload.failure`              | `error`           | Falha na inserção de metadata ou no `storage.upload`            |
-| `storage.upload.compensating_cleanup` | `warning`         | Limpeza compensatória disparada após falha de upload            |
-| `storage.signed_url.failure`          | `error`           | `createSignedUrl` falhou                                        |
-| `notifications.dispatch.failure`      | `error`           | (reservado) Falha ao despachar uma notificação — a instrumentar |
-| `ui.error_boundary.caught`            | `critical`        | Erro capturado pelo `GlobalErrorBoundary` ou boundary do root   |
-| `dev.controlled_error`                | `error`           | Diagnóstico manual em `/dev/observability` (apenas Development) |
+| Evento                                   | Severidade padrão | Quando é emitido                                                |
+| ---------------------------------------- | ----------------- | --------------------------------------------------------------- |
+| `auth.login.attempt`                     | `info`            | Usuário submete o formulário de login                           |
+| `auth.login.success`                     | `info`            | Login concluído com perfil ativo                                |
+| `auth.login.failure`                     | `error`           | Falha de credencial ou erro do provider                         |
+| `auth.logout`                            | `info`            | Sessão encerrada pelo usuário                                   |
+| `auth.session.restored`                  | `info`            | Sessão restaurada em rota protegida                             |
+| `auth.session.invalid`                   | `error`           | Sessão ausente/expirada ao acessar rota protegida               |
+| `auth.profile.blocked`                   | `error`           | Perfil ausente / `inactive` / `blocked` no gate                 |
+| `backend.request.failure`                | `error`           | Falha genérica em request ao Supabase (auth/db/storage)         |
+| `storage.upload.success`                 | `info`            | Upload de evidência concluído                                   |
+| `storage.upload.failure`                 | `error`           | Falha na inserção de metadata ou no `storage.upload`            |
+| `storage.upload.compensating_cleanup`    | `warning`         | Limpeza compensatória disparada após falha de upload            |
+| `storage.upload.version_conflict`        | `warning`         | Conflito ao criar uma nova versão de evidência                  |
+| `storage.signed_url.failure`             | `error`           | `createSignedUrl` falhou                                        |
+| `notifications.dispatch.failure`         | `error`           | (reservado) Falha ao despachar uma notificação — a instrumentar |
+| `report.export.success`                  | `info`            | Exportação de relatório concluída                               |
+| `report.export.failure`                  | `error`           | Falha ao gerar ou baixar relatório                              |
+| `pwa.service_worker.registration_failed` | `warning`         | Falha ao registrar o service worker da PWA                      |
+| `ui.error_boundary.caught`               | `critical`        | Erro capturado pelo `GlobalErrorBoundary` ou boundary do root   |
+| `dev.controlled_error`                   | `error`           | Diagnóstico manual em `/dev/observability` (apenas Development) |
 
 ## Severidades
 

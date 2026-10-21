@@ -79,6 +79,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Plataforma SaaS de governança e conformidade para operações de Dynamic Positioning.",
       },
+      { name: "theme-color", content: "#061b3a" },
+      { name: "application-name", content: "DP Suite" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "DP Suite" },
       { property: "og:title", content: "DP Suite" },
       {
         property: "og:description",
@@ -93,6 +98,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png", sizes: "180x180" },
     ],
   }),
   shellComponent: RootShell,
@@ -133,6 +140,18 @@ function RootComponent() {
       data.subscription.unsubscribe();
     };
   }, [router, queryClient]);
+
+  useEffect(() => {
+    if (!import.meta.env.PROD || !("serviceWorker" in navigator)) return;
+
+    void navigator.serviceWorker.register("/service-worker.js").catch((error) => {
+      emitEvent({
+        event_name: "pwa.service_worker.registration_failed",
+        severity: "warning",
+        context: { error: sanitize(error) },
+      });
+    });
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

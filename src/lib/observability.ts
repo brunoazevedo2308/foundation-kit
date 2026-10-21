@@ -48,6 +48,8 @@ export type EventName =
   // Relatórios / exportação (US-009)
   | "report.export.success"
   | "report.export.failure"
+  // Progressive Web App
+  | "pwa.service_worker.registration_failed"
   // Erros de renderização
   | "ui.error_boundary.caught"
   // Diagnóstico controlado (dev only)

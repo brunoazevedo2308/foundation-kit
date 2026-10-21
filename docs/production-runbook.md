@@ -147,8 +147,12 @@ Executar com contas de teste identificáveis e sem dados reais sensíveis:
 8. Busca, notificações e relatório respeitam o mesmo tenant.
 9. Central de Privacidade registra pedido e mantém detalhes invisíveis a outro membro.
 10. Monitoramento manual fica verde após o teste.
+11. Manifesto e service worker da PWA retornam `200`; a instalação abre em modo independente.
+12. Em modo offline, somente a página neutra de indisponibilidade aparece; nenhum dado autenticado é exibido.
 
 Registrar commit, horário UTC, executor, contas/papéis usados e resultado; nunca registrar senhas ou tokens.
+O procedimento detalhado para iOS e Android está em
+[`docs/mobile-installation.md`](./mobile-installation.md).
 
 ## 9. Triagem por sintoma
 
@@ -259,3 +263,4 @@ Antes de declarar o MVP pronto:
 - [ ] pendências LGPD jurídicas concluídas: CNPJ/endereço, canal, contratos, retenção e revisão do aviso;
 - [ ] responsáveis e contatos de emergência preenchidos;
 - [ ] plano de rollback conhecido e testável.
+- [ ] PWA instalada e aprovada em pelo menos um iPhone e um Android reais.

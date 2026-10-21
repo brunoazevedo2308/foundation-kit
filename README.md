@@ -32,6 +32,8 @@ O ciclo completo de implantação, smoke test, incidentes e rollback está em
 [`docs/production-runbook.md`](./docs/production-runbook.md).
 Os cenários Playwright e a configuração segura das contas de homologação estão
 em [`docs/e2e.md`](./docs/e2e.md).
+O procedimento de instalação da PWA no iOS/Android e seu smoke test seguro
+estão em [`docs/mobile-installation.md`](./docs/mobile-installation.md).
 
 ## Estrutura operacional (US-004)
 
