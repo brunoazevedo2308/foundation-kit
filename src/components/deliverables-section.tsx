@@ -32,14 +32,18 @@ interface DeliverablesSectionProps {
   actionId: string;
   canManage: boolean;
   currentUserId: string;
+  actionResponsibleUserId: string;
   role: string;
+  onChanged?: () => void;
 }
 
 export function DeliverablesSection({
   actionId,
   canManage,
   currentUserId,
+  actionResponsibleUserId,
   role,
+  onChanged,
 }: DeliverablesSectionProps) {
   const [items, setItems] = useState<DeliverableListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,6 +130,7 @@ export function DeliverablesSection({
               await createDeliverable(actionId, values);
               await reload();
               setCreating(false);
+              onChanged?.();
             }}
           />
         ) : null}
@@ -152,6 +157,7 @@ export function DeliverablesSection({
                       await updateDeliverable(item.id, values, item.completedAt);
                       await reload();
                       setEditingId(null);
+                      onChanged?.();
                     }}
                   />
                 </li>
@@ -179,17 +185,30 @@ export function DeliverablesSection({
                       actionId={actionId}
                       deliverableId={item.id}
                       canManage={canManage}
+                      canUpload={
+                        canManage ||
+                        item.responsibleUserId === currentUserId ||
+                        actionResponsibleUserId === currentUserId
+                      }
+                      onChanged={onChanged}
                     />
                     <AttachmentsSection
                       context={{ deliverableId: item.id }}
                       canManage={canManage}
+                      canUpload={
+                        canManage ||
+                        item.responsibleUserId === currentUserId ||
+                        actionResponsibleUserId === currentUserId
+                      }
                       title={`Anexos — ${item.title}`}
+                      onChanged={onChanged}
                     />
                     <CommentsSection
                       context={{ deliverableId: item.id }}
                       currentUserId={currentUserId}
                       role={role}
                       title={`Comentários — ${item.title}`}
+                      onChanged={onChanged}
                     />
                   </div>
                   {canManage ? (
@@ -212,6 +231,7 @@ export function DeliverablesSection({
                           try {
                             await softDeleteDeliverable(item.id);
                             await reload();
+                            onChanged?.();
                           } catch (err) {
                             setError(
                               err instanceof Error

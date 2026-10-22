@@ -127,6 +127,7 @@ describe("notificationTypeLabel", () => {
     expect(notificationTypeLabel("action.assigned")).toBe("Ação atribuída");
     expect(notificationTypeLabel("deliverable.assigned")).toBe("Entregável atribuído");
     expect(notificationTypeLabel("comment.created")).toBe("Novo comentário");
+    expect(notificationTypeLabel("action.updated")).toBe("Ação atualizada");
   });
 
   it("usa rótulo genérico para tipos desconhecidos", () => {

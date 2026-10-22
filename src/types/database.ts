@@ -110,6 +110,61 @@ export type Database = {
           },
         ];
       };
+      action_activity: {
+        Row: {
+          action_id: string;
+          actor_user_id: string | null;
+          created_at: string;
+          event_type: string;
+          id: string;
+          metadata: Json;
+          organization_id: string;
+          summary: string;
+        };
+        Insert: {
+          action_id: string;
+          actor_user_id?: string | null;
+          created_at?: string;
+          event_type: string;
+          id?: string;
+          metadata?: Json;
+          organization_id?: string;
+          summary: string;
+        };
+        Update: {
+          action_id?: string;
+          actor_user_id?: string | null;
+          created_at?: string;
+          event_type?: string;
+          id?: string;
+          metadata?: Json;
+          organization_id?: string;
+          summary?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "action_activity_action_id_fkey";
+            columns: ["action_id"];
+            isOneToOne: false;
+            referencedRelation: "actions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "action_activity_actor_user_id_fkey";
+            columns: ["actor_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "action_activity_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       attachments: {
         Row: {
           action_id: string | null;

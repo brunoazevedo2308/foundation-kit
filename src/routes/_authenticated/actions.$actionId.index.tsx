@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ListChecks, Pencil, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
+import { ActionActivitySection } from "@/components/action-activity-section";
 import { AttachmentsSection } from "@/components/attachments-section";
 import { CommentsSection } from "@/components/comments-section";
 import { DeliverablesSection } from "@/components/deliverables-section";
@@ -52,6 +53,8 @@ function ActionDetailPage() {
   const [action, setAction] = useState<ActionListItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activityRevision, setActivityRevision] = useState(0);
+  const activityChanged = useCallback(() => setActivityRevision((value) => value + 1), []);
 
   useEffect(() => {
     let active = true;
@@ -197,8 +200,16 @@ function ActionDetailPage() {
         </Card>
       ) : null}
 
+      {action ? <ActionActivitySection actionId={actionId} revision={activityRevision} /> : null}
+
       {action ? (
-        <AttachmentsSection context={{ actionId }} canManage={canManage} title="Anexos da ação" />
+        <AttachmentsSection
+          context={{ actionId }}
+          canManage={canManage}
+          canUpload={canManage || action.responsibleUserId === user.id}
+          title="Anexos da ação"
+          onChanged={activityChanged}
+        />
       ) : null}
 
       {action ? (
@@ -206,7 +217,9 @@ function ActionDetailPage() {
           actionId={actionId}
           canManage={canManage}
           currentUserId={user.id}
+          actionResponsibleUserId={action.responsibleUserId}
           role={profile.role}
+          onChanged={activityChanged}
         />
       ) : null}
 
@@ -216,6 +229,7 @@ function ActionDetailPage() {
           currentUserId={user.id}
           role={profile.role}
           title="Comentários da ação"
+          onChanged={activityChanged}
         />
       ) : null}
     </div>

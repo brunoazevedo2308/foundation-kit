@@ -207,6 +207,32 @@ function AttentionRow({ item, today }: { item: ActionListItem; today: string }) 
   );
 }
 
+function AttentionCard({ entries, today }: { entries: ActionListItem[]; today: string }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Atenção imediata</CardTitle>
+        <CardDescription>
+          Ações vencidas, urgentes ou de criticidade crítica, ordenadas por severidade e prazo.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {entries.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Nenhuma ação exige atenção imediata neste momento.
+          </p>
+        ) : (
+          <ul className="flex flex-col">
+            {entries.map((item) => (
+              <AttentionRow key={item.id} item={item} today={today} />
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function DashboardPage() {
   const { user, profile } = Route.useRouteContext();
   const displayName = profile.fullName ?? user.email ?? "Usuário";
@@ -359,6 +385,8 @@ function DashboardPage() {
             </Card>
           ) : (
             <>
+              <AttentionCard entries={view.attention} today={today} />
+
               <section
                 className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
                 aria-label="Indicadores operacionais"
@@ -428,29 +456,6 @@ function DashboardPage() {
                   entries={view.responsibles}
                 />
               </section>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Atenção imediata</CardTitle>
-                  <CardDescription>
-                    Ações vencidas, urgentes ou de criticidade crítica, ordenadas por severidade e
-                    prazo.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {view.attention.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      Nenhuma ação exige atenção imediata neste momento.
-                    </p>
-                  ) : (
-                    <ul className="flex flex-col">
-                      {view.attention.map((item) => (
-                        <AttentionRow key={item.id} item={item} today={today} />
-                      ))}
-                    </ul>
-                  )}
-                </CardContent>
-              </Card>
             </>
           )}
         </>

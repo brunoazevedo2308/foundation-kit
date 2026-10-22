@@ -140,8 +140,8 @@ function ActionsPage() {
           Nenhuma ação com este status.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border">
-          <Table>
+        <div className="overflow-x-auto rounded-lg border border-border">
+          <Table className="min-w-[760px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Título</TableHead>

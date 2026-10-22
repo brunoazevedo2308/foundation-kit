@@ -138,7 +138,47 @@
   }
 
   body {
+    min-height: 100dvh;
+    overflow-x: hidden;
     background-color: var(--color-background);
     color: var(--color-foreground);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+}
+
+@layer components {
+  .app-header-safe {
+    min-height: calc(3.5rem + env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+  }
+
+  .app-main-safe {
+    padding-top: 1rem;
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+
+  @media (min-width: 640px) {
+    .app-main-safe {
+      padding: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .app-main-safe {
+      padding: 2rem;
+    }
+  }
+
+  @media (max-width: 639px) and (pointer: coarse) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
   }
 }

@@ -96,6 +96,7 @@ const NOTIFICATION_TYPE_LABELS: Readonly<Record<string, string>> = {
   "action.assigned": "Ação atribuída",
   "deliverable.assigned": "Entregável atribuído",
   "comment.created": "Novo comentário",
+  "action.updated": "Ação atualizada",
 };
 
 export function notificationTypeLabel(notificationType: string): string {

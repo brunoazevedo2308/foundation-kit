@@ -29,6 +29,7 @@ interface CommentsSectionProps {
   currentUserId: string;
   role: string;
   title?: string;
+  onChanged?: () => void;
 }
 
 export function CommentsSection({
@@ -36,6 +37,7 @@ export function CommentsSection({
   currentUserId,
   role,
   title = "Comentários",
+  onChanged,
 }: CommentsSectionProps) {
   const contextKey = "actionId" in context ? `a:${context.actionId}` : `d:${context.deliverableId}`;
   const [items, setItems] = useState<CommentListItem[]>([]);
@@ -87,6 +89,7 @@ export function CommentsSection({
       await createComment(context, { body: parsed.data.body });
       setBody("");
       await reload();
+      onChanged?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível publicar o comentário.");
     } finally {
@@ -157,6 +160,7 @@ export function CommentsSection({
                     try {
                       await softDeleteComment(comment.id);
                       await reload();
+                      onChanged?.();
                     } catch (err) {
                       setError(
                         err instanceof Error

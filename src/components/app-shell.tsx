@@ -27,11 +27,11 @@ export function AppShell({
 }) {
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background text-foreground">
+      <div className="flex min-h-dvh w-full bg-background text-foreground">
         <AppSidebar role={role} />
         <SidebarInset className="flex min-w-0 flex-1 flex-col">
           <AppHeader displayName={displayName} organizationName={organizationName} email={email} />
-          <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+          <main className="app-main-safe min-w-0 flex-1">{children}</main>
         </SidebarInset>
       </div>
     </SidebarProvider>
