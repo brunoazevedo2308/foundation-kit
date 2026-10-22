@@ -21,7 +21,7 @@ import {
 export const Route = createFileRoute("/_authenticated/clients/$clientId/edit")({
   head: () => ({
     meta: [
-      { title: "Editar cliente · DP Suite" },
+      { title: "Editar cliente · Atino DP Suite" },
       { name: "description", content: "Edição de um cliente da organização." },
       { name: "robots", content: "noindex" },
     ],

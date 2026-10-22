@@ -11,9 +11,9 @@ import { createVessel, type VesselListItem } from "@/lib/vessels";
 export const Route = createFileRoute("/_authenticated/vessels/new")({
   head: () => ({
     meta: [
-      { title: "Nova embarcação · DP Suite" },
+      { title: "Nova embarcação · Atino DP Suite" },
       { name: "description", content: "Cadastro de uma nova embarcação da frota DP." },
-      { property: "og:title", content: "Nova embarcação · DP Suite" },
+      { property: "og:title", content: "Nova embarcação · Atino DP Suite" },
       { property: "og:description", content: "Cadastro de uma nova embarcação da frota DP." },
     ],
   }),

@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/brand-logo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signOut, updatePassword } from "@/lib/auth";
@@ -10,8 +11,8 @@ export const Route = createFileRoute("/reset-password")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Redefinir senha · DP Suite" },
-      { name: "description", content: "Defina uma nova senha para sua conta DP Suite." },
+      { title: "Redefinir senha · Atino DP Suite" },
+      { name: "description", content: "Defina uma nova senha para sua conta Atino DP Suite." },
     ],
   }),
   component: ResetPasswordPage,
@@ -74,9 +75,10 @@ function ResetPasswordPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-sm">
+        <BrandLogo className="mb-8" />
         <h1 className="text-2xl font-semibold tracking-tight">Redefinir senha</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Escolha uma nova senha para acessar o DP Suite.
+          Escolha uma nova senha para acessar o Atino DP Suite.
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">

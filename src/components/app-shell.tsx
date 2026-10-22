@@ -6,7 +6,7 @@ import { AppSidebar } from "./app-sidebar";
 import { AppHeader } from "./app-header";
 
 /**
- * TT-006 — DP Suite authenticated app shell.
+ * TT-006 — Atino DP Suite authenticated app shell.
  *
  * Wraps every route under `/_authenticated` with the persistent sidebar +
  * header. The shell is responsive: on mobile the sidebar collapses into an

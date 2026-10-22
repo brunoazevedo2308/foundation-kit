@@ -43,9 +43,9 @@ import {
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard · DP Suite" },
+      { title: "Dashboard · Atino DP Suite" },
       { name: "description", content: "Visão geral da governança DP da sua organização." },
-      { property: "og:title", content: "Dashboard · DP Suite" },
+      { property: "og:title", content: "Dashboard · Atino DP Suite" },
       {
         property: "og:description",
         content: "KPIs operacionais, distribuições e ações que exigem atenção imediata.",

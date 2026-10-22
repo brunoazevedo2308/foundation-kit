@@ -1,5 +1,5 @@
 /**
- * DP Suite — safe return-path helper (TT-006).
+ * Atino DP Suite — safe return-path helper (TT-006).
  *
  * Post-login redirects must never send the user to an arbitrary URL —
  * an attacker could craft `/login?redirect=https://evil.example/phish`

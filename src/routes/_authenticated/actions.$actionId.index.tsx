@@ -32,11 +32,12 @@ import {
   type ActionListItem,
 } from "@/lib/actions";
 import { canManageOperationalData } from "@/lib/clients";
+import { listActionParticipants, type ActionParticipant } from "@/lib/action-participants";
 
 export const Route = createFileRoute("/_authenticated/actions/$actionId/")({
   head: () => ({
     meta: [
-      { title: "Detalhe da ação · DP Suite" },
+      { title: "Detalhe da ação · Atino DP Suite" },
       { name: "description", content: "Detalhe de uma ação operacional DP." },
       { name: "robots", content: "noindex" },
     ],
@@ -54,14 +55,18 @@ function ActionDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activityRevision, setActivityRevision] = useState(0);
+  const [participants, setParticipants] = useState<ActionParticipant[]>([]);
   const activityChanged = useCallback(() => setActivityRevision((value) => value + 1), []);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
-    getAction(actionId)
-      .then((row) => {
-        if (active) setAction(row);
+    Promise.all([getAction(actionId), listActionParticipants(actionId)])
+      .then(([row, participantRows]) => {
+        if (active) {
+          setAction(row);
+          setParticipants(participantRows);
+        }
       })
       .catch((err) => {
         if (active)
@@ -195,6 +200,16 @@ function ActionDetailPage() {
               <Detail label="Embarcação" value={action.vesselName} />
               <Detail label="Origem" value={action.origin} />
               <Detail label="Tipo" value={action.actionType} />
+              <Detail
+                label="Participantes e contribuidores"
+                value={
+                  participants.length > 0
+                    ? participants
+                        .map((participant) => participant.fullName ?? participant.userId)
+                        .join(", ")
+                    : null
+                }
+              />
             </dl>
           </CardContent>
         </Card>
@@ -206,7 +221,11 @@ function ActionDetailPage() {
         <AttachmentsSection
           context={{ actionId }}
           canManage={canManage}
-          canUpload={canManage || action.responsibleUserId === user.id}
+          canUpload={
+            canManage ||
+            action.responsibleUserId === user.id ||
+            participants.some((participant) => participant.userId === user.id)
+          }
           title="Anexos da ação"
           onChanged={activityChanged}
         />

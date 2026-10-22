@@ -165,6 +165,59 @@ export type Database = {
           },
         ];
       };
+      action_participants: {
+        Row: {
+          action_id: string;
+          added_by: string;
+          created_at: string;
+          organization_id: string;
+          user_id: string;
+        };
+        Insert: {
+          action_id: string;
+          added_by?: string;
+          created_at?: string;
+          organization_id?: string;
+          user_id: string;
+        };
+        Update: {
+          action_id?: string;
+          added_by?: string;
+          created_at?: string;
+          organization_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "action_participants_action_id_fkey";
+            columns: ["action_id"];
+            isOneToOne: false;
+            referencedRelation: "actions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "action_participants_added_by_fkey";
+            columns: ["added_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "action_participants_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "action_participants_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       attachments: {
         Row: {
           action_id: string | null;

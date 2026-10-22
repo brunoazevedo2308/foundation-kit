@@ -20,9 +20,9 @@ import { listVessels, softDeleteVessel, type VesselListItem } from "@/lib/vessel
 export const Route = createFileRoute("/_authenticated/vessels/")({
   head: () => ({
     meta: [
-      { title: "Embarcações · DP Suite" },
+      { title: "Embarcações · Atino DP Suite" },
       { name: "description", content: "Frota DP governada pela organização." },
-      { property: "og:title", content: "Embarcações · DP Suite" },
+      { property: "og:title", content: "Embarcações · Atino DP Suite" },
       { property: "og:description", content: "Frota DP governada pela organização." },
     ],
   }),

@@ -30,7 +30,7 @@ import {
 export const Route = createFileRoute("/_authenticated/privacy-center")({
   head: () => ({
     meta: [
-      { title: "Central de Privacidade · DP Suite" },
+      { title: "Central de Privacidade · Atino DP Suite" },
       { name: "description", content: "Solicitações de direitos sobre dados pessoais." },
     ],
   }),

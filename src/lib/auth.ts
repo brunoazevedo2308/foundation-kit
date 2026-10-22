@@ -3,7 +3,7 @@ import { passwordUpdateErrorMessage } from "./auth-errors";
 import { supabase } from "./supabase";
 
 /**
- * DP Suite — authentication helpers (TT-005).
+ * Atino DP Suite — authentication helpers (TT-005).
  *
  * Thin wrapper around supabase-js. All user-facing error messages are
  * generic Portuguese strings — raw Supabase error text is never surfaced

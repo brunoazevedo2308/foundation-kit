@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "DP Suite — Dynamic Positioning Governance",
-  "short_name": "DP Suite",
+  "name": "Atino DP Suite — Dynamic Positioning Governance",
+  "short_name": "Atino DP Suite",
   "description": "Governança e conformidade para operações de Dynamic Positioning.",
   "lang": "pt-BR",
   "dir": "ltr",
@@ -10,8 +10,8 @@
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
   "orientation": "any",
-  "background_color": "#061b3a",
-  "theme_color": "#061b3a",
+  "background_color": "#F5F7FA",
+  "theme_color": "#0A2D4A",
   "categories": ["business", "productivity"],
   "icons": [
     {

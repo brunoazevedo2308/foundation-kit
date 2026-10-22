@@ -11,7 +11,7 @@ describe("PWA", () => {
 
     expect(manifest).toMatchObject({
       id: "/",
-      short_name: "DP Suite",
+      short_name: "Atino DP Suite",
       start_url: "/dashboard",
       scope: "/",
       display: "standalone",

@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -26,6 +27,7 @@ import {
 import { listClients, type ClientListItem } from "@/lib/clients";
 import { listUsers, type UserListItem } from "@/lib/users";
 import { listVessels, type VesselListItem } from "@/lib/vessels";
+import { validateAttachmentFile } from "@/lib/attachment-storage";
 
 /**
  * US-004 (2º ciclo) — formulário compartilhado de Ações.
@@ -58,21 +60,36 @@ interface ActionFormProps {
   submitLabel: string;
   submittingLabel: string;
   cancelTo: ReactNode;
-  onSubmit: (values: ActionFormInput) => Promise<void>;
+  initialContributorUserIds?: string[];
+  allowInitialAttachment?: boolean;
+  onSubmit: (values: ActionFormInput, extras: ActionFormExtras) => Promise<void>;
 }
+
+export type ActionFormExtras = {
+  contributorUserIds: string[];
+  attachment: File | null;
+};
 
 export function ActionForm({
   initialValues,
   submitLabel,
   submittingLabel,
   cancelTo,
+  initialContributorUserIds,
+  allowInitialAttachment = false,
   onSubmit,
 }: ActionFormProps) {
   const [values, setValues] = useState<ActionFormInput>(initialValues);
   const [clients, setClients] = useState<ClientListItem[]>([]);
   const [vessels, setVessels] = useState<VesselListItem[]>([]);
   const [users, setUsers] = useState<UserListItem[]>([]);
-  const [loadingRefs, setLoadingRefs] = useState(true);
+  const [loadingClients, setLoadingClients] = useState(true);
+  const [loadingVessels, setLoadingVessels] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [contributorUserIds, setContributorUserIds] = useState(
+    () => initialContributorUserIds ?? [],
+  );
+  const [attachment, setAttachment] = useState<File | null>(null);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -82,20 +99,23 @@ export function ActionForm({
   }, [initialValues]);
 
   useEffect(() => {
+    setContributorUserIds(initialContributorUserIds ?? []);
+  }, [initialContributorUserIds]);
+
+  useEffect(() => {
     let active = true;
-    Promise.all([listClients(), listVessels(), listUsers()])
-      .then(([c, v, u]) => {
-        if (!active) return;
-        setClients(c);
-        setVessels(v);
-        setUsers(u.filter((item) => item.status === "active"));
-      })
-      .catch(() => {
-        if (active) setFormError("Não foi possível carregar os dados de vínculo.");
-      })
-      .finally(() => {
-        if (active) setLoadingRefs(false);
-      });
+    listClients()
+      .then((rows) => active && setClients(rows))
+      .catch(() => active && setFormError("Não foi possível carregar os clientes."))
+      .finally(() => active && setLoadingClients(false));
+    listVessels()
+      .then((rows) => active && setVessels(rows))
+      .catch(() => active && setFormError("Não foi possível carregar as embarcações."))
+      .finally(() => active && setLoadingVessels(false));
+    listUsers()
+      .then((rows) => active && setUsers(rows.filter((item) => item.status === "active")))
+      .catch(() => active && setFormError("Não foi possível carregar os usuários."))
+      .finally(() => active && setLoadingUsers(false));
     return () => {
       active = false;
     };
@@ -124,7 +144,11 @@ export function ActionForm({
 
     setSubmitting(true);
     try {
-      await onSubmit(values);
+      if (attachment) validateAttachmentFile(attachment);
+      await onSubmit(values, {
+        contributorUserIds: contributorUserIds.filter((id) => id !== values.responsibleUserId),
+        attachment,
+      });
     } catch (error) {
       setFormError(error instanceof Error ? error.message : "Não foi possível salvar a ação.");
     } finally {
@@ -179,11 +203,11 @@ export function ActionForm({
           <Select
             value={values.responsibleUserId ? values.responsibleUserId : undefined}
             onValueChange={(value) => update("responsibleUserId", value)}
-            disabled={loadingRefs || users.length === 0}
+            disabled={loadingUsers || users.length === 0}
           >
             <SelectTrigger id="responsibleUserId">
               <SelectValue
-                placeholder={loadingRefs ? "Carregando..." : "Selecione o responsável"}
+                placeholder={loadingUsers ? "Carregando..." : "Selecione o responsável"}
               />
             </SelectTrigger>
             <SelectContent>
@@ -209,7 +233,7 @@ export function ActionForm({
           <Select
             value={values.clientId ? values.clientId : NONE}
             onValueChange={(value) => update("clientId", value === NONE ? "" : value)}
-            disabled={loadingRefs}
+            disabled={loadingClients}
           >
             <SelectTrigger id="clientId">
               <SelectValue placeholder="Sem vínculo" />
@@ -229,7 +253,7 @@ export function ActionForm({
           <Select
             value={values.vesselId ? values.vesselId : NONE}
             onValueChange={(value) => update("vesselId", value === NONE ? "" : value)}
-            disabled={loadingRefs}
+            disabled={loadingVessels}
           >
             <SelectTrigger id="vesselId">
               <SelectValue placeholder="Sem vínculo" />
@@ -329,6 +353,55 @@ export function ActionForm({
           </Select>
         </Field>
       </div>
+
+      <fieldset className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">
+        <legend className="px-1 text-sm font-semibold">Participantes e contribuidores</legend>
+        <p className="text-sm text-muted-foreground">
+          Pessoas designadas poderão acompanhar a ação, receber notificações e enviar anexos ou
+          evidências.
+        </p>
+        {loadingUsers ? (
+          <p className="text-sm text-muted-foreground">Carregando usuários...</p>
+        ) : (
+          <div className="grid gap-2 sm:grid-cols-2">
+            {users
+              .filter((user) => user.id !== values.responsibleUserId)
+              .map((user) => {
+                const checked = contributorUserIds.includes(user.id);
+                return (
+                  <label
+                    key={user.id}
+                    className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border bg-background px-3 py-2 text-sm transition-colors hover:border-primary/60 hover:bg-accent/50"
+                  >
+                    <Checkbox
+                      checked={checked}
+                      onCheckedChange={(next) =>
+                        setContributorUserIds((current) =>
+                          next
+                            ? [...current, user.id]
+                            : current.filter((userId) => userId !== user.id),
+                        )
+                      }
+                    />
+                    <span>{user.fullName ?? user.id}</span>
+                  </label>
+                );
+              })}
+          </div>
+        )}
+      </fieldset>
+
+      {allowInitialAttachment ? (
+        <Field label="Anexo inicial (foto ou PDF)" htmlFor="initialAttachment">
+          <Input
+            id="initialAttachment"
+            type="file"
+            accept="image/jpeg,image/png,image/webp,application/pdf"
+            onChange={(event) => setAttachment(event.target.files?.[0] ?? null)}
+          />
+          <p className="text-xs text-muted-foreground">JPG, PNG, WebP ou PDF.</p>
+        </Field>
+      ) : null}
 
       {formError ? (
         <p

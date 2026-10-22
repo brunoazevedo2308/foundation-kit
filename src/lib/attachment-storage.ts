@@ -2,7 +2,7 @@ import { emitEvent, sanitize } from "./observability";
 import { supabase } from "./supabase";
 
 /**
- * DP Suite — Attachment storage module (US-008, 1º ciclo).
+ * Atino DP Suite — Attachment storage module (US-008, 1º ciclo).
  *
  * Domínio **separado** de Evidences: bucket próprio, caminho próprio,
  * policies próprias. Nunca reutilize `evidences-private` para anexos.

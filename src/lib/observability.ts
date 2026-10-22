@@ -1,5 +1,5 @@
 /**
- * DP Suite — Observabilidade mínima (TT-008).
+ * Atino DP Suite — Observabilidade mínima (TT-008).
  *
  * Módulo central de emissão de eventos estruturados e sanitizados no
  * frontend. Nenhum segredo, token, senha, cookie, header de autorização,

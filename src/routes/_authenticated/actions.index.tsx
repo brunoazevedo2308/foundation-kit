@@ -3,6 +3,7 @@ import { ListChecks, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { PageHeader } from "@/components/page-header";
+import { SoftDeleteDialog } from "@/components/soft-delete-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +27,7 @@ import {
   ACTION_STATUS_LABELS,
   isOverdue,
   listActions,
+  softDeleteAction,
   type ActionListItem,
   type ActionStatus,
 } from "@/lib/actions";
@@ -34,9 +36,9 @@ import { canManageOperationalData } from "@/lib/clients";
 export const Route = createFileRoute("/_authenticated/actions/")({
   head: () => ({
     meta: [
-      { title: "Ações · DP Suite" },
+      { title: "Ações · Atino DP Suite" },
       { name: "description", content: "Ações operacionais DP da organização." },
-      { property: "og:title", content: "Ações · DP Suite" },
+      { property: "og:title", content: "Ações · Atino DP Suite" },
       { property: "og:description", content: "Ações operacionais DP da organização." },
     ],
   }),
@@ -150,6 +152,7 @@ function ActionsPage() {
                 <TableHead>Responsável</TableHead>
                 <TableHead>Cliente / Embarcação</TableHead>
                 <TableHead>Prazo</TableHead>
+                {canManage ? <TableHead className="w-16 text-right">Excluir</TableHead> : null}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -181,6 +184,21 @@ function ActionsPage() {
                       "—"
                     )}
                   </TableCell>
+                  {canManage ? (
+                    <TableCell className="text-right">
+                      <SoftDeleteDialog
+                        title="Excluir esta ação?"
+                        description={`A ação “${item.title}” sairá das listagens, mas seu histórico será preservado para auditoria.`}
+                        triggerLabel={`Excluir ação ${item.title}`}
+                        onConfirm={async () => {
+                          await softDeleteAction(item.id);
+                          setActions((current) =>
+                            current.filter((action) => action.id !== item.id),
+                          );
+                        }}
+                      />
+                    </TableCell>
+                  ) : null}
                 </TableRow>
               ))}
             </TableBody>

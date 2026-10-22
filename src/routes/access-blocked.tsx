@@ -5,7 +5,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 
 /**
- * DP Suite — controlled access-blocked screen (TT-006).
+ * Atino DP Suite — controlled access-blocked screen (TT-006).
  *
  * Public route (no auth gate). Reached when a signed-in session belongs to
  * a profile whose lifecycle status is `inactive`, `blocked`, or missing /
@@ -21,10 +21,10 @@ export const Route = createFileRoute("/access-blocked")({
   validateSearch: (search) => ({ status: StatusSchema.parse(search.status) }),
   head: () => ({
     meta: [
-      { title: "Acesso indisponível · DP Suite" },
+      { title: "Acesso indisponível · Atino DP Suite" },
       {
         name: "description",
-        content: "Este acesso ao DP Suite está temporariamente indisponível.",
+        content: "Este acesso ao Atino DP Suite está temporariamente indisponível.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -41,7 +41,7 @@ const COPY = {
   blocked: {
     title: "Acesso bloqueado",
     description:
-      "Seu acesso ao DP Suite está bloqueado. Contate o administrador da sua organização para saber mais.",
+      "Seu acesso ao Atino DP Suite está bloqueado. Contate o administrador da sua organização para saber mais.",
   },
   unknown: {
     title: "Acesso indisponível",

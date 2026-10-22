@@ -64,8 +64,17 @@ export function useUnreadNotifications(): number | null {
       lastKey = null;
       refresh();
     };
+    const interval = window.setInterval(onChanged, 15_000);
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") onChanged();
+    };
     window.addEventListener(NOTIFICATIONS_CHANGED_EVENT, onChanged);
-    return () => window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, onChanged);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, onChanged);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, []);
 
   return count;

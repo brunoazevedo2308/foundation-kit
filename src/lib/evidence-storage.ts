@@ -2,7 +2,7 @@ import { emitEvent, maskSignedUrl, sanitize } from "./observability";
 import { supabase } from "./supabase";
 
 /**
- * DP Suite — Evidence storage module (TT-007).
+ * Atino DP Suite — Evidence storage module (TT-007).
  *
  * Handles private uploads to the `evidences-private` bucket, distinct
  * from Attachments. Follows a strict metadata-first, path-canonical flow

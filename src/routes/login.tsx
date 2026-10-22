@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/brand-logo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -31,8 +32,8 @@ export const Route = createFileRoute("/login")({
   validateSearch: (search) => SearchSchema.parse(search),
   head: () => ({
     meta: [
-      { title: "Entrar · DP Suite" },
-      { name: "description", content: "Acesse o DP Suite com sua conta corporativa." },
+      { title: "Entrar · Atino DP Suite" },
+      { name: "description", content: "Acesse o Atino DP Suite com sua conta corporativa." },
     ],
   }),
   component: LoginPage,
@@ -72,8 +73,8 @@ function LoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <Link to="/" className="text-xs uppercase tracking-widest text-muted-foreground">
-            DP Suite
+          <Link to="/" aria-label="Atino DP Suite">
+            <BrandLogo />
           </Link>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight">Entrar</h1>
           <p className="mt-1 text-sm text-muted-foreground">Use sua conta corporativa.</p>

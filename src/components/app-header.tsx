@@ -137,7 +137,7 @@ export function AppHeader({ displayName, organizationName, email }: HeaderProps)
         <nav aria-label="Ações rápidas" className="flex items-center gap-1">
           <form role="search" onSubmit={handleSearchSubmit} className="hidden sm:block">
             <label htmlFor="global-search" className="sr-only">
-              Buscar no DP Suite
+              Buscar no Atino DP Suite
             </label>
             <div className="relative">
               <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

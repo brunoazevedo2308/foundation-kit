@@ -76,18 +76,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "viewport",
         content: "width=device-width, initial-scale=1, viewport-fit=cover",
       },
-      { title: "DP Suite — Dynamic Positioning Governance" },
+      { title: "Atino DP Suite — Dynamic Positioning Governance" },
       {
         name: "description",
         content:
           "Plataforma SaaS de governança e conformidade para operações de Dynamic Positioning.",
       },
       { name: "theme-color", content: "#061b3a" },
-      { name: "application-name", content: "DP Suite" },
+      { name: "application-name", content: "Atino DP Suite" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
-      { name: "apple-mobile-web-app-title", content: "DP Suite" },
-      { property: "og:title", content: "DP Suite" },
+      { name: "apple-mobile-web-app-title", content: "Atino DP Suite" },
+      { property: "og:title", content: "Atino DP Suite" },
       {
         property: "og:description",
         content: "Plataforma SaaS de governança para operações de Dynamic Positioning.",

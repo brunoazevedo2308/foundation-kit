@@ -3,7 +3,7 @@ import { Component, type ErrorInfo, type ReactNode } from "react";
 import { emitEvent, generateCorrelationId, sanitize } from "@/lib/observability";
 
 /**
- * DP Suite — Global Error Boundary (TT-008).
+ * Atino DP Suite — Global Error Boundary (TT-008).
  *
  * Captura erros críticos de renderização, exibe uma tela em português
  * com o correlation ID visível e emite um evento `ui.error_boundary.caught`

@@ -21,7 +21,7 @@ import {
 export const Route = createFileRoute("/_authenticated/vessels/$vesselId/edit")({
   head: () => ({
     meta: [
-      { title: "Editar embarcação · DP Suite" },
+      { title: "Editar embarcação · Atino DP Suite" },
       { name: "description", content: "Edição de uma embarcação da frota DP." },
       { name: "robots", content: "noindex" },
     ],
