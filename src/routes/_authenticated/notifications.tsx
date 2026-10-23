@@ -189,6 +189,14 @@ function NotificationsPage() {
                     {notification.body ? (
                       <p className="mt-1 text-sm text-muted-foreground">{notification.body}</p>
                     ) : null}
+                    {notification.actorUserId ? (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Executada por:{" "}
+                        <span className="font-medium text-foreground">
+                          {notification.actorName ?? "Usuário não disponível"}
+                        </span>
+                      </p>
+                    ) : null}
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       {notification.target ? (
                         <Button asChild variant="link" size="sm" className="h-auto px-0">
