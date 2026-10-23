@@ -102,8 +102,8 @@ function VesselsPage() {
           </p>
         </div>
       ) : vessels.length > 0 ? (
-        <div className="overflow-hidden rounded-lg border border-border">
-          <Table>
+        <div className="overflow-x-auto rounded-lg border border-border">
+          <Table className="min-w-[960px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
@@ -111,6 +111,7 @@ function VesselsPage() {
                 <TableHead>Tipo</TableHead>
                 <TableHead>Classe DP</TableHead>
                 <TableHead>Cliente</TableHead>
+                <TableHead>Key DP Personel</TableHead>
                 <TableHead>Status</TableHead>
                 {canManage ? <TableHead className="text-right">Ações</TableHead> : null}
               </TableRow>
@@ -123,6 +124,13 @@ function VesselsPage() {
                   <TableCell>{item.vesselType ?? "—"}</TableCell>
                   <TableCell>{item.dpClass ?? "—"}</TableCell>
                   <TableCell>{item.clientName ?? "Sem vínculo"}</TableCell>
+                  <TableCell className="max-w-64 whitespace-normal">
+                    {item.keyDpPersonnel.length > 0
+                      ? item.keyDpPersonnel
+                          .map((person) => person.fullName ?? "Usuário não disponível")
+                          .join(", ")
+                      : "Não informado"}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={item.status === "active" ? "default" : "secondary"}>
                       {STATUS_LABELS[item.status] ?? item.status}

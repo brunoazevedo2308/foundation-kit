@@ -6,7 +6,12 @@ import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { EMPTY_VESSEL_FORM, VesselForm } from "@/components/vessel-form";
 import { canManageOperationalData } from "@/lib/clients";
-import { createVessel, type VesselListItem } from "@/lib/vessels";
+import {
+  createVessel,
+  replaceVesselKeyDpPersonnel,
+  softDeleteVessel,
+  type VesselListItem,
+} from "@/lib/vessels";
 
 export const Route = createFileRoute("/_authenticated/vessels/new")({
   head: () => ({
@@ -81,8 +86,17 @@ function NewVesselPage() {
         submitLabel="Cadastrar embarcação"
         submittingLabel="Salvando..."
         cancelTo={<Link to="/vessels">Cancelar</Link>}
-        onSubmit={async (values) => {
-          setCreated(await createVessel(values));
+        onSubmit={async (values, extras) => {
+          const vessel = await createVessel(values);
+          try {
+            if (extras.keyDpPersonnelUserIds.length > 0) {
+              await replaceVesselKeyDpPersonnel(vessel.id, extras.keyDpPersonnelUserIds);
+            }
+          } catch (error) {
+            await softDeleteVessel(vessel.id).catch(() => undefined);
+            throw error;
+          }
+          setCreated(vessel);
         }}
       />
     </div>

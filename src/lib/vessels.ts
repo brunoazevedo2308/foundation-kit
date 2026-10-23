@@ -75,11 +75,17 @@ export type VesselListItem = {
   status: VesselStatus;
   clientId: string | null;
   clientName: string | null;
+  keyDpPersonnel: VesselKeyDpPerson[];
   createdAt: string;
 };
 
+export type VesselKeyDpPerson = {
+  userId: string;
+  fullName: string | null;
+};
+
 const SELECT_COLUMNS =
-  "id, name, imo_number, vessel_type, dp_class, status, client_id, created_at, clients(name)";
+  "id, name, imo_number, vessel_type, dp_class, status, client_id, created_at, clients(name), user_vessels(profile_id, profiles!user_vessels_profile_id_fkey(full_name))";
 
 type VesselRow = {
   id: string;
@@ -91,10 +97,26 @@ type VesselRow = {
   client_id: string | null;
   created_at: string;
   clients?: { name: string } | { name: string }[] | null;
+  user_vessels?:
+    | {
+        profile_id: string;
+        profiles?: { full_name: string | null } | { full_name: string | null }[] | null;
+      }[]
+    | null;
 };
 
 function mapVessel(row: VesselRow): VesselListItem {
   const related = Array.isArray(row.clients) ? row.clients[0] : row.clients;
+  const keyDpPersonnel = (row.user_vessels ?? [])
+    .map((assignment) => {
+      const profile = Array.isArray(assignment.profiles)
+        ? assignment.profiles[0]
+        : assignment.profiles;
+      return { userId: assignment.profile_id, fullName: profile?.full_name ?? null };
+    })
+    .sort((left, right) =>
+      (left.fullName ?? left.userId).localeCompare(right.fullName ?? right.userId, "pt-BR"),
+    );
   return {
     id: row.id,
     name: row.name,
@@ -104,6 +126,7 @@ function mapVessel(row: VesselRow): VesselListItem {
     status: row.status as VesselStatus,
     clientId: row.client_id,
     clientName: related?.name ?? null,
+    keyDpPersonnel,
     createdAt: row.created_at,
   };
 }
@@ -172,6 +195,83 @@ export function toVesselFormInput(item: VesselListItem): VesselFormInput {
     status: item.status,
     clientId: item.clientId ?? "",
   };
+}
+
+/**
+ * Substitui a equipe Key DP Personel da embarcação. A tabela de associação
+ * possui RLS, integridade de tenant e auditoria; somente administradores da
+ * organização podem inserir/remover vínculos.
+ */
+export async function replaceVesselKeyDpPersonnel(
+  vesselId: string,
+  requestedUserIds: string[],
+): Promise<void> {
+  const desired = [...new Set(requestedUserIds.filter(Boolean))];
+  const [{ data: assignments, error: listError }, organizationId, userResult] = await Promise.all([
+    client().from("user_vessels").select("profile_id").eq("vessel_id", vesselId),
+    fetchCurrentOrganizationId(),
+    client().auth.getUser(),
+  ]);
+
+  if (listError || !organizationId || userResult.error || !userResult.data.user) {
+    emitEvent({
+      event_name: "backend.request.failure",
+      organization_id: organizationId ?? undefined,
+      context: {
+        operation: "vessels.key_dp_personnel.load_context",
+        supabase_error: sanitize(listError ?? userResult.error),
+      },
+    });
+    throw new Error("Não foi possível atualizar o Key DP Personel.");
+  }
+
+  const currentIds = new Set((assignments ?? []).map((item) => item.profile_id));
+  const desiredIds = new Set(desired);
+  const removed = [...currentIds].filter((userId) => !desiredIds.has(userId));
+  const added = desired.filter((userId) => !currentIds.has(userId));
+
+  if (removed.length > 0) {
+    const { error } = await client()
+      .from("user_vessels")
+      .delete()
+      .eq("vessel_id", vesselId)
+      .in("profile_id", removed);
+    if (error) {
+      emitEvent({
+        event_name: "backend.request.failure",
+        organization_id: organizationId,
+        context: {
+          operation: "vessels.key_dp_personnel.remove",
+          supabase_error: sanitize(error),
+        },
+      });
+      throw new Error("Não foi possível remover tripulantes do Key DP Personel.");
+    }
+  }
+
+  if (added.length > 0) {
+    const { error } = await client()
+      .from("user_vessels")
+      .insert(
+        added.map((profileId) => ({
+          organization_id: organizationId,
+          vessel_id: vesselId,
+          profile_id: profileId,
+          assigned_by: userResult.data.user.id,
+        })),
+      );
+    if (error) {
+      emitEvent({
+        event_name: "backend.request.failure",
+        organization_id: organizationId,
+        context: {
+          operation: "vessels.key_dp_personnel.add",
+          supabase_error: sanitize(error),
+        },
+      });
+      throw new Error("Não foi possível adicionar tripulantes ao Key DP Personel.");
+    }
+  }
 }
 
 export async function getVessel(vesselId: string): Promise<VesselListItem | null> {

@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { listClients, type ClientListItem } from "@/lib/clients";
+import { listUsers, type UserListItem } from "@/lib/users";
 import { VesselFormSchema, type VesselFormInput } from "@/lib/vessels";
 
 /**
@@ -36,22 +38,38 @@ interface VesselFormProps {
   submitLabel: string;
   submittingLabel: string;
   cancelTo: ReactNode;
-  onSubmit: (values: VesselFormInput) => Promise<void>;
+  initialKeyDpPersonnelUserIds?: string[];
+  onSubmit: (values: VesselFormInput, extras: VesselFormExtras) => Promise<void>;
 }
+
+export type VesselFormExtras = {
+  keyDpPersonnelUserIds: string[];
+};
 
 export function VesselForm({
   initialValues,
   submitLabel,
   submittingLabel,
   cancelTo,
+  initialKeyDpPersonnelUserIds,
   onSubmit,
 }: VesselFormProps) {
   const [values, setValues] = useState<VesselFormInput>(initialValues);
   const [clients, setClients] = useState<ClientListItem[]>([]);
+  const [users, setUsers] = useState<UserListItem[]>([]);
+  const [keyDpPersonnelUserIds, setKeyDpPersonnelUserIds] = useState(
+    () => initialKeyDpPersonnelUserIds ?? [],
+  );
   const [loadingClients, setLoadingClients] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(true);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const selectedKeyDpPersonnelUserIds = new Set(keyDpPersonnelUserIds);
+
+  useEffect(() => {
+    setKeyDpPersonnelUserIds(initialKeyDpPersonnelUserIds ?? []);
+  }, [initialKeyDpPersonnelUserIds]);
 
   useEffect(() => {
     let active = true;
@@ -64,6 +82,16 @@ export function VesselForm({
       })
       .finally(() => {
         if (active) setLoadingClients(false);
+      });
+    listUsers()
+      .then((rows) => {
+        if (active) setUsers(rows.filter((item) => item.status === "active"));
+      })
+      .catch(() => {
+        if (active) setFormError("Não foi possível carregar os usuários para o Key DP Personel.");
+      })
+      .finally(() => {
+        if (active) setLoadingUsers(false);
       });
     return () => {
       active = false;
@@ -93,7 +121,7 @@ export function VesselForm({
 
     setSubmitting(true);
     try {
-      await onSubmit(parsed.data);
+      await onSubmit(parsed.data, { keyDpPersonnelUserIds });
     } catch (error) {
       setFormError(
         error instanceof Error ? error.message : "Não foi possível salvar a embarcação agora.",
@@ -177,6 +205,45 @@ export function VesselForm({
           </Select>
         </Field>
       </div>
+
+      <fieldset className="space-y-3 rounded-lg border border-border p-4">
+        <legend className="px-1 text-sm font-semibold">Key DP Personel</legend>
+        <p className="text-sm text-muted-foreground">
+          Selecione os tripulantes de pessoal-chave DP vinculados a esta embarcação.
+        </p>
+        {loadingUsers ? (
+          <p className="text-sm text-muted-foreground">Carregando usuários...</p>
+        ) : users.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nenhum usuário ativo disponível.</p>
+        ) : (
+          <div className="grid gap-2 sm:grid-cols-2">
+            {users.map((user) => {
+              const checked = selectedKeyDpPersonnelUserIds.has(user.id);
+              const inputId = `key-dp-person-${user.id}`;
+              return (
+                <label
+                  key={user.id}
+                  htmlFor={inputId}
+                  className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border border-border px-3 py-2 text-sm hover:bg-muted/60"
+                >
+                  <Checkbox
+                    id={inputId}
+                    checked={checked}
+                    onCheckedChange={(next) =>
+                      setKeyDpPersonnelUserIds((current) =>
+                        next === true
+                          ? [...new Set([...current, user.id])]
+                          : current.filter((id) => id !== user.id),
+                      )
+                    }
+                  />
+                  <span>{user.fullName ?? user.id}</span>
+                </label>
+              );
+            })}
+          </div>
+        )}
+      </fieldset>
 
       {formError ? (
         <p

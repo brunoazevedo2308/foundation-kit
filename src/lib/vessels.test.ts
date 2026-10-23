@@ -88,6 +88,7 @@ describe("toVesselFormInput", () => {
         status: "inactive",
         clientId: null,
         clientName: null,
+        keyDpPersonnel: [],
         createdAt: "2026-08-09T00:00:00.000Z",
       }),
     ).toEqual({
@@ -111,6 +112,7 @@ describe("toVesselFormInput", () => {
         status: "active",
         clientId: "0f10f14c-a74d-41c2-81c3-c67ac69e9f12",
         clientName: "Mar Azul",
+        keyDpPersonnel: [{ userId: "86cd7575-679d-4df5-a8dc-0111776239ab", fullName: "Ana DPO" }],
         createdAt: "2026-08-09T00:00:00.000Z",
       }),
     );
