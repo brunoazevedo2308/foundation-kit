@@ -410,8 +410,6 @@ export type Database = {
           contact_email: string | null;
           contact_name: string | null;
           contact_phone: string | null;
-          contract_management: string | null;
-          contract_manager: string | null;
           created_at: string;
           deleted_at: string | null;
           id: string;
@@ -424,8 +422,6 @@ export type Database = {
           contact_email?: string | null;
           contact_name?: string | null;
           contact_phone?: string | null;
-          contract_management?: string | null;
-          contract_manager?: string | null;
           created_at?: string;
           deleted_at?: string | null;
           id?: string;
@@ -438,8 +434,6 @@ export type Database = {
           contact_email?: string | null;
           contact_name?: string | null;
           contact_phone?: string | null;
-          contract_management?: string | null;
-          contract_manager?: string | null;
           created_at?: string;
           deleted_at?: string | null;
           id?: string;
@@ -890,6 +884,8 @@ export type Database = {
       vessels: {
         Row: {
           client_id: string | null;
+          contract_management: string | null;
+          contract_manager: string | null;
           created_at: string;
           deleted_at: string | null;
           dp_class: string | null;
@@ -903,6 +899,8 @@ export type Database = {
         };
         Insert: {
           client_id?: string | null;
+          contract_management?: string | null;
+          contract_manager?: string | null;
           created_at?: string;
           deleted_at?: string | null;
           dp_class?: string | null;
@@ -916,6 +914,8 @@ export type Database = {
         };
         Update: {
           client_id?: string | null;
+          contract_management?: string | null;
+          contract_manager?: string | null;
           created_at?: string;
           deleted_at?: string | null;
           dp_class?: string | null;

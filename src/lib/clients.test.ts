@@ -10,8 +10,6 @@ describe("ClientFormSchema", () => {
       contactName: " Ana Souza ",
       contactEmail: "  ANA@EXAMPLE.COM ",
       contactPhone: "",
-      contractManagement: " Operações Offshore ",
-      contractManager: " Bruno Azevedo ",
     });
 
     expect(parsed).toEqual({
@@ -20,8 +18,6 @@ describe("ClientFormSchema", () => {
       contactName: "Ana Souza",
       contactEmail: "ana@example.com",
       contactPhone: null,
-      contractManagement: "Operações Offshore",
-      contractManager: "Bruno Azevedo",
     });
   });
 
@@ -32,8 +28,6 @@ describe("ClientFormSchema", () => {
       contactName: "",
       contactEmail: "nao-e-email",
       contactPhone: "",
-      contractManagement: "",
-      contractManager: "",
     });
 
     expect(parsed.success).toBe(false);
@@ -63,8 +57,6 @@ describe("toClientFormInput", () => {
         contactName: null,
         contactEmail: null,
         contactPhone: null,
-        contractManagement: null,
-        contractManager: null,
         createdAt: "2026-08-09T00:00:00.000Z",
       }),
     ).toEqual({
@@ -73,8 +65,6 @@ describe("toClientFormInput", () => {
       contactName: "",
       contactEmail: "",
       contactPhone: "",
-      contractManagement: "",
-      contractManager: "",
     });
   });
 
@@ -87,8 +77,6 @@ describe("toClientFormInput", () => {
         contactName: "Ana",
         contactEmail: "ana@example.com",
         contactPhone: "+55 21 99999-0000",
-        contractManagement: "Gerência de Operações",
-        contractManager: "Carlos Lima",
         createdAt: "2026-08-09T00:00:00.000Z",
       }),
     );

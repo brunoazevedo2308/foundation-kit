@@ -25,6 +25,8 @@ export const EMPTY_VESSEL_FORM: VesselFormInput = {
   imoNumber: "",
   vesselType: "",
   dpClass: "",
+  contractManagement: "",
+  contractManager: "",
   status: "active",
   clientId: "",
 };
@@ -203,6 +205,27 @@ export function VesselForm({
               ))}
             </SelectContent>
           </Select>
+        </Field>
+        <Field
+          label="Gerência Contratual"
+          htmlFor="contractManagement"
+          error={errors.contractManagement}
+        >
+          <Input
+            id="contractManagement"
+            value={values.contractManagement ?? ""}
+            onChange={(event) => update("contractManagement", event.target.value)}
+            maxLength={160}
+          />
+        </Field>
+        <Field label="Gerente de Contrato" htmlFor="contractManager" error={errors.contractManager}>
+          <Input
+            id="contractManager"
+            value={values.contractManager ?? ""}
+            onChange={(event) => update("contractManager", event.target.value)}
+            maxLength={120}
+            autoComplete="name"
+          />
         </Field>
       </div>
 

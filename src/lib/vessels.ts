@@ -51,6 +51,8 @@ export const VesselFormSchema = z.object({
     .default(null),
   vesselType: optionalText(80, "Máximo de 80 caracteres."),
   dpClass: optionalText(20, "Máximo de 20 caracteres."),
+  contractManagement: optionalText(160, "Máximo de 160 caracteres."),
+  contractManager: optionalText(120, "Máximo de 120 caracteres."),
   status: z.enum(VESSEL_STATUSES),
   clientId: z
     .string()
@@ -72,6 +74,8 @@ export type VesselListItem = {
   imoNumber: string | null;
   vesselType: string | null;
   dpClass: string | null;
+  contractManagement: string | null;
+  contractManager: string | null;
   status: VesselStatus;
   clientId: string | null;
   clientName: string | null;
@@ -85,7 +89,7 @@ export type VesselKeyDpPerson = {
 };
 
 const SELECT_COLUMNS =
-  "id, name, imo_number, vessel_type, dp_class, status, client_id, created_at, clients(name), user_vessels(profile_id, profiles!user_vessels_profile_id_fkey(full_name))";
+  "id, name, imo_number, vessel_type, dp_class, contract_management, contract_manager, status, client_id, created_at, clients(name), user_vessels(profile_id, profiles!user_vessels_profile_id_fkey(full_name))";
 
 type VesselRow = {
   id: string;
@@ -93,6 +97,8 @@ type VesselRow = {
   imo_number: string | null;
   vessel_type: string | null;
   dp_class: string | null;
+  contract_management: string | null;
+  contract_manager: string | null;
   status: string;
   client_id: string | null;
   created_at: string;
@@ -123,6 +129,8 @@ function mapVessel(row: VesselRow): VesselListItem {
     imoNumber: row.imo_number,
     vesselType: row.vessel_type,
     dpClass: row.dp_class,
+    contractManagement: row.contract_management,
+    contractManager: row.contract_manager,
     status: row.status as VesselStatus,
     clientId: row.client_id,
     clientName: related?.name ?? null,
@@ -165,6 +173,8 @@ export async function createVessel(input: VesselFormInput): Promise<VesselListIt
       imo_number: parsed.imoNumber,
       vessel_type: parsed.vesselType,
       dp_class: parsed.dpClass,
+      contract_management: parsed.contractManagement,
+      contract_manager: parsed.contractManager,
       status: parsed.status,
     })
     .select(SELECT_COLUMNS)
@@ -192,6 +202,8 @@ export function toVesselFormInput(item: VesselListItem): VesselFormInput {
     imoNumber: item.imoNumber ?? "",
     vesselType: item.vesselType ?? "",
     dpClass: item.dpClass ?? "",
+    contractManagement: item.contractManagement ?? "",
+    contractManager: item.contractManager ?? "",
     status: item.status,
     clientId: item.clientId ?? "",
   };
@@ -307,6 +319,8 @@ export async function updateVessel(
       imo_number: parsed.imoNumber,
       vessel_type: parsed.vesselType,
       dp_class: parsed.dpClass,
+      contract_management: parsed.contractManagement,
+      contract_manager: parsed.contractManager,
       status: parsed.status,
     })
     .eq("id", vesselId)

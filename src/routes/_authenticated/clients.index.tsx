@@ -99,7 +99,7 @@ function ClientsPage() {
         </div>
       ) : clients.length > 0 ? (
         <div className="overflow-x-auto rounded-lg border border-border">
-          <Table className="min-w-[1180px]">
+          <Table className="min-w-[900px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
@@ -107,8 +107,6 @@ function ClientsPage() {
                 <TableHead>Contato</TableHead>
                 <TableHead>E-mail</TableHead>
                 <TableHead>Telefone</TableHead>
-                <TableHead>Gerência Contratual</TableHead>
-                <TableHead>Gerente de Contrato</TableHead>
                 {canManage ? <TableHead className="text-right">Ações</TableHead> : null}
               </TableRow>
             </TableHeader>
@@ -120,8 +118,6 @@ function ClientsPage() {
                   <TableCell>{item.contactName ?? "—"}</TableCell>
                   <TableCell>{item.contactEmail ?? "—"}</TableCell>
                   <TableCell>{item.contactPhone ?? "—"}</TableCell>
-                  <TableCell>{item.contractManagement ?? "—"}</TableCell>
-                  <TableCell>{item.contractManager ?? "—"}</TableCell>
                   {canManage ? (
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
