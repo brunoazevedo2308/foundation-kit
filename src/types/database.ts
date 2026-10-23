@@ -410,6 +410,8 @@ export type Database = {
           contact_email: string | null;
           contact_name: string | null;
           contact_phone: string | null;
+          contract_management: string | null;
+          contract_manager: string | null;
           created_at: string;
           deleted_at: string | null;
           id: string;
@@ -422,6 +424,8 @@ export type Database = {
           contact_email?: string | null;
           contact_name?: string | null;
           contact_phone?: string | null;
+          contract_management?: string | null;
+          contract_manager?: string | null;
           created_at?: string;
           deleted_at?: string | null;
           id?: string;
@@ -434,6 +438,8 @@ export type Database = {
           contact_email?: string | null;
           contact_name?: string | null;
           contact_phone?: string | null;
+          contract_management?: string | null;
+          contract_manager?: string | null;
           created_at?: string;
           deleted_at?: string | null;
           id?: string;

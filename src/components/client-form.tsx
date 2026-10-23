@@ -16,6 +16,8 @@ export const EMPTY_CLIENT_FORM: ClientFormInput = {
   contactName: "",
   contactEmail: "",
   contactPhone: "",
+  contractManagement: "",
+  contractManager: "",
 };
 
 type FieldErrors = Partial<Record<keyof ClientFormInput, string>>;
@@ -119,6 +121,27 @@ export function ClientForm({
             onChange={(e) => update("contactPhone", e.target.value)}
             maxLength={40}
             autoComplete="tel"
+          />
+        </Field>
+        <Field
+          label="Gerência Contratual"
+          htmlFor="contractManagement"
+          error={errors.contractManagement}
+        >
+          <Input
+            id="contractManagement"
+            value={values.contractManagement ?? ""}
+            onChange={(e) => update("contractManagement", e.target.value)}
+            maxLength={160}
+          />
+        </Field>
+        <Field label="Gerente de Contrato" htmlFor="contractManager" error={errors.contractManager}>
+          <Input
+            id="contractManager"
+            value={values.contractManager ?? ""}
+            onChange={(e) => update("contractManager", e.target.value)}
+            maxLength={120}
+            autoComplete="name"
           />
         </Field>
       </div>

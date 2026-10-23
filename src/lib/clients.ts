@@ -49,6 +49,8 @@ export const ClientFormSchema = z.object({
     .nullable()
     .default(null),
   contactPhone: optionalText(40, "Máximo de 40 caracteres."),
+  contractManagement: optionalText(160, "Máximo de 160 caracteres."),
+  contractManager: optionalText(120, "Máximo de 120 caracteres."),
 });
 
 export type ClientFormInput = z.input<typeof ClientFormSchema>;
@@ -61,6 +63,8 @@ export type ClientListItem = {
   contactName: string | null;
   contactEmail: string | null;
   contactPhone: string | null;
+  contractManagement: string | null;
+  contractManager: string | null;
   createdAt: string;
 };
 
@@ -89,7 +93,9 @@ export async function fetchCurrentOrganizationId(): Promise<string | null> {
 export async function listClients(): Promise<ClientListItem[]> {
   const { data, error } = await client()
     .from("clients")
-    .select("id, name, code, contact_name, contact_email, contact_phone, created_at")
+    .select(
+      "id, name, code, contact_name, contact_email, contact_phone, contract_management, contract_manager, created_at",
+    )
     .is("deleted_at", null)
     .order("name", { ascending: true });
 
@@ -108,6 +114,8 @@ export async function listClients(): Promise<ClientListItem[]> {
     contactName: row.contact_name,
     contactEmail: row.contact_email,
     contactPhone: row.contact_phone,
+    contractManagement: row.contract_management,
+    contractManager: row.contract_manager,
     createdAt: row.created_at,
   }));
 }
@@ -128,8 +136,12 @@ export async function createClient(input: ClientFormInput): Promise<ClientListIt
       contact_name: parsed.contactName,
       contact_email: parsed.contactEmail,
       contact_phone: parsed.contactPhone,
+      contract_management: parsed.contractManagement,
+      contract_manager: parsed.contractManager,
     })
-    .select("id, name, code, contact_name, contact_email, contact_phone, created_at")
+    .select(
+      "id, name, code, contact_name, contact_email, contact_phone, contract_management, contract_manager, created_at",
+    )
     .single();
 
   if (error || !data) {
@@ -151,12 +163,14 @@ export async function createClient(input: ClientFormInput): Promise<ClientListIt
     contactName: data.contact_name,
     contactEmail: data.contact_email,
     contactPhone: data.contact_phone,
+    contractManagement: data.contract_management,
+    contractManager: data.contract_manager,
     createdAt: data.created_at,
   };
 }
 
 const CLIENT_SELECT_COLUMNS =
-  "id, name, code, contact_name, contact_email, contact_phone, created_at";
+  "id, name, code, contact_name, contact_email, contact_phone, contract_management, contract_manager, created_at";
 
 type ClientRow = {
   id: string;
@@ -165,6 +179,8 @@ type ClientRow = {
   contact_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
+  contract_management: string | null;
+  contract_manager: string | null;
   created_at: string;
 };
 
@@ -176,6 +192,8 @@ function mapClient(row: ClientRow): ClientListItem {
     contactName: row.contact_name,
     contactEmail: row.contact_email,
     contactPhone: row.contact_phone,
+    contractManagement: row.contract_management,
+    contractManager: row.contract_manager,
     createdAt: row.created_at,
   };
 }
@@ -188,6 +206,8 @@ export function toClientFormInput(item: ClientListItem): ClientFormInput {
     contactName: item.contactName ?? "",
     contactEmail: item.contactEmail ?? "",
     contactPhone: item.contactPhone ?? "",
+    contractManagement: item.contractManagement ?? "",
+    contractManager: item.contractManager ?? "",
   };
 }
 
@@ -224,6 +244,8 @@ export async function updateClient(
       contact_name: parsed.contactName,
       contact_email: parsed.contactEmail,
       contact_phone: parsed.contactPhone,
+      contract_management: parsed.contractManagement,
+      contract_manager: parsed.contractManager,
     })
     .eq("id", clientId)
     .is("deleted_at", null)
