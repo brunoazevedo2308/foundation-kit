@@ -46,6 +46,8 @@ function notifyChanged() {
 
 export type NotificationItem = {
   id: string;
+  actorUserId: string | null;
+  actorName: string | null;
   notificationType: string;
   title: string;
   body: string | null;
@@ -57,6 +59,8 @@ export type NotificationItem = {
 
 type NotificationRow = {
   id: string;
+  actor_user_id: string | null;
+  actor?: { full_name: string | null } | { full_name: string | null }[] | null;
   notification_type: string;
   title: string;
   body: string | null;
@@ -67,8 +71,11 @@ type NotificationRow = {
 };
 
 export function mapNotification(row: NotificationRow): NotificationItem {
+  const actor = Array.isArray(row.actor) ? row.actor[0] : row.actor;
   return {
     id: row.id,
+    actorUserId: row.actor_user_id,
+    actorName: actor?.full_name?.trim() || null,
     notificationType: row.notification_type,
     title: row.title,
     body: row.body,
@@ -96,6 +103,9 @@ const NOTIFICATION_TYPE_LABELS: Readonly<Record<string, string>> = {
   "action.assigned": "Ação atribuída",
   "deliverable.assigned": "Entregável atribuído",
   "comment.created": "Novo comentário",
+  "action.updated": "Ação atualizada",
+  "action.due_soon": "Prazo próximo",
+  "action.overdue": "Ação atrasada",
 };
 
 export function notificationTypeLabel(notificationType: string): string {
@@ -143,7 +153,7 @@ export function formatNotificationTimestamp(iso: string): string {
 // ---------------------------------------------------------------------------
 
 const SELECT_COLUMNS =
-  "id, notification_type, title, body, entity_type, entity_id, read_at, created_at";
+  "id, actor_user_id, notification_type, title, body, entity_type, entity_id, read_at, created_at, actor:profiles!notifications_actor_user_id_fkey(full_name)";
 
 export type NotificationListItem = NotificationItem & { target: NotificationTarget };
 

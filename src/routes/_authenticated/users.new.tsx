@@ -27,8 +27,8 @@ import {
 export const Route = createFileRoute("/_authenticated/users/new")({
   head: () => ({
     meta: [
-      { title: "Convidar usuário · DP Suite" },
-      { name: "description", content: "Cadastro e convite de usuário para o DP Suite." },
+      { title: "Convidar usuário · Atino DP Suite" },
+      { name: "description", content: "Cadastro e convite de usuário para o Atino DP Suite." },
     ],
   }),
   beforeLoad: ({ context }) => {

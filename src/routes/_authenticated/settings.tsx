@@ -23,7 +23,7 @@ import {
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
     meta: [
-      { title: "Configurações · DP Suite" },
+      { title: "Configurações · Atino DP Suite" },
       { name: "description", content: "Configurações da conta e da organização." },
     ],
   }),

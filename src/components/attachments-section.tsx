@@ -28,7 +28,9 @@ import {
 interface AttachmentsSectionProps {
   context: AttachmentContext;
   canManage: boolean;
+  canUpload?: boolean;
   title?: string;
+  onChanged?: () => void;
 }
 
 function contextKeyOf(context: AttachmentContext): string {
@@ -40,8 +42,11 @@ function contextKeyOf(context: AttachmentContext): string {
 export function AttachmentsSection({
   context,
   canManage,
+  canUpload,
   title = "Anexos",
+  onChanged,
 }: AttachmentsSectionProps) {
+  const uploadAllowed = canUpload ?? canManage;
   const contextKey = contextKeyOf(context);
   const [items, setItems] = useState<AttachmentListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,7 +92,7 @@ export function AttachmentsSection({
           {title}
           {items.length > 0 ? <Badge variant="secondary">{items.length}</Badge> : null}
         </h4>
-        {canManage ? (
+        {uploadAllowed ? (
           <Button
             size="sm"
             variant="outline"
@@ -100,7 +105,7 @@ export function AttachmentsSection({
         ) : null}
       </div>
 
-      {canManage ? (
+      {uploadAllowed ? (
         <div className="mt-2">
           <Label htmlFor={`attachment-file-${contextKey}`} className="sr-only">
             Selecionar arquivo para anexar
@@ -120,6 +125,7 @@ export function AttachmentsSection({
               try {
                 await createAttachment({ context, file });
                 await reload();
+                onChanged?.();
               } catch (err) {
                 setError(err instanceof Error ? err.message : "Não foi possível enviar o anexo.");
               } finally {
@@ -194,6 +200,7 @@ export function AttachmentsSection({
                       try {
                         await softDeleteAttachment(attachment.id);
                         await reload();
+                        onChanged?.();
                       } catch (err) {
                         setError(
                           err instanceof Error ? err.message : "Não foi possível excluir o anexo.",

@@ -15,13 +15,17 @@ import { Route as AccessBlockedRouteImport } from './routes/access-blocked'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedActionsRouteImport } from './routes/_authenticated/actions'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
+import { Route as AuthenticatedCoursesRouteImport } from './routes/_authenticated/courses'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedOrganizationsRouteImport } from './routes/_authenticated/organizations'
+import { Route as AuthenticatedPrivacyCenterRouteImport } from './routes/_authenticated/privacy-center'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -32,7 +36,13 @@ import { Route as AuthenticatedActionsIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedActionsNewRouteImport } from './routes/_authenticated/actions.new'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients.index'
 import { Route as AuthenticatedClientsNewRouteImport } from './routes/_authenticated/clients.new'
+import { Route as AuthenticatedCoursesIndexRouteImport } from './routes/_authenticated/courses.index'
+import { Route as AuthenticatedCoursesAsogCamRouteImport } from './routes/_authenticated/courses.asog-cam'
+import { Route as AuthenticatedCoursesDpAssessmentRouteImport } from './routes/_authenticated/courses.dp-assessment'
 import { Route as AuthenticatedDevObservabilityRouteImport } from './routes/_authenticated/dev.observability'
+import { Route as AuthenticatedDocumentsIndexRouteImport } from './routes/_authenticated/documents.index'
+import { Route as AuthenticatedDocumentsCompanyIdRouteImport } from './routes/_authenticated/documents.$companyId'
+import { Route as AuthenticatedDocumentsNewRouteImport } from './routes/_authenticated/documents.new'
 import { Route as AuthenticatedOrganizationsIndexRouteImport } from './routes/_authenticated/organizations.index'
 import { Route as AuthenticatedOrganizationsNewRouteImport } from './routes/_authenticated/organizations.new'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users.index'
@@ -74,6 +84,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -94,9 +109,19 @@ const AuthenticatedClientsRoute = AuthenticatedClientsRouteImport.update({
   path: '/clients',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCoursesRoute = AuthenticatedCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedNotificationsRoute =
@@ -109,6 +134,12 @@ const AuthenticatedOrganizationsRoute =
   AuthenticatedOrganizationsRouteImport.update({
     id: '/organizations',
     path: '/organizations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPrivacyCenterRoute =
+  AuthenticatedPrivacyCenterRouteImport.update({
+    id: '/privacy-center',
+    path: '/privacy-center',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
@@ -163,11 +194,47 @@ const AuthenticatedClientsNewRoute = AuthenticatedClientsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AuthenticatedClientsRoute,
 } as any)
+const AuthenticatedCoursesIndexRoute =
+  AuthenticatedCoursesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedCoursesRoute,
+  } as any)
+const AuthenticatedCoursesAsogCamRoute =
+  AuthenticatedCoursesAsogCamRouteImport.update({
+    id: '/asog-cam',
+    path: '/asog-cam',
+    getParentRoute: () => AuthenticatedCoursesRoute,
+  } as any)
+const AuthenticatedCoursesDpAssessmentRoute =
+  AuthenticatedCoursesDpAssessmentRouteImport.update({
+    id: '/dp-assessment',
+    path: '/dp-assessment',
+    getParentRoute: () => AuthenticatedCoursesRoute,
+  } as any)
 const AuthenticatedDevObservabilityRoute =
   AuthenticatedDevObservabilityRouteImport.update({
     id: '/dev/observability',
     path: '/dev/observability',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDocumentsIndexRoute =
+  AuthenticatedDocumentsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedDocumentsRoute,
+  } as any)
+const AuthenticatedDocumentsCompanyIdRoute =
+  AuthenticatedDocumentsCompanyIdRouteImport.update({
+    id: '/$companyId',
+    path: '/$companyId',
+    getParentRoute: () => AuthenticatedDocumentsRoute,
+  } as any)
+const AuthenticatedDocumentsNewRoute =
+  AuthenticatedDocumentsNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => AuthenticatedDocumentsRoute,
   } as any)
 const AuthenticatedOrganizationsIndexRoute =
   AuthenticatedOrganizationsIndexRouteImport.update({
@@ -239,13 +306,17 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/actions': typeof AuthenticatedActionsRouteWithChildren
   '/app': typeof AuthenticatedAppRoute
   '/clients': typeof AuthenticatedClientsRouteWithChildren
+  '/courses': typeof AuthenticatedCoursesRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/documents': typeof AuthenticatedDocumentsRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
+  '/privacy-center': typeof AuthenticatedPrivacyCenterRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/search': typeof AuthenticatedSearchRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -254,12 +325,18 @@ export interface FileRoutesByFullPath {
   '/api/health': typeof ApiHealthRoute
   '/actions/new': typeof AuthenticatedActionsNewRoute
   '/clients/new': typeof AuthenticatedClientsNewRoute
+  '/courses/asog-cam': typeof AuthenticatedCoursesAsogCamRoute
+  '/courses/dp-assessment': typeof AuthenticatedCoursesDpAssessmentRoute
   '/dev/observability': typeof AuthenticatedDevObservabilityRoute
+  '/documents/$companyId': typeof AuthenticatedDocumentsCompanyIdRoute
+  '/documents/new': typeof AuthenticatedDocumentsNewRoute
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/vessels/new': typeof AuthenticatedVesselsNewRoute
   '/actions/': typeof AuthenticatedActionsIndexRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
+  '/courses/': typeof AuthenticatedCoursesIndexRoute
+  '/documents/': typeof AuthenticatedDocumentsIndexRoute
   '/organizations/': typeof AuthenticatedOrganizationsIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/vessels/': typeof AuthenticatedVesselsIndexRoute
@@ -275,22 +352,30 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/app': typeof AuthenticatedAppRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/privacy-center': typeof AuthenticatedPrivacyCenterRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/search': typeof AuthenticatedSearchRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/health': typeof ApiHealthRoute
   '/actions/new': typeof AuthenticatedActionsNewRoute
   '/clients/new': typeof AuthenticatedClientsNewRoute
+  '/courses/asog-cam': typeof AuthenticatedCoursesAsogCamRoute
+  '/courses/dp-assessment': typeof AuthenticatedCoursesDpAssessmentRoute
   '/dev/observability': typeof AuthenticatedDevObservabilityRoute
+  '/documents/$companyId': typeof AuthenticatedDocumentsCompanyIdRoute
+  '/documents/new': typeof AuthenticatedDocumentsNewRoute
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/vessels/new': typeof AuthenticatedVesselsNewRoute
   '/actions': typeof AuthenticatedActionsIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
+  '/courses': typeof AuthenticatedCoursesIndexRoute
+  '/documents': typeof AuthenticatedDocumentsIndexRoute
   '/organizations': typeof AuthenticatedOrganizationsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/vessels': typeof AuthenticatedVesselsIndexRoute
@@ -308,13 +393,17 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/actions': typeof AuthenticatedActionsRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRouteWithChildren
+  '/_authenticated/courses': typeof AuthenticatedCoursesRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/documents': typeof AuthenticatedDocumentsRouteWithChildren
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
+  '/_authenticated/privacy-center': typeof AuthenticatedPrivacyCenterRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/search': typeof AuthenticatedSearchRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -323,12 +412,18 @@ export interface FileRoutesById {
   '/api/health': typeof ApiHealthRoute
   '/_authenticated/actions/new': typeof AuthenticatedActionsNewRoute
   '/_authenticated/clients/new': typeof AuthenticatedClientsNewRoute
+  '/_authenticated/courses/asog-cam': typeof AuthenticatedCoursesAsogCamRoute
+  '/_authenticated/courses/dp-assessment': typeof AuthenticatedCoursesDpAssessmentRoute
   '/_authenticated/dev/observability': typeof AuthenticatedDevObservabilityRoute
+  '/_authenticated/documents/$companyId': typeof AuthenticatedDocumentsCompanyIdRoute
+  '/_authenticated/documents/new': typeof AuthenticatedDocumentsNewRoute
   '/_authenticated/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
   '/_authenticated/vessels/new': typeof AuthenticatedVesselsNewRoute
   '/_authenticated/actions/': typeof AuthenticatedActionsIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
+  '/_authenticated/courses/': typeof AuthenticatedCoursesIndexRoute
+  '/_authenticated/documents/': typeof AuthenticatedDocumentsIndexRoute
   '/_authenticated/organizations/': typeof AuthenticatedOrganizationsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/vessels/': typeof AuthenticatedVesselsIndexRoute
@@ -346,13 +441,17 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/login'
+    | '/privacy'
     | '/reset-password'
     | '/actions'
     | '/app'
     | '/clients'
+    | '/courses'
     | '/dashboard'
+    | '/documents'
     | '/notifications'
     | '/organizations'
+    | '/privacy-center'
     | '/reports'
     | '/search'
     | '/settings'
@@ -361,12 +460,18 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/actions/new'
     | '/clients/new'
+    | '/courses/asog-cam'
+    | '/courses/dp-assessment'
     | '/dev/observability'
+    | '/documents/$companyId'
+    | '/documents/new'
     | '/organizations/new'
     | '/users/new'
     | '/vessels/new'
     | '/actions/'
     | '/clients/'
+    | '/courses/'
+    | '/documents/'
     | '/organizations/'
     | '/users/'
     | '/vessels/'
@@ -382,22 +487,30 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/login'
+    | '/privacy'
     | '/reset-password'
     | '/app'
     | '/dashboard'
     | '/notifications'
+    | '/privacy-center'
     | '/reports'
     | '/search'
     | '/settings'
     | '/api/health'
     | '/actions/new'
     | '/clients/new'
+    | '/courses/asog-cam'
+    | '/courses/dp-assessment'
     | '/dev/observability'
+    | '/documents/$companyId'
+    | '/documents/new'
     | '/organizations/new'
     | '/users/new'
     | '/vessels/new'
     | '/actions'
     | '/clients'
+    | '/courses'
+    | '/documents'
     | '/organizations'
     | '/users'
     | '/vessels'
@@ -414,13 +527,17 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/login'
+    | '/privacy'
     | '/reset-password'
     | '/_authenticated/actions'
     | '/_authenticated/app'
     | '/_authenticated/clients'
+    | '/_authenticated/courses'
     | '/_authenticated/dashboard'
+    | '/_authenticated/documents'
     | '/_authenticated/notifications'
     | '/_authenticated/organizations'
+    | '/_authenticated/privacy-center'
     | '/_authenticated/reports'
     | '/_authenticated/search'
     | '/_authenticated/settings'
@@ -429,12 +546,18 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/_authenticated/actions/new'
     | '/_authenticated/clients/new'
+    | '/_authenticated/courses/asog-cam'
+    | '/_authenticated/courses/dp-assessment'
     | '/_authenticated/dev/observability'
+    | '/_authenticated/documents/$companyId'
+    | '/_authenticated/documents/new'
     | '/_authenticated/organizations/new'
     | '/_authenticated/users/new'
     | '/_authenticated/vessels/new'
     | '/_authenticated/actions/'
     | '/_authenticated/clients/'
+    | '/_authenticated/courses/'
+    | '/_authenticated/documents/'
     | '/_authenticated/organizations/'
     | '/_authenticated/users/'
     | '/_authenticated/vessels/'
@@ -452,6 +575,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
+  PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiHealthRoute: typeof ApiHealthRoute
 }
@@ -500,6 +624,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -528,11 +659,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/courses': {
+      id: '/_authenticated/courses'
+      path: '/courses'
+      fullPath: '/courses'
+      preLoaderRoute: typeof AuthenticatedCoursesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/documents': {
+      id: '/_authenticated/documents'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof AuthenticatedDocumentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/notifications': {
@@ -547,6 +692,13 @@ declare module '@tanstack/react-router' {
       path: '/organizations'
       fullPath: '/organizations'
       preLoaderRoute: typeof AuthenticatedOrganizationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/privacy-center': {
+      id: '/_authenticated/privacy-center'
+      path: '/privacy-center'
+      fullPath: '/privacy-center'
+      preLoaderRoute: typeof AuthenticatedPrivacyCenterRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/reports': {
@@ -619,12 +771,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientsNewRouteImport
       parentRoute: typeof AuthenticatedClientsRoute
     }
+    '/_authenticated/courses/': {
+      id: '/_authenticated/courses/'
+      path: '/'
+      fullPath: '/courses/'
+      preLoaderRoute: typeof AuthenticatedCoursesIndexRouteImport
+      parentRoute: typeof AuthenticatedCoursesRoute
+    }
+    '/_authenticated/courses/asog-cam': {
+      id: '/_authenticated/courses/asog-cam'
+      path: '/asog-cam'
+      fullPath: '/courses/asog-cam'
+      preLoaderRoute: typeof AuthenticatedCoursesAsogCamRouteImport
+      parentRoute: typeof AuthenticatedCoursesRoute
+    }
+    '/_authenticated/courses/dp-assessment': {
+      id: '/_authenticated/courses/dp-assessment'
+      path: '/dp-assessment'
+      fullPath: '/courses/dp-assessment'
+      preLoaderRoute: typeof AuthenticatedCoursesDpAssessmentRouteImport
+      parentRoute: typeof AuthenticatedCoursesRoute
+    }
     '/_authenticated/dev/observability': {
       id: '/_authenticated/dev/observability'
       path: '/dev/observability'
       fullPath: '/dev/observability'
       preLoaderRoute: typeof AuthenticatedDevObservabilityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/documents/': {
+      id: '/_authenticated/documents/'
+      path: '/'
+      fullPath: '/documents/'
+      preLoaderRoute: typeof AuthenticatedDocumentsIndexRouteImport
+      parentRoute: typeof AuthenticatedDocumentsRoute
+    }
+    '/_authenticated/documents/$companyId': {
+      id: '/_authenticated/documents/$companyId'
+      path: '/$companyId'
+      fullPath: '/documents/$companyId'
+      preLoaderRoute: typeof AuthenticatedDocumentsCompanyIdRouteImport
+      parentRoute: typeof AuthenticatedDocumentsRoute
+    }
+    '/_authenticated/documents/new': {
+      id: '/_authenticated/documents/new'
+      path: '/new'
+      fullPath: '/documents/new'
+      preLoaderRoute: typeof AuthenticatedDocumentsNewRouteImport
+      parentRoute: typeof AuthenticatedDocumentsRoute
     }
     '/_authenticated/organizations/': {
       id: '/_authenticated/organizations/'
@@ -739,6 +933,39 @@ const AuthenticatedClientsRouteChildren: AuthenticatedClientsRouteChildren = {
 const AuthenticatedClientsRouteWithChildren =
   AuthenticatedClientsRoute._addFileChildren(AuthenticatedClientsRouteChildren)
 
+interface AuthenticatedCoursesRouteChildren {
+  AuthenticatedCoursesAsogCamRoute: typeof AuthenticatedCoursesAsogCamRoute
+  AuthenticatedCoursesDpAssessmentRoute: typeof AuthenticatedCoursesDpAssessmentRoute
+  AuthenticatedCoursesIndexRoute: typeof AuthenticatedCoursesIndexRoute
+}
+
+const AuthenticatedCoursesRouteChildren: AuthenticatedCoursesRouteChildren = {
+  AuthenticatedCoursesAsogCamRoute: AuthenticatedCoursesAsogCamRoute,
+  AuthenticatedCoursesDpAssessmentRoute: AuthenticatedCoursesDpAssessmentRoute,
+  AuthenticatedCoursesIndexRoute: AuthenticatedCoursesIndexRoute,
+}
+
+const AuthenticatedCoursesRouteWithChildren =
+  AuthenticatedCoursesRoute._addFileChildren(AuthenticatedCoursesRouteChildren)
+
+interface AuthenticatedDocumentsRouteChildren {
+  AuthenticatedDocumentsCompanyIdRoute: typeof AuthenticatedDocumentsCompanyIdRoute
+  AuthenticatedDocumentsNewRoute: typeof AuthenticatedDocumentsNewRoute
+  AuthenticatedDocumentsIndexRoute: typeof AuthenticatedDocumentsIndexRoute
+}
+
+const AuthenticatedDocumentsRouteChildren: AuthenticatedDocumentsRouteChildren =
+  {
+    AuthenticatedDocumentsCompanyIdRoute: AuthenticatedDocumentsCompanyIdRoute,
+    AuthenticatedDocumentsNewRoute: AuthenticatedDocumentsNewRoute,
+    AuthenticatedDocumentsIndexRoute: AuthenticatedDocumentsIndexRoute,
+  }
+
+const AuthenticatedDocumentsRouteWithChildren =
+  AuthenticatedDocumentsRoute._addFileChildren(
+    AuthenticatedDocumentsRouteChildren,
+  )
+
 interface AuthenticatedOrganizationsRouteChildren {
   AuthenticatedOrganizationsNewRoute: typeof AuthenticatedOrganizationsNewRoute
   AuthenticatedOrganizationsIndexRoute: typeof AuthenticatedOrganizationsIndexRoute
@@ -789,9 +1016,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedActionsRoute: typeof AuthenticatedActionsRouteWithChildren
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRouteWithChildren
+  AuthenticatedCoursesRoute: typeof AuthenticatedCoursesRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRouteWithChildren
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRouteWithChildren
+  AuthenticatedPrivacyCenterRoute: typeof AuthenticatedPrivacyCenterRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -804,9 +1034,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedActionsRoute: AuthenticatedActionsRouteWithChildren,
   AuthenticatedAppRoute: AuthenticatedAppRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRouteWithChildren,
+  AuthenticatedCoursesRoute: AuthenticatedCoursesRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDocumentsRoute: AuthenticatedDocumentsRouteWithChildren,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRouteWithChildren,
+  AuthenticatedPrivacyCenterRoute: AuthenticatedPrivacyCenterRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSearchRoute: AuthenticatedSearchRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
@@ -825,6 +1058,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
+  PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiHealthRoute: ApiHealthRoute,
 }

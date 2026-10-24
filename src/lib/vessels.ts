@@ -39,18 +39,11 @@ export const VesselFormSchema = z.object({
     .trim()
     .min(2, "Informe o nome da embarcação.")
     .max(120, "Máximo de 120 caracteres."),
-  imoNumber: z
-    .string()
-    .trim()
-    .max(20, "Máximo de 20 caracteres.")
-    .refine((value) => value === "" || /^[0-9]{7}$/.test(value), {
-      message: "O número IMO deve conter exatamente 7 dígitos.",
-    })
-    .transform((value) => (value === "" ? null : value))
-    .nullable()
-    .default(null),
   vesselType: optionalText(80, "Máximo de 80 caracteres."),
   dpClass: optionalText(20, "Máximo de 20 caracteres."),
+  companyName: optionalText(160, "Máximo de 160 caracteres."),
+  contractManagement: optionalText(160, "Máximo de 160 caracteres."),
+  contractManager: optionalText(120, "Máximo de 120 caracteres."),
   status: z.enum(VESSEL_STATUSES),
   clientId: z
     .string()
@@ -69,41 +62,70 @@ export type VesselFormValues = z.output<typeof VesselFormSchema>;
 export type VesselListItem = {
   id: string;
   name: string;
-  imoNumber: string | null;
   vesselType: string | null;
   dpClass: string | null;
+  companyName: string | null;
+  contractManagement: string | null;
+  contractManager: string | null;
   status: VesselStatus;
   clientId: string | null;
   clientName: string | null;
+  keyDpPersonnel: VesselKeyDpPerson[];
   createdAt: string;
 };
 
+export type VesselKeyDpPerson = {
+  userId: string;
+  fullName: string | null;
+};
+
 const SELECT_COLUMNS =
-  "id, name, imo_number, vessel_type, dp_class, status, client_id, created_at, clients(name)";
+  "id, name, vessel_type, dp_class, company_name, contract_management, contract_manager, status, client_id, created_at, clients(name), user_vessels(profile_id, profiles!user_vessels_profile_id_fkey(full_name))";
 
 type VesselRow = {
   id: string;
   name: string;
-  imo_number: string | null;
   vessel_type: string | null;
   dp_class: string | null;
+  company_name: string | null;
+  contract_management: string | null;
+  contract_manager: string | null;
   status: string;
   client_id: string | null;
   created_at: string;
   clients?: { name: string } | { name: string }[] | null;
+  user_vessels?:
+    | {
+        profile_id: string;
+        profiles?: { full_name: string | null } | { full_name: string | null }[] | null;
+      }[]
+    | null;
 };
 
 function mapVessel(row: VesselRow): VesselListItem {
   const related = Array.isArray(row.clients) ? row.clients[0] : row.clients;
+  const keyDpPersonnel = (row.user_vessels ?? [])
+    .map((assignment) => {
+      const profile = Array.isArray(assignment.profiles)
+        ? assignment.profiles[0]
+        : assignment.profiles;
+      return { userId: assignment.profile_id, fullName: profile?.full_name ?? null };
+    })
+    .sort((left, right) =>
+      (left.fullName ?? left.userId).localeCompare(right.fullName ?? right.userId, "pt-BR"),
+    );
   return {
     id: row.id,
     name: row.name,
-    imoNumber: row.imo_number,
     vesselType: row.vessel_type,
     dpClass: row.dp_class,
+    companyName: row.company_name,
+    contractManagement: row.contract_management,
+    contractManager: row.contract_manager,
     status: row.status as VesselStatus,
     clientId: row.client_id,
     clientName: related?.name ?? null,
+    keyDpPersonnel,
     createdAt: row.created_at,
   };
 }
@@ -139,9 +161,11 @@ export async function createVessel(input: VesselFormInput): Promise<VesselListIt
       organization_id: organizationId,
       client_id: parsed.clientId,
       name: parsed.name,
-      imo_number: parsed.imoNumber,
       vessel_type: parsed.vesselType,
       dp_class: parsed.dpClass,
+      company_name: parsed.companyName,
+      contract_management: parsed.contractManagement,
+      contract_manager: parsed.contractManager,
       status: parsed.status,
     })
     .select(SELECT_COLUMNS)
@@ -154,7 +178,7 @@ export async function createVessel(input: VesselFormInput): Promise<VesselListIt
       context: { operation: "vessels.create", supabase_error: sanitize(error) },
     });
     if (error?.code === "23505") {
-      throw new Error("Já existe uma embarcação ativa com este nome ou número IMO.");
+      throw new Error("Já existe uma embarcação ativa com este nome.");
     }
     throw new Error("Não foi possível cadastrar a embarcação agora. Tente novamente.");
   }
@@ -166,12 +190,91 @@ export async function createVessel(input: VesselFormInput): Promise<VesselListIt
 export function toVesselFormInput(item: VesselListItem): VesselFormInput {
   return {
     name: item.name,
-    imoNumber: item.imoNumber ?? "",
     vesselType: item.vesselType ?? "",
     dpClass: item.dpClass ?? "",
+    companyName: item.companyName ?? "",
+    contractManagement: item.contractManagement ?? "",
+    contractManager: item.contractManager ?? "",
     status: item.status,
     clientId: item.clientId ?? "",
   };
+}
+
+/**
+ * Substitui a equipe Key DP Personel da embarcação. A tabela de associação
+ * possui RLS, integridade de tenant e auditoria; somente administradores da
+ * organização podem inserir/remover vínculos.
+ */
+export async function replaceVesselKeyDpPersonnel(
+  vesselId: string,
+  requestedUserIds: string[],
+): Promise<void> {
+  const desired = [...new Set(requestedUserIds.filter(Boolean))];
+  const [{ data: assignments, error: listError }, organizationId, userResult] = await Promise.all([
+    client().from("user_vessels").select("profile_id").eq("vessel_id", vesselId),
+    fetchCurrentOrganizationId(),
+    client().auth.getUser(),
+  ]);
+
+  if (listError || !organizationId || userResult.error || !userResult.data.user) {
+    emitEvent({
+      event_name: "backend.request.failure",
+      organization_id: organizationId ?? undefined,
+      context: {
+        operation: "vessels.key_dp_personnel.load_context",
+        supabase_error: sanitize(listError ?? userResult.error),
+      },
+    });
+    throw new Error("Não foi possível atualizar o Key DP Personel.");
+  }
+
+  const currentIds = new Set((assignments ?? []).map((item) => item.profile_id));
+  const desiredIds = new Set(desired);
+  const removed = [...currentIds].filter((userId) => !desiredIds.has(userId));
+  const added = desired.filter((userId) => !currentIds.has(userId));
+
+  if (removed.length > 0) {
+    const { error } = await client()
+      .from("user_vessels")
+      .delete()
+      .eq("vessel_id", vesselId)
+      .in("profile_id", removed);
+    if (error) {
+      emitEvent({
+        event_name: "backend.request.failure",
+        organization_id: organizationId,
+        context: {
+          operation: "vessels.key_dp_personnel.remove",
+          supabase_error: sanitize(error),
+        },
+      });
+      throw new Error("Não foi possível remover tripulantes do Key DP Personel.");
+    }
+  }
+
+  if (added.length > 0) {
+    const { error } = await client()
+      .from("user_vessels")
+      .insert(
+        added.map((profileId) => ({
+          organization_id: organizationId,
+          vessel_id: vesselId,
+          profile_id: profileId,
+          assigned_by: userResult.data.user.id,
+        })),
+      );
+    if (error) {
+      emitEvent({
+        event_name: "backend.request.failure",
+        organization_id: organizationId,
+        context: {
+          operation: "vessels.key_dp_personnel.add",
+          supabase_error: sanitize(error),
+        },
+      });
+      throw new Error("Não foi possível adicionar tripulantes ao Key DP Personel.");
+    }
+  }
 }
 
 export async function getVessel(vesselId: string): Promise<VesselListItem | null> {
@@ -204,9 +307,11 @@ export async function updateVessel(
     .update({
       client_id: parsed.clientId,
       name: parsed.name,
-      imo_number: parsed.imoNumber,
       vessel_type: parsed.vesselType,
       dp_class: parsed.dpClass,
+      company_name: parsed.companyName,
+      contract_management: parsed.contractManagement,
+      contract_manager: parsed.contractManager,
       status: parsed.status,
     })
     .eq("id", vesselId)
@@ -220,7 +325,7 @@ export async function updateVessel(
       context: { operation: "vessels.update", supabase_error: sanitize(error) },
     });
     if (error?.code === "23505") {
-      throw new Error("Já existe uma embarcação ativa com este nome ou número IMO.");
+      throw new Error("Já existe uma embarcação ativa com este nome.");
     }
     throw new Error("Não foi possível salvar as alterações da embarcação.");
   }

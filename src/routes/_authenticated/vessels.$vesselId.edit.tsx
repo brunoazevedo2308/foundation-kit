@@ -6,6 +6,7 @@ import { VesselForm } from "@/components/vessel-form";
 import { canManageOperationalData } from "@/lib/clients";
 import {
   getVessel,
+  replaceVesselKeyDpPersonnel,
   toVesselFormInput,
   updateVessel,
   type VesselFormInput,
@@ -21,7 +22,7 @@ import {
 export const Route = createFileRoute("/_authenticated/vessels/$vesselId/edit")({
   head: () => ({
     meta: [
-      { title: "Editar embarcação · DP Suite" },
+      { title: "Editar embarcação · Atino DP Suite" },
       { name: "description", content: "Edição de uma embarcação da frota DP." },
       { name: "robots", content: "noindex" },
     ],
@@ -94,11 +95,13 @@ function EditVesselPage() {
       ) : (
         <VesselForm
           initialValues={initialValues}
+          initialKeyDpPersonnelUserIds={item.keyDpPersonnel.map((person) => person.userId)}
           submitLabel="Salvar alterações"
           submittingLabel="Salvando..."
           cancelTo={<Link to="/vessels">Cancelar</Link>}
-          onSubmit={async (values) => {
+          onSubmit={async (values, extras) => {
             await updateVessel(vesselId, values);
+            await replaceVesselKeyDpPersonnel(vesselId, extras.keyDpPersonnelUserIds);
             await navigate({ to: "/vessels" });
           }}
         />

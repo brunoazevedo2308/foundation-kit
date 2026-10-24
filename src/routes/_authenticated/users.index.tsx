@@ -18,7 +18,7 @@ import { listUsers, type UserListItem } from "@/lib/users";
 export const Route = createFileRoute("/_authenticated/users/")({
   head: () => ({
     meta: [
-      { title: "Usuários · DP Suite" },
+      { title: "Usuários · Atino DP Suite" },
       { name: "description", content: "Gestão de usuários da organização." },
     ],
   }),

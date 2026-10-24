@@ -6,14 +6,19 @@ import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { EMPTY_VESSEL_FORM, VesselForm } from "@/components/vessel-form";
 import { canManageOperationalData } from "@/lib/clients";
-import { createVessel, type VesselListItem } from "@/lib/vessels";
+import {
+  createVessel,
+  replaceVesselKeyDpPersonnel,
+  softDeleteVessel,
+  type VesselListItem,
+} from "@/lib/vessels";
 
 export const Route = createFileRoute("/_authenticated/vessels/new")({
   head: () => ({
     meta: [
-      { title: "Nova embarcação · DP Suite" },
+      { title: "Nova embarcação · Atino DP Suite" },
       { name: "description", content: "Cadastro de uma nova embarcação da frota DP." },
-      { property: "og:title", content: "Nova embarcação · DP Suite" },
+      { property: "og:title", content: "Nova embarcação · Atino DP Suite" },
       { property: "og:description", content: "Cadastro de uma nova embarcação da frota DP." },
     ],
   }),
@@ -45,7 +50,6 @@ function NewVesselPage() {
             <div>
               <p className="font-medium">{created.name}</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                {created.imoNumber ? `IMO ${created.imoNumber}` : "Sem IMO informado"} ·{" "}
                 {created.clientName ?? "Sem cliente vinculado"}
               </p>
             </div>
@@ -81,8 +85,17 @@ function NewVesselPage() {
         submitLabel="Cadastrar embarcação"
         submittingLabel="Salvando..."
         cancelTo={<Link to="/vessels">Cancelar</Link>}
-        onSubmit={async (values) => {
-          setCreated(await createVessel(values));
+        onSubmit={async (values, extras) => {
+          const vessel = await createVessel(values);
+          try {
+            if (extras.keyDpPersonnelUserIds.length > 0) {
+              await replaceVesselKeyDpPersonnel(vessel.id, extras.keyDpPersonnelUserIds);
+            }
+          } catch (error) {
+            await softDeleteVessel(vessel.id).catch(() => undefined);
+            throw error;
+          }
+          setCreated(vessel);
         }}
       />
     </div>

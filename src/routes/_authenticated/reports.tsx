@@ -42,12 +42,12 @@ import {
 export const Route = createFileRoute("/_authenticated/reports")({
   head: () => ({
     meta: [
-      { title: "Relatórios · DP Suite" },
+      { title: "Relatórios · Atino DP Suite" },
       {
         name: "description",
         content: "Relatório operacional de ações com filtros gerenciais e exportação CSV.",
       },
-      { property: "og:title", content: "Relatórios · DP Suite" },
+      { property: "og:title", content: "Relatórios · Atino DP Suite" },
       {
         property: "og:description",
         content: "Recorte filtrado de ações, indicadores e exportação CSV em PT-BR.",

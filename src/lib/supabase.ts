@@ -3,7 +3,7 @@ import { env, isSupabaseConfigured } from "./env";
 import type { Database } from "../types/database";
 
 /**
- * Centralized Supabase client for DP Suite.
+ * Centralized Supabase client for Atino DP Suite.
  *
  * Uses only the publishable (anon) key — NEVER the service_role key.
  * If the environment is not yet configured (e.g. Staging before secrets are

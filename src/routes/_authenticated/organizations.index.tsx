@@ -22,8 +22,8 @@ import { listOrganizations, type OrganizationListItem } from "@/lib/organization
 export const Route = createFileRoute("/_authenticated/organizations/")({
   head: () => ({
     meta: [
-      { title: "Organizations · DP Suite" },
-      { name: "description", content: "Administração de organizações do DP Suite." },
+      { title: "Organizations · Atino DP Suite" },
+      { name: "description", content: "Administração de organizações do Atino DP Suite." },
     ],
   }),
   component: OrganizationsIndex,
@@ -59,7 +59,7 @@ function OrganizationsIndex() {
     <div className="space-y-6">
       <PageHeader
         title="Organizations"
-        description="Gestão de organizações do DP Suite."
+        description="Gestão de organizações do Atino DP Suite."
         actions={
           <Button asChild>
             <Link to="/organizations/new">

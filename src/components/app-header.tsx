@@ -1,5 +1,5 @@
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
-import { Bell, LogOut, Search } from "lucide-react";
+import { Bell, House, LogOut, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import {
@@ -38,6 +38,10 @@ const LABELS: Record<string, string> = {
   search: "Busca",
   app: "Aplicação",
   organizations: "Organizations",
+  courses: "Cursos",
+  documents: "Documentos",
+  "asog-cam": "ASOG/CAM",
+  "dp-assessment": "DP Assessment",
   new: "Novo",
   edit: "Editar",
 };
@@ -94,10 +98,22 @@ export function AppHeader({ displayName, organizationName, email }: HeaderProps)
 
   return (
     <TooltipProvider>
-      <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background/95 px-4 backdrop-blur">
+      <header className="app-header-safe sticky top-0 z-30 flex shrink-0 items-center gap-1 border-b border-border bg-background/95 backdrop-blur sm:gap-2">
         <SidebarTrigger />
         <Separator orientation="vertical" className="mx-1 h-5" />
-        <Breadcrumb className="min-w-0 flex-1">
+        {pathname !== "/dashboard" ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" asChild aria-label="Voltar ao menu principal">
+                <Link to="/dashboard">
+                  <House className="h-5 w-5" />
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Voltar ao menu principal</TooltipContent>
+          </Tooltip>
+        ) : null}
+        <Breadcrumb className="hidden min-w-0 flex-1 sm:block">
           <BreadcrumbList>
             {crumbs.length === 0 ? (
               <BreadcrumbItem>
@@ -121,10 +137,11 @@ export function AppHeader({ displayName, organizationName, email }: HeaderProps)
             )}
           </BreadcrumbList>
         </Breadcrumb>
+        <span className="min-w-0 flex-1 sm:hidden" aria-hidden />
         <nav aria-label="Ações rápidas" className="flex items-center gap-1">
           <form role="search" onSubmit={handleSearchSubmit} className="hidden sm:block">
             <label htmlFor="global-search" className="sr-only">
-              Buscar no DP Suite
+              Buscar no Atino DP Suite
             </label>
             <div className="relative">
               <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

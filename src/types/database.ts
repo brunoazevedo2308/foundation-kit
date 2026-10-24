@@ -110,6 +110,114 @@ export type Database = {
           },
         ];
       };
+      action_activity: {
+        Row: {
+          action_id: string;
+          actor_user_id: string | null;
+          created_at: string;
+          event_type: string;
+          id: string;
+          metadata: Json;
+          organization_id: string;
+          summary: string;
+        };
+        Insert: {
+          action_id: string;
+          actor_user_id?: string | null;
+          created_at?: string;
+          event_type: string;
+          id?: string;
+          metadata?: Json;
+          organization_id?: string;
+          summary: string;
+        };
+        Update: {
+          action_id?: string;
+          actor_user_id?: string | null;
+          created_at?: string;
+          event_type?: string;
+          id?: string;
+          metadata?: Json;
+          organization_id?: string;
+          summary?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "action_activity_action_id_fkey";
+            columns: ["action_id"];
+            isOneToOne: false;
+            referencedRelation: "actions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "action_activity_actor_user_id_fkey";
+            columns: ["actor_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "action_activity_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      action_participants: {
+        Row: {
+          action_id: string;
+          added_by: string;
+          created_at: string;
+          organization_id: string;
+          user_id: string;
+        };
+        Insert: {
+          action_id: string;
+          added_by?: string;
+          created_at?: string;
+          organization_id?: string;
+          user_id: string;
+        };
+        Update: {
+          action_id?: string;
+          added_by?: string;
+          created_at?: string;
+          organization_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "action_participants_action_id_fkey";
+            columns: ["action_id"];
+            isOneToOne: false;
+            referencedRelation: "actions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "action_participants_added_by_fkey";
+            columns: ["added_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "action_participants_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "action_participants_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       attachments: {
         Row: {
           action_id: string | null;
@@ -242,6 +350,111 @@ export type Database = {
           },
         ];
       };
+      data_subject_requests: {
+        Row: {
+          created_at: string;
+          details: string;
+          id: string;
+          organization_id: string;
+          request_type: string;
+          requester_user_id: string;
+          resolved_at: string | null;
+          response_summary: string | null;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          details: string;
+          id?: string;
+          organization_id: string;
+          request_type: string;
+          requester_user_id: string;
+          resolved_at?: string | null;
+          response_summary?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          details?: string;
+          id?: string;
+          organization_id?: string;
+          request_type?: string;
+          requester_user_id?: string;
+          resolved_at?: string | null;
+          response_summary?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "data_subject_requests_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "data_subject_requests_requester_user_id_fkey";
+            columns: ["requester_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      client_contacts: {
+        Row: {
+          client_id: string;
+          created_at: string;
+          email: string | null;
+          id: string;
+          organization_id: string;
+          phone: string | null;
+          position: number;
+          responsible_area: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          client_id: string;
+          created_at?: string;
+          email?: string | null;
+          id?: string;
+          organization_id: string;
+          phone?: string | null;
+          position?: number;
+          responsible_area?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          client_id?: string;
+          created_at?: string;
+          email?: string | null;
+          id?: string;
+          organization_id?: string;
+          phone?: string | null;
+          position?: number;
+          responsible_area?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "client_contacts_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_contacts_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       clients: {
         Row: {
           code: string | null;
@@ -350,6 +563,118 @@ export type Database = {
             columns: ["organization_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      document_companies: {
+        Row: {
+          created_at: string;
+          created_by: string;
+          deleted_at: string | null;
+          id: string;
+          name: string;
+          organization_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string;
+          deleted_at?: string | null;
+          id?: string;
+          name: string;
+          organization_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string;
+          deleted_at?: string | null;
+          id?: string;
+          name?: string;
+          organization_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "document_companies_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "document_companies_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      document_files: {
+        Row: {
+          category: string;
+          company_id: string;
+          created_at: string;
+          deleted_at: string | null;
+          file_name: string;
+          id: string;
+          mime_type: string;
+          organization_id: string;
+          size_bytes: number;
+          storage_path: string;
+          updated_at: string;
+          uploaded_by: string;
+        };
+        Insert: {
+          category: string;
+          company_id: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          file_name: string;
+          id?: string;
+          mime_type: string;
+          organization_id: string;
+          size_bytes: number;
+          storage_path: string;
+          updated_at?: string;
+          uploaded_by?: string;
+        };
+        Update: {
+          category?: string;
+          company_id?: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          file_name?: string;
+          id?: string;
+          mime_type?: string;
+          organization_id?: string;
+          size_bytes?: number;
+          storage_path?: string;
+          updated_at?: string;
+          uploaded_by?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "document_files_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "document_companies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "document_files_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "document_files_uploaded_by_fkey";
+            columns: ["uploaded_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -722,6 +1047,9 @@ export type Database = {
       vessels: {
         Row: {
           client_id: string | null;
+          company_name: string | null;
+          contract_management: string | null;
+          contract_manager: string | null;
           created_at: string;
           deleted_at: string | null;
           dp_class: string | null;
@@ -735,6 +1063,9 @@ export type Database = {
         };
         Insert: {
           client_id?: string | null;
+          company_name?: string | null;
+          contract_management?: string | null;
+          contract_manager?: string | null;
           created_at?: string;
           deleted_at?: string | null;
           dp_class?: string | null;
@@ -748,6 +1079,9 @@ export type Database = {
         };
         Update: {
           client_id?: string | null;
+          company_name?: string | null;
+          contract_management?: string | null;
+          contract_manager?: string | null;
           created_at?: string;
           deleted_at?: string | null;
           dp_class?: string | null;

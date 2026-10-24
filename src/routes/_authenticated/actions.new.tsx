@@ -12,13 +12,15 @@ import {
   type ActionListItem,
 } from "@/lib/actions";
 import { canManageOperationalData } from "@/lib/clients";
+import { replaceActionParticipants } from "@/lib/action-participants";
+import { createAttachment } from "@/lib/attachments";
 
 export const Route = createFileRoute("/_authenticated/actions/new")({
   head: () => ({
     meta: [
-      { title: "Nova ação · DP Suite" },
+      { title: "Nova ação · Atino DP Suite" },
       { name: "description", content: "Cadastro de uma nova ação operacional DP." },
-      { property: "og:title", content: "Nova ação · DP Suite" },
+      { property: "og:title", content: "Nova ação · Atino DP Suite" },
       { property: "og:description", content: "Cadastro de uma nova ação operacional DP." },
     ],
   }),
@@ -92,8 +94,14 @@ function NewActionPage() {
         submitLabel="Criar ação"
         submittingLabel="Salvando..."
         cancelTo={<Link to="/actions">Cancelar</Link>}
-        onSubmit={async (values) => {
-          setCreated(await createAction(values));
+        allowInitialAttachment
+        onSubmit={async (values, extras) => {
+          const action = await createAction(values);
+          await replaceActionParticipants(action.id, extras.contributorUserIds);
+          if (extras.attachment) {
+            await createAttachment({ context: { actionId: action.id }, file: extras.attachment });
+          }
+          setCreated(action);
         }}
       />
     </div>

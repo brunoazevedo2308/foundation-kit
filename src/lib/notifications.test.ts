@@ -13,6 +13,8 @@ import {
 function item(over: Partial<NotificationItem> = {}): NotificationItem {
   return {
     id: "n1",
+    actorUserId: "u1",
+    actorName: "Ana",
     notificationType: "action.assigned",
     title: "Você foi designado para uma ação",
     body: "Inspeção anual DP",
@@ -29,6 +31,8 @@ describe("mapNotification", () => {
     expect(
       mapNotification({
         id: "n1",
+        actor_user_id: "u1",
+        actor: { full_name: " Ana " },
         notification_type: "action.assigned",
         title: "Nova ação",
         body: "Detalhe",
@@ -39,6 +43,8 @@ describe("mapNotification", () => {
       }),
     ).toEqual({
       id: "n1",
+      actorUserId: "u1",
+      actorName: "Ana",
       notificationType: "action.assigned",
       title: "Nova ação",
       body: "Detalhe",
@@ -52,6 +58,8 @@ describe("mapNotification", () => {
   it("preserva campos nulos (body/entity)", () => {
     const mapped = mapNotification({
       id: "n2",
+      actor_user_id: null,
+      actor: null,
       notification_type: "system.announcement",
       title: "Aviso",
       body: null,
@@ -63,6 +71,26 @@ describe("mapNotification", () => {
     expect(mapped.body).toBeNull();
     expect(mapped.entityType).toBeNull();
     expect(mapped.entityId).toBeNull();
+    expect(mapped.actorUserId).toBeNull();
+    expect(mapped.actorName).toBeNull();
+  });
+
+  it("mantém o executor mesmo quando o perfil relacionado não está disponível", () => {
+    const mapped = mapNotification({
+      id: "n3",
+      actor_user_id: "u3",
+      actor: null,
+      notification_type: "action.updated",
+      title: "Ação atualizada",
+      body: "Status alterado",
+      entity_type: "action",
+      entity_id: "a3",
+      read_at: null,
+      created_at: "2026-08-20T10:00:00.000Z",
+    });
+
+    expect(mapped.actorUserId).toBe("u3");
+    expect(mapped.actorName).toBeNull();
   });
 });
 
@@ -127,6 +155,9 @@ describe("notificationTypeLabel", () => {
     expect(notificationTypeLabel("action.assigned")).toBe("Ação atribuída");
     expect(notificationTypeLabel("deliverable.assigned")).toBe("Entregável atribuído");
     expect(notificationTypeLabel("comment.created")).toBe("Novo comentário");
+    expect(notificationTypeLabel("action.updated")).toBe("Ação atualizada");
+    expect(notificationTypeLabel("action.due_soon")).toBe("Prazo próximo");
+    expect(notificationTypeLabel("action.overdue")).toBe("Ação atrasada");
   });
 
   it("usa rótulo genérico para tipos desconhecidos", () => {

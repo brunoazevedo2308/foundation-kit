@@ -20,9 +20,9 @@ import { listVessels, softDeleteVessel, type VesselListItem } from "@/lib/vessel
 export const Route = createFileRoute("/_authenticated/vessels/")({
   head: () => ({
     meta: [
-      { title: "Embarcações · DP Suite" },
+      { title: "Embarcações · Atino DP Suite" },
       { name: "description", content: "Frota DP governada pela organização." },
-      { property: "og:title", content: "Embarcações · DP Suite" },
+      { property: "og:title", content: "Embarcações · Atino DP Suite" },
       { property: "og:description", content: "Frota DP governada pela organização." },
     ],
   }),
@@ -102,15 +102,18 @@ function VesselsPage() {
           </p>
         </div>
       ) : vessels.length > 0 ? (
-        <div className="overflow-hidden rounded-lg border border-border">
-          <Table>
+        <div className="overflow-x-auto rounded-lg border border-border">
+          <Table className="min-w-[1320px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
-                <TableHead>IMO</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Classe DP</TableHead>
                 <TableHead>Cliente</TableHead>
+                <TableHead>Nome da empresa</TableHead>
+                <TableHead>Key DP Personel</TableHead>
+                <TableHead>Gerência Contratual</TableHead>
+                <TableHead>Gerente de Contrato</TableHead>
                 <TableHead>Status</TableHead>
                 {canManage ? <TableHead className="text-right">Ações</TableHead> : null}
               </TableRow>
@@ -119,10 +122,19 @@ function VesselsPage() {
               {vessels.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell>{item.imoNumber ?? "—"}</TableCell>
                   <TableCell>{item.vesselType ?? "—"}</TableCell>
                   <TableCell>{item.dpClass ?? "—"}</TableCell>
                   <TableCell>{item.clientName ?? "Sem vínculo"}</TableCell>
+                  <TableCell>{item.companyName ?? "—"}</TableCell>
+                  <TableCell className="max-w-64 whitespace-normal">
+                    {item.keyDpPersonnel.length > 0
+                      ? item.keyDpPersonnel
+                          .map((person) => person.fullName ?? "Usuário não disponível")
+                          .join(", ")
+                      : "Não informado"}
+                  </TableCell>
+                  <TableCell>{item.contractManagement ?? "—"}</TableCell>
+                  <TableCell>{item.contractManager ?? "—"}</TableCell>
                   <TableCell>
                     <Badge variant={item.status === "active" ? "default" : "secondary"}>
                       {STATUS_LABELS[item.status] ?? item.status}

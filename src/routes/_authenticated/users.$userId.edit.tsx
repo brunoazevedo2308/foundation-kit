@@ -16,7 +16,7 @@ import type { AppRole, ProfileStatus } from "@/lib/auth";
 import { getUser, updateUserAccess, type UserAccessInput, type UserListItem } from "@/lib/users";
 
 export const Route = createFileRoute("/_authenticated/users/$userId/edit")({
-  head: () => ({ meta: [{ title: "Editar acesso · DP Suite" }] }),
+  head: () => ({ meta: [{ title: "Editar acesso · Atino DP Suite" }] }),
   beforeLoad: ({ context }) => {
     if (!context.profile || context.profile.role === "member") {
       throw redirect({ to: "/dashboard" });

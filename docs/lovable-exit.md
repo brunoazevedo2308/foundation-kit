@@ -27,7 +27,7 @@ O workflow `.github/workflows/ci.yml` repete os quatro checks em todo pull reque
 - ~~Provisionar um projeto Supabase separado para Staging.~~ Concluído com a
   branch `dp-suite-staging` (`ggehwncqjetinynwlqhj`).
 - ~~Validar por replay a cadeia canônica em `supabase/migrations`.~~
-  Concluído com 32 migrations aplicadas; os arquivos em `db/migrations`
+  Concluído com 34 migrations aplicadas em staging; os arquivos em `db/migrations`
   permanecem como espelhos históricos. O único aviso atual do Security Advisor
   é o uso intencional de `SECURITY DEFINER` por `list_organizations()`, cuja
   execução faz a checagem interna de `system_admin` e tem grants restritos.

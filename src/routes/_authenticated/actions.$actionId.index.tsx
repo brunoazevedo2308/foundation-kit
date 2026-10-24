@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ListChecks, Pencil, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
+import { ActionActivitySection } from "@/components/action-activity-section";
 import { AttachmentsSection } from "@/components/attachments-section";
 import { CommentsSection } from "@/components/comments-section";
 import { DeliverablesSection } from "@/components/deliverables-section";
@@ -31,11 +32,12 @@ import {
   type ActionListItem,
 } from "@/lib/actions";
 import { canManageOperationalData } from "@/lib/clients";
+import { listActionParticipants, type ActionParticipant } from "@/lib/action-participants";
 
 export const Route = createFileRoute("/_authenticated/actions/$actionId/")({
   head: () => ({
     meta: [
-      { title: "Detalhe da ação · DP Suite" },
+      { title: "Detalhe da ação · Atino DP Suite" },
       { name: "description", content: "Detalhe de uma ação operacional DP." },
       { name: "robots", content: "noindex" },
     ],
@@ -52,13 +54,19 @@ function ActionDetailPage() {
   const [action, setAction] = useState<ActionListItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activityRevision, setActivityRevision] = useState(0);
+  const [participants, setParticipants] = useState<ActionParticipant[]>([]);
+  const activityChanged = useCallback(() => setActivityRevision((value) => value + 1), []);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
-    getAction(actionId)
-      .then((row) => {
-        if (active) setAction(row);
+    Promise.all([getAction(actionId), listActionParticipants(actionId)])
+      .then(([row, participantRows]) => {
+        if (active) {
+          setAction(row);
+          setParticipants(participantRows);
+        }
       })
       .catch((err) => {
         if (active)
@@ -192,13 +200,35 @@ function ActionDetailPage() {
               <Detail label="Embarcação" value={action.vesselName} />
               <Detail label="Origem" value={action.origin} />
               <Detail label="Tipo" value={action.actionType} />
+              <Detail
+                label="Participantes e contribuidores"
+                value={
+                  participants.length > 0
+                    ? participants
+                        .map((participant) => participant.fullName ?? participant.userId)
+                        .join(", ")
+                    : null
+                }
+              />
             </dl>
           </CardContent>
         </Card>
       ) : null}
 
+      {action ? <ActionActivitySection actionId={actionId} revision={activityRevision} /> : null}
+
       {action ? (
-        <AttachmentsSection context={{ actionId }} canManage={canManage} title="Anexos da ação" />
+        <AttachmentsSection
+          context={{ actionId }}
+          canManage={canManage}
+          canUpload={
+            canManage ||
+            action.responsibleUserId === user.id ||
+            participants.some((participant) => participant.userId === user.id)
+          }
+          title="Anexos da ação"
+          onChanged={activityChanged}
+        />
       ) : null}
 
       {action ? (
@@ -206,7 +236,9 @@ function ActionDetailPage() {
           actionId={actionId}
           canManage={canManage}
           currentUserId={user.id}
+          actionResponsibleUserId={action.responsibleUserId}
           role={profile.role}
+          onChanged={activityChanged}
         />
       ) : null}
 
@@ -216,6 +248,7 @@ function ActionDetailPage() {
           currentUserId={user.id}
           role={profile.role}
           title="Comentários da ação"
+          onChanged={activityChanged}
         />
       ) : null}
     </div>
