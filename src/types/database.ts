@@ -884,6 +884,7 @@ export type Database = {
       vessels: {
         Row: {
           client_id: string | null;
+          company_name: string | null;
           contract_management: string | null;
           contract_manager: string | null;
           created_at: string;
@@ -899,6 +900,7 @@ export type Database = {
         };
         Insert: {
           client_id?: string | null;
+          company_name?: string | null;
           contract_management?: string | null;
           contract_manager?: string | null;
           created_at?: string;
@@ -914,6 +916,7 @@ export type Database = {
         };
         Update: {
           client_id?: string | null;
+          company_name?: string | null;
           contract_management?: string | null;
           contract_manager?: string | null;
           created_at?: string;

@@ -25,6 +25,7 @@ export const EMPTY_VESSEL_FORM: VesselFormInput = {
   imoNumber: "",
   vesselType: "",
   dpClass: "",
+  companyName: "",
   contractManagement: "",
   contractManager: "",
   status: "active",
@@ -205,6 +206,15 @@ export function VesselForm({
               ))}
             </SelectContent>
           </Select>
+        </Field>
+        <Field label="Nome da empresa" htmlFor="companyName" error={errors.companyName}>
+          <Input
+            id="companyName"
+            value={values.companyName ?? ""}
+            onChange={(event) => update("companyName", event.target.value)}
+            maxLength={160}
+            autoComplete="organization"
+          />
         </Field>
         <Field
           label="Gerência Contratual"

@@ -103,7 +103,7 @@ function VesselsPage() {
         </div>
       ) : vessels.length > 0 ? (
         <div className="overflow-x-auto rounded-lg border border-border">
-          <Table className="min-w-[1240px]">
+          <Table className="min-w-[1420px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
@@ -111,6 +111,7 @@ function VesselsPage() {
                 <TableHead>Tipo</TableHead>
                 <TableHead>Classe DP</TableHead>
                 <TableHead>Cliente</TableHead>
+                <TableHead>Nome da empresa</TableHead>
                 <TableHead>Key DP Personel</TableHead>
                 <TableHead>Gerência Contratual</TableHead>
                 <TableHead>Gerente de Contrato</TableHead>
@@ -126,6 +127,7 @@ function VesselsPage() {
                   <TableCell>{item.vesselType ?? "—"}</TableCell>
                   <TableCell>{item.dpClass ?? "—"}</TableCell>
                   <TableCell>{item.clientName ?? "Sem vínculo"}</TableCell>
+                  <TableCell>{item.companyName ?? "—"}</TableCell>
                   <TableCell className="max-w-64 whitespace-normal">
                     {item.keyDpPersonnel.length > 0
                       ? item.keyDpPersonnel
