@@ -39,6 +39,7 @@ const LABELS: Record<string, string> = {
   app: "Aplicação",
   organizations: "Organizations",
   courses: "Cursos",
+  documents: "Documentos",
   "asog-cam": "ASOG/CAM",
   "dp-assessment": "DP Assessment",
   new: "Novo",

@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   BookOpenCheck,
   ClipboardCheck,
+  FolderOpen,
 } from "lucide-react";
 
 import type { AppRole } from "@/lib/auth";
@@ -47,6 +48,7 @@ const operational: NavItem[] = [
   { title: "Relatórios", url: "/reports", icon: FileSpreadsheet },
   { title: "Notificações", url: "/notifications", icon: Bell },
   { title: "Busca", url: "/search", icon: Search },
+  { title: "Documentos", url: "/documents", icon: FolderOpen },
 ];
 
 const registry: NavItem[] = [

@@ -22,6 +22,7 @@ import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/ap
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedCoursesRouteImport } from './routes/_authenticated/courses'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedOrganizationsRouteImport } from './routes/_authenticated/organizations'
 import { Route as AuthenticatedPrivacyCenterRouteImport } from './routes/_authenticated/privacy-center'
@@ -39,6 +40,9 @@ import { Route as AuthenticatedCoursesIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedCoursesAsogCamRouteImport } from './routes/_authenticated/courses.asog-cam'
 import { Route as AuthenticatedCoursesDpAssessmentRouteImport } from './routes/_authenticated/courses.dp-assessment'
 import { Route as AuthenticatedDevObservabilityRouteImport } from './routes/_authenticated/dev.observability'
+import { Route as AuthenticatedDocumentsIndexRouteImport } from './routes/_authenticated/documents.index'
+import { Route as AuthenticatedDocumentsCompanyIdRouteImport } from './routes/_authenticated/documents.$companyId'
+import { Route as AuthenticatedDocumentsNewRouteImport } from './routes/_authenticated/documents.new'
 import { Route as AuthenticatedOrganizationsIndexRouteImport } from './routes/_authenticated/organizations.index'
 import { Route as AuthenticatedOrganizationsNewRouteImport } from './routes/_authenticated/organizations.new'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users.index'
@@ -113,6 +117,11 @@ const AuthenticatedCoursesRoute = AuthenticatedCoursesRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedNotificationsRoute =
@@ -209,6 +218,24 @@ const AuthenticatedDevObservabilityRoute =
     path: '/dev/observability',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDocumentsIndexRoute =
+  AuthenticatedDocumentsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedDocumentsRoute,
+  } as any)
+const AuthenticatedDocumentsCompanyIdRoute =
+  AuthenticatedDocumentsCompanyIdRouteImport.update({
+    id: '/$companyId',
+    path: '/$companyId',
+    getParentRoute: () => AuthenticatedDocumentsRoute,
+  } as any)
+const AuthenticatedDocumentsNewRoute =
+  AuthenticatedDocumentsNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => AuthenticatedDocumentsRoute,
+  } as any)
 const AuthenticatedOrganizationsIndexRoute =
   AuthenticatedOrganizationsIndexRouteImport.update({
     id: '/',
@@ -286,6 +313,7 @@ export interface FileRoutesByFullPath {
   '/clients': typeof AuthenticatedClientsRouteWithChildren
   '/courses': typeof AuthenticatedCoursesRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/documents': typeof AuthenticatedDocumentsRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/privacy-center': typeof AuthenticatedPrivacyCenterRoute
@@ -300,12 +328,15 @@ export interface FileRoutesByFullPath {
   '/courses/asog-cam': typeof AuthenticatedCoursesAsogCamRoute
   '/courses/dp-assessment': typeof AuthenticatedCoursesDpAssessmentRoute
   '/dev/observability': typeof AuthenticatedDevObservabilityRoute
+  '/documents/$companyId': typeof AuthenticatedDocumentsCompanyIdRoute
+  '/documents/new': typeof AuthenticatedDocumentsNewRoute
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/vessels/new': typeof AuthenticatedVesselsNewRoute
   '/actions/': typeof AuthenticatedActionsIndexRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/courses/': typeof AuthenticatedCoursesIndexRoute
+  '/documents/': typeof AuthenticatedDocumentsIndexRoute
   '/organizations/': typeof AuthenticatedOrganizationsIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/vessels/': typeof AuthenticatedVesselsIndexRoute
@@ -336,12 +367,15 @@ export interface FileRoutesByTo {
   '/courses/asog-cam': typeof AuthenticatedCoursesAsogCamRoute
   '/courses/dp-assessment': typeof AuthenticatedCoursesDpAssessmentRoute
   '/dev/observability': typeof AuthenticatedDevObservabilityRoute
+  '/documents/$companyId': typeof AuthenticatedDocumentsCompanyIdRoute
+  '/documents/new': typeof AuthenticatedDocumentsNewRoute
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/vessels/new': typeof AuthenticatedVesselsNewRoute
   '/actions': typeof AuthenticatedActionsIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/courses': typeof AuthenticatedCoursesIndexRoute
+  '/documents': typeof AuthenticatedDocumentsIndexRoute
   '/organizations': typeof AuthenticatedOrganizationsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/vessels': typeof AuthenticatedVesselsIndexRoute
@@ -366,6 +400,7 @@ export interface FileRoutesById {
   '/_authenticated/clients': typeof AuthenticatedClientsRouteWithChildren
   '/_authenticated/courses': typeof AuthenticatedCoursesRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/documents': typeof AuthenticatedDocumentsRouteWithChildren
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
   '/_authenticated/privacy-center': typeof AuthenticatedPrivacyCenterRoute
@@ -380,12 +415,15 @@ export interface FileRoutesById {
   '/_authenticated/courses/asog-cam': typeof AuthenticatedCoursesAsogCamRoute
   '/_authenticated/courses/dp-assessment': typeof AuthenticatedCoursesDpAssessmentRoute
   '/_authenticated/dev/observability': typeof AuthenticatedDevObservabilityRoute
+  '/_authenticated/documents/$companyId': typeof AuthenticatedDocumentsCompanyIdRoute
+  '/_authenticated/documents/new': typeof AuthenticatedDocumentsNewRoute
   '/_authenticated/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
   '/_authenticated/vessels/new': typeof AuthenticatedVesselsNewRoute
   '/_authenticated/actions/': typeof AuthenticatedActionsIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/courses/': typeof AuthenticatedCoursesIndexRoute
+  '/_authenticated/documents/': typeof AuthenticatedDocumentsIndexRoute
   '/_authenticated/organizations/': typeof AuthenticatedOrganizationsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/vessels/': typeof AuthenticatedVesselsIndexRoute
@@ -410,6 +448,7 @@ export interface FileRouteTypes {
     | '/clients'
     | '/courses'
     | '/dashboard'
+    | '/documents'
     | '/notifications'
     | '/organizations'
     | '/privacy-center'
@@ -424,12 +463,15 @@ export interface FileRouteTypes {
     | '/courses/asog-cam'
     | '/courses/dp-assessment'
     | '/dev/observability'
+    | '/documents/$companyId'
+    | '/documents/new'
     | '/organizations/new'
     | '/users/new'
     | '/vessels/new'
     | '/actions/'
     | '/clients/'
     | '/courses/'
+    | '/documents/'
     | '/organizations/'
     | '/users/'
     | '/vessels/'
@@ -460,12 +502,15 @@ export interface FileRouteTypes {
     | '/courses/asog-cam'
     | '/courses/dp-assessment'
     | '/dev/observability'
+    | '/documents/$companyId'
+    | '/documents/new'
     | '/organizations/new'
     | '/users/new'
     | '/vessels/new'
     | '/actions'
     | '/clients'
     | '/courses'
+    | '/documents'
     | '/organizations'
     | '/users'
     | '/vessels'
@@ -489,6 +534,7 @@ export interface FileRouteTypes {
     | '/_authenticated/clients'
     | '/_authenticated/courses'
     | '/_authenticated/dashboard'
+    | '/_authenticated/documents'
     | '/_authenticated/notifications'
     | '/_authenticated/organizations'
     | '/_authenticated/privacy-center'
@@ -503,12 +549,15 @@ export interface FileRouteTypes {
     | '/_authenticated/courses/asog-cam'
     | '/_authenticated/courses/dp-assessment'
     | '/_authenticated/dev/observability'
+    | '/_authenticated/documents/$companyId'
+    | '/_authenticated/documents/new'
     | '/_authenticated/organizations/new'
     | '/_authenticated/users/new'
     | '/_authenticated/vessels/new'
     | '/_authenticated/actions/'
     | '/_authenticated/clients/'
     | '/_authenticated/courses/'
+    | '/_authenticated/documents/'
     | '/_authenticated/organizations/'
     | '/_authenticated/users/'
     | '/_authenticated/vessels/'
@@ -622,6 +671,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/documents': {
+      id: '/_authenticated/documents'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof AuthenticatedDocumentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/notifications': {
@@ -742,6 +798,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/dev/observability'
       preLoaderRoute: typeof AuthenticatedDevObservabilityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/documents/': {
+      id: '/_authenticated/documents/'
+      path: '/'
+      fullPath: '/documents/'
+      preLoaderRoute: typeof AuthenticatedDocumentsIndexRouteImport
+      parentRoute: typeof AuthenticatedDocumentsRoute
+    }
+    '/_authenticated/documents/$companyId': {
+      id: '/_authenticated/documents/$companyId'
+      path: '/$companyId'
+      fullPath: '/documents/$companyId'
+      preLoaderRoute: typeof AuthenticatedDocumentsCompanyIdRouteImport
+      parentRoute: typeof AuthenticatedDocumentsRoute
+    }
+    '/_authenticated/documents/new': {
+      id: '/_authenticated/documents/new'
+      path: '/new'
+      fullPath: '/documents/new'
+      preLoaderRoute: typeof AuthenticatedDocumentsNewRouteImport
+      parentRoute: typeof AuthenticatedDocumentsRoute
     }
     '/_authenticated/organizations/': {
       id: '/_authenticated/organizations/'
@@ -871,6 +948,24 @@ const AuthenticatedCoursesRouteChildren: AuthenticatedCoursesRouteChildren = {
 const AuthenticatedCoursesRouteWithChildren =
   AuthenticatedCoursesRoute._addFileChildren(AuthenticatedCoursesRouteChildren)
 
+interface AuthenticatedDocumentsRouteChildren {
+  AuthenticatedDocumentsCompanyIdRoute: typeof AuthenticatedDocumentsCompanyIdRoute
+  AuthenticatedDocumentsNewRoute: typeof AuthenticatedDocumentsNewRoute
+  AuthenticatedDocumentsIndexRoute: typeof AuthenticatedDocumentsIndexRoute
+}
+
+const AuthenticatedDocumentsRouteChildren: AuthenticatedDocumentsRouteChildren =
+  {
+    AuthenticatedDocumentsCompanyIdRoute: AuthenticatedDocumentsCompanyIdRoute,
+    AuthenticatedDocumentsNewRoute: AuthenticatedDocumentsNewRoute,
+    AuthenticatedDocumentsIndexRoute: AuthenticatedDocumentsIndexRoute,
+  }
+
+const AuthenticatedDocumentsRouteWithChildren =
+  AuthenticatedDocumentsRoute._addFileChildren(
+    AuthenticatedDocumentsRouteChildren,
+  )
+
 interface AuthenticatedOrganizationsRouteChildren {
   AuthenticatedOrganizationsNewRoute: typeof AuthenticatedOrganizationsNewRoute
   AuthenticatedOrganizationsIndexRoute: typeof AuthenticatedOrganizationsIndexRoute
@@ -923,6 +1018,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRouteWithChildren
   AuthenticatedCoursesRoute: typeof AuthenticatedCoursesRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRouteWithChildren
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRouteWithChildren
   AuthenticatedPrivacyCenterRoute: typeof AuthenticatedPrivacyCenterRoute
@@ -940,6 +1036,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedClientsRoute: AuthenticatedClientsRouteWithChildren,
   AuthenticatedCoursesRoute: AuthenticatedCoursesRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDocumentsRoute: AuthenticatedDocumentsRouteWithChildren,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRouteWithChildren,
   AuthenticatedPrivacyCenterRoute: AuthenticatedPrivacyCenterRoute,
