@@ -612,6 +612,73 @@ export type Database = {
           },
         ];
       };
+      document_files: {
+        Row: {
+          category: string;
+          company_id: string;
+          created_at: string;
+          deleted_at: string | null;
+          file_name: string;
+          id: string;
+          mime_type: string;
+          organization_id: string;
+          size_bytes: number;
+          storage_path: string;
+          updated_at: string;
+          uploaded_by: string;
+        };
+        Insert: {
+          category: string;
+          company_id: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          file_name: string;
+          id?: string;
+          mime_type: string;
+          organization_id: string;
+          size_bytes: number;
+          storage_path: string;
+          updated_at?: string;
+          uploaded_by?: string;
+        };
+        Update: {
+          category?: string;
+          company_id?: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          file_name?: string;
+          id?: string;
+          mime_type?: string;
+          organization_id?: string;
+          size_bytes?: number;
+          storage_path?: string;
+          updated_at?: string;
+          uploaded_by?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "document_files_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "document_companies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "document_files_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "document_files_uploaded_by_fkey";
+            columns: ["uploaded_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       deliverables: {
         Row: {
           action_id: string;

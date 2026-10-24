@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ClipboardList, FileCheck2, FileText, FolderOpen, FlaskConical } from "lucide-react";
+import { ClipboardList, FileCheck2, FileText, FlaskConical } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { DocumentFilesSection } from "@/components/document-files-section";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { canManageOperationalData } from "@/lib/clients";
 import { getDocumentCompany, type DocumentCompany } from "@/lib/document-companies";
 
 export const Route = createFileRoute("/_authenticated/documents/$companyId")({
@@ -43,6 +45,8 @@ const DOCUMENT_AREAS = [
 
 function DocumentCompanyPage() {
   const { companyId } = Route.useParams();
+  const { profile } = Route.useRouteContext();
+  const canManage = canManageOperationalData(profile.role);
   const [company, setCompany] = useState<DocumentCompany | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -125,13 +129,11 @@ function DocumentCompanyPage() {
                     </p>
                   </div>
                 </div>
-                <div className="mt-6 rounded-lg border border-dashed border-border p-8 text-center">
-                  <FolderOpen className="mx-auto size-7 text-muted-foreground" aria-hidden />
-                  <p className="mt-3 text-sm font-medium">Nenhum documento inserido.</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Esta área está pronta para receber os documentos da empresa.
-                  </p>
-                </div>
+                <DocumentFilesSection
+                  companyId={company.id}
+                  category={area.value}
+                  canManage={canManage}
+                />
               </section>
             </TabsContent>
           );
