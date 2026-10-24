@@ -28,12 +28,15 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   CalendarEntryFormSchema,
   createCalendarEntry,
+  getVesselCalendarColor,
   isSameCalendarDay,
   listCalendarEntries,
+  VESSEL_CALENDAR_COLORS,
   type CalendarEntry,
   type CalendarEntryType,
 } from "@/lib/calendar-entries";
 import { cn } from "@/lib/utils";
+import { listVessels, type VesselListItem } from "@/lib/vessels";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({
@@ -50,6 +53,7 @@ function CalendarPage() {
   const [month, setMonth] = useState(() => new Date());
   const [selectedDay, setSelectedDay] = useState<Date>(() => new Date());
   const [entries, setEntries] = useState<CalendarEntry[]>([]);
+  const [vessels, setVessels] = useState<VesselListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -60,7 +64,12 @@ function CalendarPage() {
     try {
       const from = startOfWeek(startOfMonth(visibleMonth), { weekStartsOn: 0 });
       const to = endOfWeek(endOfMonth(visibleMonth), { weekStartsOn: 0 });
-      setEntries(await listCalendarEntries(from, to));
+      const [calendarEntries, availableVessels] = await Promise.all([
+        listCalendarEntries(from, to),
+        listVessels(),
+      ]);
+      setEntries(calendarEntries);
+      setVessels(availableVessels.filter((vessel) => vessel.status === "active"));
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : "Não foi possível carregar o calendário.",
@@ -78,9 +87,24 @@ function CalendarPage() {
     () => entries.filter((entry) => isSameCalendarDay(entry.startsAt, selectedDay)),
     [entries, selectedDay],
   );
-  const daysWithEntries = useMemo(
-    () => entries.map((entry) => new Date(entry.startsAt)),
-    [entries],
+  const vesselDayModifiers = useMemo(() => {
+    const modifiers: Record<string, Date[]> = {};
+    entries.forEach((entry) => {
+      const colorIndex = VESSEL_CALENDAR_COLORS.indexOf(getVesselCalendarColor(entry.vesselId));
+      const key = `vesselColor${colorIndex}`;
+      modifiers[key] = [...(modifiers[key] ?? []), new Date(entry.startsAt)];
+    });
+    return modifiers;
+  }, [entries]);
+  const vesselDayModifierClasses = useMemo(
+    () =>
+      Object.fromEntries(
+        VESSEL_CALENDAR_COLORS.map((color, index) => [
+          `vesselColor${index}`,
+          `after:absolute after:bottom-1 after:left-1/2 after:size-1.5 after:-translate-x-1/2 after:rounded-full ${color.dayMarker}`,
+        ]),
+      ),
+    [],
   );
 
   async function handleCreated(entry: CalendarEntry) {
@@ -108,7 +132,12 @@ function CalendarPage() {
                 Novo registro
               </Button>
             </DialogTrigger>
-            <CalendarEntryDialog day={selectedDay} createdBy={user.id} onCreated={handleCreated} />
+            <CalendarEntryDialog
+              day={selectedDay}
+              createdBy={user.id}
+              vessels={vessels}
+              onCreated={handleCreated}
+            />
           </Dialog>
         }
       />
@@ -131,19 +160,20 @@ function CalendarPage() {
             onMonthChange={setMonth}
             selected={selectedDay}
             onSelect={(day) => day && setSelectedDay(day)}
-            modifiers={{ hasEntries: daysWithEntries }}
-            modifiersClassNames={{
-              hasEntries:
-                "after:absolute after:bottom-1 after:left-1/2 after:size-1 after:-translate-x-1/2 after:rounded-full after:bg-secondary",
-            }}
-            className="mx-auto w-full bg-transparent p-0 [--cell-size:clamp(2.25rem,8vw,3.25rem)]"
-            classNames={{ month: "flex w-full flex-col gap-4", table: "w-full border-collapse" }}
+            modifiers={vesselDayModifiers}
+            modifiersClassNames={vesselDayModifierClasses}
+            className="mx-auto bg-transparent p-0 [--cell-size:2.5rem] sm:[--cell-size:3rem]"
           />
           <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-border pt-4 text-xs text-muted-foreground">
-            <span className="flex items-center gap-2">
-              <span className="size-2 rounded-full bg-secondary" /> Dia com registro
-            </span>
-            <span>Selecione um dia para ver os detalhes.</span>
+            {vessels.map((vessel) => (
+              <span key={vessel.id} className="flex items-center gap-2">
+                <span
+                  className={cn("size-2 rounded-full", getVesselCalendarColor(vessel.id).dot)}
+                />
+                {vessel.name}
+              </span>
+            ))}
+            {vessels.length === 0 ? <span>Nenhuma embarcação ativa cadastrada.</span> : null}
           </div>
         </section>
 
@@ -192,8 +222,14 @@ function CalendarPage() {
 
 function CalendarEntryCard({ entry }: { entry: CalendarEntry }) {
   const isNote = entry.entryType === "note";
+  const vesselColor = getVesselCalendarColor(entry.vesselId);
   return (
-    <li className="rounded-lg border border-border bg-background p-4">
+    <li
+      className={cn(
+        "rounded-lg border border-l-4 border-border bg-background p-4",
+        vesselColor.border,
+      )}
+    >
       <div className="flex items-start gap-3">
         <div
           className={cn(
@@ -212,6 +248,15 @@ function CalendarEntryCard({ entry }: { entry: CalendarEntry }) {
                 : `${format(new Date(entry.startsAt), "HH:mm")}–${format(new Date(entry.endsAt ?? entry.startsAt), "HH:mm")}`}
             </span>
           </div>
+          <span
+            className={cn(
+              "mt-2 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium",
+              vesselColor.badge,
+            )}
+          >
+            <span className={cn("size-1.5 rounded-full", vesselColor.dot)} />
+            {entry.vesselName}
+          </span>
           {entry.description ? (
             <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
               {entry.description}
@@ -229,15 +274,18 @@ function CalendarEntryCard({ entry }: { entry: CalendarEntry }) {
 function CalendarEntryDialog({
   day,
   createdBy,
+  vessels,
   onCreated,
 }: {
   day: Date;
   createdBy: string;
+  vessels: VesselListItem[];
   onCreated: (entry: CalendarEntry) => Promise<void>;
 }) {
   const [entryType, setEntryType] = useState<CalendarEntryType>("activity");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [vesselId, setVesselId] = useState("");
   const [date, setDate] = useState(() => format(day, "yyyy-MM-dd"));
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("10:00");
@@ -251,6 +299,7 @@ function CalendarEntryDialog({
     setError(null);
     const parsed = CalendarEntryFormSchema.safeParse({
       entryType,
+      vesselId,
       title,
       description,
       date,
@@ -312,6 +361,31 @@ function CalendarEntryDialog({
           </div>
         </div>
         <div className="space-y-2">
+          <Label htmlFor="calendar-vessel">Embarcação</Label>
+          <Select value={vesselId} onValueChange={setVesselId}>
+            <SelectTrigger id="calendar-vessel">
+              <SelectValue placeholder="Selecione a embarcação" />
+            </SelectTrigger>
+            <SelectContent>
+              {vessels.map((vessel) => (
+                <SelectItem key={vessel.id} value={vessel.id}>
+                  <span className="flex items-center gap-2">
+                    <span
+                      className={cn("size-2 rounded-full", getVesselCalendarColor(vessel.id).dot)}
+                    />
+                    {vessel.name}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {vessels.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              Cadastre uma embarcação ativa antes de criar registros no calendário.
+            </p>
+          ) : null}
+        </div>
+        <div className="space-y-2">
           <Label htmlFor="calendar-title">Título</Label>
           <Input
             id="calendar-title"
@@ -362,7 +436,7 @@ function CalendarEntryDialog({
           </p>
         ) : null}
         <div className="flex justify-end">
-          <Button type="submit" disabled={submitting}>
+          <Button type="submit" disabled={submitting || vessels.length === 0}>
             {submitting ? "Salvando..." : "Salvar registro"}
           </Button>
         </div>

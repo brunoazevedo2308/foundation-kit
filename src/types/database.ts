@@ -417,6 +417,7 @@ export type Database = {
           starts_at: string;
           title: string;
           updated_at: string;
+          vessel_id: string;
         };
         Insert: {
           all_day?: boolean;
@@ -430,6 +431,7 @@ export type Database = {
           starts_at: string;
           title: string;
           updated_at?: string;
+          vessel_id: string;
         };
         Update: {
           all_day?: boolean;
@@ -443,6 +445,7 @@ export type Database = {
           starts_at?: string;
           title?: string;
           updated_at?: string;
+          vessel_id?: string;
         };
         Relationships: [
           {
@@ -457,6 +460,13 @@ export type Database = {
             columns: ["organization_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "calendar_entries_vessel_id_fkey";
+            columns: ["vessel_id"];
+            isOneToOne: false;
+            referencedRelation: "vessels";
             referencedColumns: ["id"];
           },
         ];

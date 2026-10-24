@@ -5,6 +5,7 @@ import { CalendarEntryFormSchema, isSameCalendarDay, mapCalendarEntry } from "./
 describe("CalendarEntryFormSchema", () => {
   const base = {
     entryType: "activity" as const,
+    vesselId: "11111111-1111-4111-8111-111111111111",
     title: "Reunião de planejamento",
     description: "Alinhar as próximas atividades.",
     date: "2026-10-24",
@@ -31,6 +32,7 @@ describe("calendar entry mapping", () => {
     const item = mapCalendarEntry({
       id: "entry-1",
       entry_type: "note",
+      vessel_id: "11111111-1111-4111-8111-111111111111",
       title: "Nota do dia",
       description: null,
       starts_at: "2026-10-24T15:00:00.000Z",
@@ -39,8 +41,10 @@ describe("calendar entry mapping", () => {
       created_by: "user-1",
       created_at: "2026-10-24T12:00:00.000Z",
       profiles: [{ full_name: "Administrador" }],
+      vessels: [{ name: "ACE Defender" }],
     });
     expect(item.createdByName).toBe("Administrador");
+    expect(item.vesselName).toBe("ACE Defender");
     expect(isSameCalendarDay(item.startsAt, new Date(2026, 9, 24))).toBe(true);
   });
 });
