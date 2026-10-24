@@ -11,6 +11,8 @@ import {
   Search,
   Landmark,
   ShieldCheck,
+  BookOpenCheck,
+  ClipboardCheck,
 } from "lucide-react";
 
 import type { AppRole } from "@/lib/auth";
@@ -51,6 +53,11 @@ const registry: NavItem[] = [
   { title: "Clientes", url: "/clients", icon: Building2 },
   { title: "Embarcações", url: "/vessels", icon: Ship },
   { title: "Usuários", url: "/users", icon: Users },
+];
+
+const courses: NavItem[] = [
+  { title: "ASOG/CAM", url: "/courses/asog-cam", icon: BookOpenCheck },
+  { title: "DP Assessment", url: "/courses/dp-assessment", icon: ClipboardCheck },
 ];
 
 const account: NavItem[] = [
@@ -122,6 +129,7 @@ export function AppSidebar({ role }: { role: AppRole }) {
       <SidebarContent>
         {renderGroup("Operações", operational)}
         {renderGroup("Cadastros", registry)}
+        {renderGroup("Cursos", courses)}
         {role === "system_admin" && renderGroup("Administração", administration)}
         {renderGroup("Conta", account)}
       </SidebarContent>

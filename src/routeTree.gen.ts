@@ -20,6 +20,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedActionsRouteImport } from './routes/_authenticated/actions'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
+import { Route as AuthenticatedCoursesRouteImport } from './routes/_authenticated/courses'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedOrganizationsRouteImport } from './routes/_authenticated/organizations'
@@ -34,6 +35,9 @@ import { Route as AuthenticatedActionsIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedActionsNewRouteImport } from './routes/_authenticated/actions.new'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients.index'
 import { Route as AuthenticatedClientsNewRouteImport } from './routes/_authenticated/clients.new'
+import { Route as AuthenticatedCoursesIndexRouteImport } from './routes/_authenticated/courses.index'
+import { Route as AuthenticatedCoursesAsogCamRouteImport } from './routes/_authenticated/courses.asog-cam'
+import { Route as AuthenticatedCoursesDpAssessmentRouteImport } from './routes/_authenticated/courses.dp-assessment'
 import { Route as AuthenticatedDevObservabilityRouteImport } from './routes/_authenticated/dev.observability'
 import { Route as AuthenticatedOrganizationsIndexRouteImport } from './routes/_authenticated/organizations.index'
 import { Route as AuthenticatedOrganizationsNewRouteImport } from './routes/_authenticated/organizations.new'
@@ -99,6 +103,11 @@ const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
 const AuthenticatedClientsRoute = AuthenticatedClientsRouteImport.update({
   id: '/clients',
   path: '/clients',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCoursesRoute = AuthenticatedCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -176,6 +185,24 @@ const AuthenticatedClientsNewRoute = AuthenticatedClientsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AuthenticatedClientsRoute,
 } as any)
+const AuthenticatedCoursesIndexRoute =
+  AuthenticatedCoursesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedCoursesRoute,
+  } as any)
+const AuthenticatedCoursesAsogCamRoute =
+  AuthenticatedCoursesAsogCamRouteImport.update({
+    id: '/asog-cam',
+    path: '/asog-cam',
+    getParentRoute: () => AuthenticatedCoursesRoute,
+  } as any)
+const AuthenticatedCoursesDpAssessmentRoute =
+  AuthenticatedCoursesDpAssessmentRouteImport.update({
+    id: '/dp-assessment',
+    path: '/dp-assessment',
+    getParentRoute: () => AuthenticatedCoursesRoute,
+  } as any)
 const AuthenticatedDevObservabilityRoute =
   AuthenticatedDevObservabilityRouteImport.update({
     id: '/dev/observability',
@@ -257,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/actions': typeof AuthenticatedActionsRouteWithChildren
   '/app': typeof AuthenticatedAppRoute
   '/clients': typeof AuthenticatedClientsRouteWithChildren
+  '/courses': typeof AuthenticatedCoursesRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
@@ -269,12 +297,15 @@ export interface FileRoutesByFullPath {
   '/api/health': typeof ApiHealthRoute
   '/actions/new': typeof AuthenticatedActionsNewRoute
   '/clients/new': typeof AuthenticatedClientsNewRoute
+  '/courses/asog-cam': typeof AuthenticatedCoursesAsogCamRoute
+  '/courses/dp-assessment': typeof AuthenticatedCoursesDpAssessmentRoute
   '/dev/observability': typeof AuthenticatedDevObservabilityRoute
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/vessels/new': typeof AuthenticatedVesselsNewRoute
   '/actions/': typeof AuthenticatedActionsIndexRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
+  '/courses/': typeof AuthenticatedCoursesIndexRoute
   '/organizations/': typeof AuthenticatedOrganizationsIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/vessels/': typeof AuthenticatedVesselsIndexRoute
@@ -302,12 +333,15 @@ export interface FileRoutesByTo {
   '/api/health': typeof ApiHealthRoute
   '/actions/new': typeof AuthenticatedActionsNewRoute
   '/clients/new': typeof AuthenticatedClientsNewRoute
+  '/courses/asog-cam': typeof AuthenticatedCoursesAsogCamRoute
+  '/courses/dp-assessment': typeof AuthenticatedCoursesDpAssessmentRoute
   '/dev/observability': typeof AuthenticatedDevObservabilityRoute
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/vessels/new': typeof AuthenticatedVesselsNewRoute
   '/actions': typeof AuthenticatedActionsIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
+  '/courses': typeof AuthenticatedCoursesIndexRoute
   '/organizations': typeof AuthenticatedOrganizationsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/vessels': typeof AuthenticatedVesselsIndexRoute
@@ -330,6 +364,7 @@ export interface FileRoutesById {
   '/_authenticated/actions': typeof AuthenticatedActionsRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRouteWithChildren
+  '/_authenticated/courses': typeof AuthenticatedCoursesRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
@@ -342,12 +377,15 @@ export interface FileRoutesById {
   '/api/health': typeof ApiHealthRoute
   '/_authenticated/actions/new': typeof AuthenticatedActionsNewRoute
   '/_authenticated/clients/new': typeof AuthenticatedClientsNewRoute
+  '/_authenticated/courses/asog-cam': typeof AuthenticatedCoursesAsogCamRoute
+  '/_authenticated/courses/dp-assessment': typeof AuthenticatedCoursesDpAssessmentRoute
   '/_authenticated/dev/observability': typeof AuthenticatedDevObservabilityRoute
   '/_authenticated/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
   '/_authenticated/vessels/new': typeof AuthenticatedVesselsNewRoute
   '/_authenticated/actions/': typeof AuthenticatedActionsIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
+  '/_authenticated/courses/': typeof AuthenticatedCoursesIndexRoute
   '/_authenticated/organizations/': typeof AuthenticatedOrganizationsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/vessels/': typeof AuthenticatedVesselsIndexRoute
@@ -370,6 +408,7 @@ export interface FileRouteTypes {
     | '/actions'
     | '/app'
     | '/clients'
+    | '/courses'
     | '/dashboard'
     | '/notifications'
     | '/organizations'
@@ -382,12 +421,15 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/actions/new'
     | '/clients/new'
+    | '/courses/asog-cam'
+    | '/courses/dp-assessment'
     | '/dev/observability'
     | '/organizations/new'
     | '/users/new'
     | '/vessels/new'
     | '/actions/'
     | '/clients/'
+    | '/courses/'
     | '/organizations/'
     | '/users/'
     | '/vessels/'
@@ -415,12 +457,15 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/actions/new'
     | '/clients/new'
+    | '/courses/asog-cam'
+    | '/courses/dp-assessment'
     | '/dev/observability'
     | '/organizations/new'
     | '/users/new'
     | '/vessels/new'
     | '/actions'
     | '/clients'
+    | '/courses'
     | '/organizations'
     | '/users'
     | '/vessels'
@@ -442,6 +487,7 @@ export interface FileRouteTypes {
     | '/_authenticated/actions'
     | '/_authenticated/app'
     | '/_authenticated/clients'
+    | '/_authenticated/courses'
     | '/_authenticated/dashboard'
     | '/_authenticated/notifications'
     | '/_authenticated/organizations'
@@ -454,12 +500,15 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/_authenticated/actions/new'
     | '/_authenticated/clients/new'
+    | '/_authenticated/courses/asog-cam'
+    | '/_authenticated/courses/dp-assessment'
     | '/_authenticated/dev/observability'
     | '/_authenticated/organizations/new'
     | '/_authenticated/users/new'
     | '/_authenticated/vessels/new'
     | '/_authenticated/actions/'
     | '/_authenticated/clients/'
+    | '/_authenticated/courses/'
     | '/_authenticated/organizations/'
     | '/_authenticated/users/'
     | '/_authenticated/vessels/'
@@ -561,6 +610,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/courses': {
+      id: '/_authenticated/courses'
+      path: '/courses'
+      fullPath: '/courses'
+      preLoaderRoute: typeof AuthenticatedCoursesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -658,6 +714,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/clients/new'
       preLoaderRoute: typeof AuthenticatedClientsNewRouteImport
       parentRoute: typeof AuthenticatedClientsRoute
+    }
+    '/_authenticated/courses/': {
+      id: '/_authenticated/courses/'
+      path: '/'
+      fullPath: '/courses/'
+      preLoaderRoute: typeof AuthenticatedCoursesIndexRouteImport
+      parentRoute: typeof AuthenticatedCoursesRoute
+    }
+    '/_authenticated/courses/asog-cam': {
+      id: '/_authenticated/courses/asog-cam'
+      path: '/asog-cam'
+      fullPath: '/courses/asog-cam'
+      preLoaderRoute: typeof AuthenticatedCoursesAsogCamRouteImport
+      parentRoute: typeof AuthenticatedCoursesRoute
+    }
+    '/_authenticated/courses/dp-assessment': {
+      id: '/_authenticated/courses/dp-assessment'
+      path: '/dp-assessment'
+      fullPath: '/courses/dp-assessment'
+      preLoaderRoute: typeof AuthenticatedCoursesDpAssessmentRouteImport
+      parentRoute: typeof AuthenticatedCoursesRoute
     }
     '/_authenticated/dev/observability': {
       id: '/_authenticated/dev/observability'
@@ -779,6 +856,21 @@ const AuthenticatedClientsRouteChildren: AuthenticatedClientsRouteChildren = {
 const AuthenticatedClientsRouteWithChildren =
   AuthenticatedClientsRoute._addFileChildren(AuthenticatedClientsRouteChildren)
 
+interface AuthenticatedCoursesRouteChildren {
+  AuthenticatedCoursesAsogCamRoute: typeof AuthenticatedCoursesAsogCamRoute
+  AuthenticatedCoursesDpAssessmentRoute: typeof AuthenticatedCoursesDpAssessmentRoute
+  AuthenticatedCoursesIndexRoute: typeof AuthenticatedCoursesIndexRoute
+}
+
+const AuthenticatedCoursesRouteChildren: AuthenticatedCoursesRouteChildren = {
+  AuthenticatedCoursesAsogCamRoute: AuthenticatedCoursesAsogCamRoute,
+  AuthenticatedCoursesDpAssessmentRoute: AuthenticatedCoursesDpAssessmentRoute,
+  AuthenticatedCoursesIndexRoute: AuthenticatedCoursesIndexRoute,
+}
+
+const AuthenticatedCoursesRouteWithChildren =
+  AuthenticatedCoursesRoute._addFileChildren(AuthenticatedCoursesRouteChildren)
+
 interface AuthenticatedOrganizationsRouteChildren {
   AuthenticatedOrganizationsNewRoute: typeof AuthenticatedOrganizationsNewRoute
   AuthenticatedOrganizationsIndexRoute: typeof AuthenticatedOrganizationsIndexRoute
@@ -829,6 +921,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedActionsRoute: typeof AuthenticatedActionsRouteWithChildren
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRouteWithChildren
+  AuthenticatedCoursesRoute: typeof AuthenticatedCoursesRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRouteWithChildren
@@ -845,6 +938,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedActionsRoute: AuthenticatedActionsRouteWithChildren,
   AuthenticatedAppRoute: AuthenticatedAppRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRouteWithChildren,
+  AuthenticatedCoursesRoute: AuthenticatedCoursesRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRouteWithChildren,
