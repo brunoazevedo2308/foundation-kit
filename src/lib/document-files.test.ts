@@ -52,11 +52,12 @@ function makeClient(options: { insertError?: unknown; uploadError?: unknown } = 
 }
 
 describe("document file categories", () => {
-  it("accepts only the four library categories", () => {
+  it("accepts only the five library categories", () => {
     expect(isDocumentCategory("procedures")).toBe(true);
     expect(isDocumentCategory("forms")).toBe(true);
     expect(isDocumentCategory("trials-fmea")).toBe(true);
     expect(isDocumentCategory("documents")).toBe(true);
+    expect(isDocumentCategory("audits")).toBe(true);
     expect(isDocumentCategory("other")).toBe(false);
   });
 });

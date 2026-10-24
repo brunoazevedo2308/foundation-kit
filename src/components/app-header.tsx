@@ -40,6 +40,7 @@ const LABELS: Record<string, string> = {
   organizations: "Organizations",
   courses: "Cursos",
   documents: "Documentos",
+  calendar: "Calendário",
   "asog-cam": "ASOG/CAM",
   "dp-assessment": "DP Assessment",
   new: "Novo",

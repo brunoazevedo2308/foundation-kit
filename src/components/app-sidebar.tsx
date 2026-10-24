@@ -14,6 +14,7 @@ import {
   BookOpenCheck,
   ClipboardCheck,
   FolderOpen,
+  CalendarDays,
 } from "lucide-react";
 
 import type { AppRole } from "@/lib/auth";
@@ -49,6 +50,7 @@ const operational: NavItem[] = [
   { title: "Notificações", url: "/notifications", icon: Bell },
   { title: "Busca", url: "/search", icon: Search },
   { title: "Documentos", url: "/documents", icon: FolderOpen },
+  { title: "Calendário", url: "/calendar", icon: CalendarDays },
 ];
 
 const registry: NavItem[] = [

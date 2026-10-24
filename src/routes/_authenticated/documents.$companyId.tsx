@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ClipboardList, FileCheck2, FileText, FlaskConical } from "lucide-react";
+import { ClipboardList, FileCheck2, FileSearch, FileText, FlaskConical } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { DocumentFilesSection } from "@/components/document-files-section";
@@ -40,6 +40,12 @@ const DOCUMENT_AREAS = [
     label: "Documentos DP",
     description: "Demais documentos técnicos e administrativos relacionados ao DP.",
     icon: FileText,
+  },
+  {
+    value: "audits",
+    label: "Auditoria DP",
+    description: "Relatórios, evidências, planos e registros relacionados a auditorias DP.",
+    icon: FileSearch,
   },
 ] as const;
 

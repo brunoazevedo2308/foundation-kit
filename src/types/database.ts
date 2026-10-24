@@ -404,6 +404,63 @@ export type Database = {
           },
         ];
       };
+      calendar_entries: {
+        Row: {
+          all_day: boolean;
+          created_at: string;
+          created_by: string;
+          description: string | null;
+          ends_at: string | null;
+          entry_type: string;
+          id: string;
+          organization_id: string;
+          starts_at: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          all_day?: boolean;
+          created_at?: string;
+          created_by?: string;
+          description?: string | null;
+          ends_at?: string | null;
+          entry_type: string;
+          id?: string;
+          organization_id: string;
+          starts_at: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          all_day?: boolean;
+          created_at?: string;
+          created_by?: string;
+          description?: string | null;
+          ends_at?: string | null;
+          entry_type?: string;
+          id?: string;
+          organization_id?: string;
+          starts_at?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "calendar_entries_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "calendar_entries_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       client_contacts: {
         Row: {
           client_id: string;

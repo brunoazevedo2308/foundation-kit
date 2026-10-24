@@ -16,7 +16,13 @@ import { supabase } from "./supabase";
 export const DOCUMENT_FILE_ALLOWED_MIME_TYPES = ATTACHMENT_ALLOWED_MIME_TYPES;
 export const DOCUMENT_FILE_MAX_BYTES = ATTACHMENT_MAX_BYTES;
 
-export const DOCUMENT_CATEGORIES = ["procedures", "forms", "trials-fmea", "documents"] as const;
+export const DOCUMENT_CATEGORIES = [
+  "procedures",
+  "forms",
+  "trials-fmea",
+  "documents",
+  "audits",
+] as const;
 export type DocumentCategory = (typeof DOCUMENT_CATEGORIES)[number];
 
 export type DocumentFileListItem = {

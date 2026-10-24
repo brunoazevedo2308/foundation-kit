@@ -102,7 +102,7 @@ function DocumentsPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <h2 className="truncate font-semibold text-foreground">{company.name}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">4 áreas documentais</p>
+                <p className="mt-1 text-sm text-muted-foreground">5 áreas documentais</p>
                 <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
                   Abrir documentos
                   <ChevronRight

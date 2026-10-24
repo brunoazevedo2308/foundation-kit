@@ -55,7 +55,7 @@ function NewDocumentCompanyPage() {
     <div className="space-y-6">
       <PageHeader
         title="Inserir empresa"
-        description="Crie uma biblioteca documental com quatro áreas DP para esta empresa."
+        description="Crie uma biblioteca documental com cinco áreas DP para esta empresa."
       />
 
       <form onSubmit={handleSubmit} className="max-w-xl space-y-6" noValidate>
