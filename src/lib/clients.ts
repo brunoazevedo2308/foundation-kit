@@ -36,31 +36,56 @@ export const ClientFormSchema = z.object({
     .min(2, "Informe o nome do cliente.")
     .max(120, "Máximo de 120 caracteres."),
   code: optionalText(40, "Máximo de 40 caracteres."),
-  contactName: optionalText(120, "Máximo de 120 caracteres."),
-  contactEmail: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .max(254, "Máximo de 254 caracteres.")
-    .refine((value) => value === "" || z.string().email().safeParse(value).success, {
-      message: "Informe um e-mail válido.",
-    })
-    .transform((value) => (value === "" ? null : value))
-    .nullable()
-    .default(null),
-  contactPhone: optionalText(40, "Máximo de 40 caracteres."),
+  contacts: z
+    .array(
+      z
+        .object({
+          id: z.string().uuid().optional(),
+          email: z
+            .string()
+            .trim()
+            .toLowerCase()
+            .max(254, "Máximo de 254 caracteres.")
+            .refine((value) => value === "" || z.string().email().safeParse(value).success, {
+              message: "Informe um e-mail válido.",
+            })
+            .transform((value) => (value === "" ? null : value))
+            .nullable()
+            .default(null),
+          phone: optionalText(40, "Máximo de 40 caracteres."),
+          responsibleArea: optionalText(120, "Máximo de 120 caracteres."),
+        })
+        .superRefine((contact, context) => {
+          if (!contact.email && (contact.phone || contact.responsibleArea)) {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ["email"],
+              message: "Informe o e-mail deste contato.",
+            });
+          }
+        }),
+    )
+    .max(20, "Cadastre no máximo 20 contatos.")
+    .transform((contacts) =>
+      contacts.filter((contact) => contact.email || contact.phone || contact.responsibleArea),
+    ),
 });
 
 export type ClientFormInput = z.input<typeof ClientFormSchema>;
 export type ClientFormValues = z.output<typeof ClientFormSchema>;
 
+export type ClientContact = {
+  id: string;
+  email: string | null;
+  phone: string | null;
+  responsibleArea: string | null;
+};
+
 export type ClientListItem = {
   id: string;
   name: string;
   code: string | null;
-  contactName: string | null;
-  contactEmail: string | null;
-  contactPhone: string | null;
+  contacts: ClientContact[];
   createdAt: string;
 };
 
@@ -89,7 +114,7 @@ export async function fetchCurrentOrganizationId(): Promise<string | null> {
 export async function listClients(): Promise<ClientListItem[]> {
   const { data, error } = await client()
     .from("clients")
-    .select("id, name, code, contact_name, contact_email, contact_phone, created_at")
+    .select(CLIENT_SELECT_COLUMNS)
     .is("deleted_at", null)
     .order("name", { ascending: true });
 
@@ -101,15 +126,28 @@ export async function listClients(): Promise<ClientListItem[]> {
     throw new Error("Não foi possível carregar os clientes.");
   }
 
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    name: row.name,
-    code: row.code,
-    contactName: row.contact_name,
-    contactEmail: row.contact_email,
-    contactPhone: row.contact_phone,
-    createdAt: row.created_at,
-  }));
+  return ((data ?? []) as ClientRow[]).map(mapClient);
+}
+
+async function insertClientContacts(
+  clientId: string,
+  organizationId: string,
+  contacts: ClientFormValues["contacts"],
+): Promise<void> {
+  if (contacts.length === 0) return;
+  const { error } = await client()
+    .from("client_contacts")
+    .insert(
+      contacts.map((contact, position) => ({
+        organization_id: organizationId,
+        client_id: clientId,
+        email: contact.email,
+        phone: contact.phone,
+        responsible_area: contact.responsibleArea,
+        position,
+      })),
+    );
+  if (error) throw error;
 }
 
 export async function createClient(input: ClientFormInput): Promise<ClientListItem> {
@@ -125,11 +163,8 @@ export async function createClient(input: ClientFormInput): Promise<ClientListIt
       organization_id: organizationId,
       name: parsed.name,
       code: parsed.code,
-      contact_name: parsed.contactName,
-      contact_email: parsed.contactEmail,
-      contact_phone: parsed.contactPhone,
     })
-    .select("id, name, code, contact_name, contact_email, contact_phone, created_at")
+    .select("id")
     .single();
 
   if (error || !data) {
@@ -144,28 +179,40 @@ export async function createClient(input: ClientFormInput): Promise<ClientListIt
     throw new Error("Não foi possível cadastrar o cliente agora. Tente novamente.");
   }
 
-  return {
-    id: data.id,
-    name: data.name,
-    code: data.code,
-    contactName: data.contact_name,
-    contactEmail: data.contact_email,
-    contactPhone: data.contact_phone,
-    createdAt: data.created_at,
-  };
+  try {
+    await insertClientContacts(data.id, organizationId, parsed.contacts);
+  } catch (contactError) {
+    await softDeleteClient(data.id).catch(() => undefined);
+    emitEvent({
+      event_name: "backend.request.failure",
+      organization_id: organizationId,
+      context: { operation: "clients.contacts.create", supabase_error: sanitize(contactError) },
+    });
+    throw new Error("Não foi possível salvar os contatos do cliente.");
+  }
+
+  const created = await getClient(data.id);
+  if (!created) throw new Error("O cliente foi cadastrado, mas não pôde ser recarregado.");
+  return created;
 }
 
 const CLIENT_SELECT_COLUMNS =
-  "id, name, code, contact_name, contact_email, contact_phone, created_at";
+  "id, name, code, created_at, client_contacts(id, email, phone, responsible_area, position)";
 
 type ClientRow = {
   id: string;
   name: string;
   code: string | null;
-  contact_name: string | null;
-  contact_email: string | null;
-  contact_phone: string | null;
   created_at: string;
+  client_contacts?:
+    | {
+        id: string;
+        email: string | null;
+        phone: string | null;
+        responsible_area: string | null;
+        position: number;
+      }[]
+    | null;
 };
 
 function mapClient(row: ClientRow): ClientListItem {
@@ -173,9 +220,14 @@ function mapClient(row: ClientRow): ClientListItem {
     id: row.id,
     name: row.name,
     code: row.code,
-    contactName: row.contact_name,
-    contactEmail: row.contact_email,
-    contactPhone: row.contact_phone,
+    contacts: [...(row.client_contacts ?? [])]
+      .sort((left, right) => left.position - right.position)
+      .map((contact) => ({
+        id: contact.id,
+        email: contact.email,
+        phone: contact.phone,
+        responsibleArea: contact.responsible_area,
+      })),
     createdAt: row.created_at,
   };
 }
@@ -185,10 +237,73 @@ export function toClientFormInput(item: ClientListItem): ClientFormInput {
   return {
     name: item.name,
     code: item.code ?? "",
-    contactName: item.contactName ?? "",
-    contactEmail: item.contactEmail ?? "",
-    contactPhone: item.contactPhone ?? "",
+    contacts:
+      item.contacts.length > 0
+        ? item.contacts.map((contact) => ({
+            id: contact.id,
+            email: contact.email ?? "",
+            phone: contact.phone ?? "",
+            responsibleArea: contact.responsibleArea ?? "",
+          }))
+        : [{ email: "", phone: "", responsibleArea: "" }],
   };
+}
+
+async function syncClientContacts(
+  clientId: string,
+  contacts: ClientFormValues["contacts"],
+): Promise<void> {
+  const c = client();
+  const [organizationId, currentResult] = await Promise.all([
+    fetchCurrentOrganizationId(),
+    c.from("client_contacts").select("id").eq("client_id", clientId),
+  ]);
+  if (!organizationId || currentResult.error) {
+    throw currentResult.error ?? new Error("Organização não encontrada.");
+  }
+
+  const currentIds = new Set((currentResult.data ?? []).map((contact) => contact.id));
+  for (const contact of contacts) {
+    if (contact.id && !currentIds.has(contact.id)) {
+      throw new Error("Contato inválido para este cliente.");
+    }
+  }
+
+  const writes = contacts.map((contact, position) => {
+    const payload = {
+      email: contact.email,
+      phone: contact.phone,
+      responsible_area: contact.responsibleArea,
+      position,
+    };
+    if (contact.id) {
+      return c
+        .from("client_contacts")
+        .update(payload)
+        .eq("id", contact.id)
+        .eq("client_id", clientId);
+    }
+    return c.from("client_contacts").insert({
+      ...payload,
+      organization_id: organizationId,
+      client_id: clientId,
+    });
+  });
+
+  const results = await Promise.all(writes);
+  const writeError = results.find((result) => result.error)?.error;
+  if (writeError) throw writeError;
+
+  const desiredIds = new Set(contacts.flatMap((contact) => (contact.id ? [contact.id] : [])));
+  const removedIds = [...currentIds].filter((id) => !desiredIds.has(id));
+  if (removedIds.length > 0) {
+    const { error } = await c
+      .from("client_contacts")
+      .delete()
+      .eq("client_id", clientId)
+      .in("id", removedIds);
+    if (error) throw error;
+  }
 }
 
 export async function getClient(clientId: string): Promise<ClientListItem | null> {
@@ -221,9 +336,6 @@ export async function updateClient(
     .update({
       name: parsed.name,
       code: parsed.code,
-      contact_name: parsed.contactName,
-      contact_email: parsed.contactEmail,
-      contact_phone: parsed.contactPhone,
     })
     .eq("id", clientId)
     .is("deleted_at", null)
@@ -241,7 +353,19 @@ export async function updateClient(
     throw new Error("Não foi possível salvar as alterações do cliente.");
   }
 
-  return mapClient(data as ClientRow);
+  try {
+    await syncClientContacts(clientId, parsed.contacts);
+  } catch (contactError) {
+    emitEvent({
+      event_name: "backend.request.failure",
+      context: { operation: "clients.contacts.update", supabase_error: sanitize(contactError) },
+    });
+    throw new Error(
+      "Os dados do cliente foram salvos, mas não foi possível atualizar os contatos.",
+    );
+  }
+
+  return (await getClient(clientId)) ?? mapClient(data as ClientRow);
 }
 
 /**

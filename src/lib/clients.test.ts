@@ -7,17 +7,25 @@ describe("ClientFormSchema", () => {
     const parsed = ClientFormSchema.parse({
       name: "  Petro Offshore  ",
       code: "",
-      contactName: " Ana Souza ",
-      contactEmail: "  ANA@EXAMPLE.COM ",
-      contactPhone: "",
+      contacts: [
+        {
+          email: "  ANA@EXAMPLE.COM ",
+          phone: " +55 21 99999-0000 ",
+          responsibleArea: " Operações ",
+        },
+      ],
     });
 
     expect(parsed).toEqual({
       name: "Petro Offshore",
       code: null,
-      contactName: "Ana Souza",
-      contactEmail: "ana@example.com",
-      contactPhone: null,
+      contacts: [
+        {
+          email: "ana@example.com",
+          phone: "+55 21 99999-0000",
+          responsibleArea: "Operações",
+        },
+      ],
     });
   });
 
@@ -25,17 +33,31 @@ describe("ClientFormSchema", () => {
     const parsed = ClientFormSchema.safeParse({
       name: "A",
       code: "",
-      contactName: "",
-      contactEmail: "nao-e-email",
-      contactPhone: "",
+      contacts: [{ email: "nao-e-email", phone: "", responsibleArea: "" }],
     });
 
     expect(parsed.success).toBe(false);
     if (!parsed.success) {
       const errors = parsed.error.flatten().fieldErrors;
       expect(errors.name).toBeDefined();
-      expect(errors.contactEmail).toBeDefined();
+      expect(errors.contacts).toBeDefined();
     }
+  });
+
+  it("remove linhas totalmente vazias e exige e-mail quando há outros dados", () => {
+    const empty = ClientFormSchema.parse({
+      name: "Petro Offshore",
+      code: "",
+      contacts: [{ email: "", phone: "", responsibleArea: "" }],
+    });
+    expect(empty.contacts).toEqual([]);
+
+    const invalid = ClientFormSchema.safeParse({
+      name: "Petro Offshore",
+      code: "",
+      contacts: [{ email: "", phone: "+55 21 99999-0000", responsibleArea: "Operações" }],
+    });
+    expect(invalid.success).toBe(false);
   });
 });
 
@@ -54,17 +76,13 @@ describe("toClientFormInput", () => {
         id: "c1",
         name: "Petro Offshore",
         code: null,
-        contactName: null,
-        contactEmail: null,
-        contactPhone: null,
+        contacts: [],
         createdAt: "2026-08-09T00:00:00.000Z",
       }),
     ).toEqual({
       name: "Petro Offshore",
       code: "",
-      contactName: "",
-      contactEmail: "",
-      contactPhone: "",
+      contacts: [{ email: "", phone: "", responsibleArea: "" }],
     });
   });
 
@@ -74,13 +92,19 @@ describe("toClientFormInput", () => {
         id: "c2",
         name: "Mar Azul",
         code: "MA-01",
-        contactName: "Ana",
-        contactEmail: "ana@example.com",
-        contactPhone: "+55 21 99999-0000",
+        contacts: [
+          {
+            id: "bf745e58-b8a0-42dd-aa11-15f64cc19be7",
+            email: "ana@example.com",
+            phone: "+55 21 99999-0000",
+            responsibleArea: "Operações",
+          },
+        ],
         createdAt: "2026-08-09T00:00:00.000Z",
       }),
     );
     expect(parsed.code).toBe("MA-01");
-    expect(parsed.contactEmail).toBe("ana@example.com");
+    expect(parsed.contacts[0]?.email).toBe("ana@example.com");
+    expect(parsed.contacts[0]?.responsibleArea).toBe("Operações");
   });
 });

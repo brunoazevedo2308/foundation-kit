@@ -99,14 +99,14 @@ function ClientsPage() {
         </div>
       ) : clients.length > 0 ? (
         <div className="overflow-x-auto rounded-lg border border-border">
-          <Table className="min-w-[900px]">
+          <Table className="min-w-[1080px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
                 <TableHead>Código</TableHead>
-                <TableHead>Contato</TableHead>
                 <TableHead>E-mail</TableHead>
-                <TableHead>Telefone</TableHead>
+                <TableHead>Contato telefônico</TableHead>
+                <TableHead>Setor/Área responsável</TableHead>
                 {canManage ? <TableHead className="text-right">Ações</TableHead> : null}
               </TableRow>
             </TableHeader>
@@ -115,9 +115,17 @@ function ClientsPage() {
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.name}</TableCell>
                   <TableCell>{item.code ?? "—"}</TableCell>
-                  <TableCell>{item.contactName ?? "—"}</TableCell>
-                  <TableCell>{item.contactEmail ?? "—"}</TableCell>
-                  <TableCell>{item.contactPhone ?? "—"}</TableCell>
+                  <TableCell className="align-top">
+                    <ContactValues values={item.contacts.map((contact) => contact.email)} />
+                  </TableCell>
+                  <TableCell className="align-top">
+                    <ContactValues values={item.contacts.map((contact) => contact.phone)} />
+                  </TableCell>
+                  <TableCell className="align-top">
+                    <ContactValues
+                      values={item.contacts.map((contact) => contact.responsibleArea)}
+                    />
+                  </TableCell>
                   {canManage ? (
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
@@ -153,6 +161,19 @@ function ClientsPage() {
           </Table>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function ContactValues({ values }: { values: (string | null)[] }) {
+  if (values.length === 0) return <>—</>;
+  return (
+    <div className="space-y-1">
+      {values.map((value, index) => (
+        <div key={`${value ?? "empty"}-${index}`} className="min-h-5">
+          {value ?? "—"}
+        </div>
+      ))}
     </div>
   );
 }

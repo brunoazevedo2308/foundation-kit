@@ -67,7 +67,10 @@ function EditClientPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Editar cliente" description="Atualize os dados cadastrais e o contato." />
+      <PageHeader
+        title="Editar cliente"
+        description="Atualize os dados cadastrais e os contatos."
+      />
 
       {error ? (
         <p

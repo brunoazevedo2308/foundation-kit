@@ -1,3 +1,4 @@
+import { Plus, Trash2 } from "lucide-react";
 import { useState, type FormEvent, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -13,12 +14,10 @@ import { ClientFormSchema, type ClientFormInput } from "@/lib/clients";
 export const EMPTY_CLIENT_FORM: ClientFormInput = {
   name: "",
   code: "",
-  contactName: "",
-  contactEmail: "",
-  contactPhone: "",
+  contacts: [{ email: "", phone: "", responsibleArea: "" }],
 };
 
-type FieldErrors = Partial<Record<keyof ClientFormInput, string>>;
+type FieldErrors = Record<string, string | undefined>;
 
 interface ClientFormProps {
   initialValues: ClientFormInput;
@@ -45,6 +44,37 @@ export function ClientForm({
     if (errors[key]) setErrors((current) => ({ ...current, [key]: undefined }));
   }
 
+  function updateContact(index: number, key: "email" | "phone" | "responsibleArea", value: string) {
+    setValues((current) => ({
+      ...current,
+      contacts: current.contacts.map((contact, contactIndex) =>
+        contactIndex === index ? { ...contact, [key]: value } : contact,
+      ),
+    }));
+    const errorKey = `contacts.${index}.${key}`;
+    if (errors[errorKey]) {
+      setErrors((current) => ({ ...current, [errorKey]: undefined }));
+    }
+  }
+
+  function addContact() {
+    setValues((current) => ({
+      ...current,
+      contacts: [...current.contacts, { email: "", phone: "", responsibleArea: "" }],
+    }));
+  }
+
+  function removeContact(index: number) {
+    setValues((current) => {
+      const contacts = current.contacts.filter((_, contactIndex) => contactIndex !== index);
+      return {
+        ...current,
+        contacts: contacts.length > 0 ? contacts : [{ email: "", phone: "", responsibleArea: "" }],
+      };
+    });
+    setErrors({});
+  }
+
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setErrors({});
@@ -54,7 +84,7 @@ export function ClientForm({
     if (!parsed.success) {
       const next: FieldErrors = {};
       for (const issue of parsed.error.issues) {
-        const key = issue.path[0] as keyof ClientFormInput | undefined;
+        const key = issue.path.join(".");
         if (key && !next[key]) next[key] = issue.message;
       }
       setErrors(next);
@@ -74,7 +104,7 @@ export function ClientForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl space-y-6" noValidate>
+    <form onSubmit={handleSubmit} className="max-w-4xl space-y-6" noValidate>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Nome" htmlFor="name" error={errors.name}>
           <Input
@@ -93,35 +123,87 @@ export function ClientForm({
             maxLength={40}
           />
         </Field>
-        <Field label="Nome do contato" htmlFor="contactName" error={errors.contactName}>
-          <Input
-            id="contactName"
-            value={values.contactName ?? ""}
-            onChange={(e) => update("contactName", e.target.value)}
-            maxLength={120}
-            autoComplete="name"
-          />
-        </Field>
-        <Field label="E-mail do contato" htmlFor="contactEmail" error={errors.contactEmail}>
-          <Input
-            id="contactEmail"
-            type="email"
-            value={values.contactEmail ?? ""}
-            onChange={(e) => update("contactEmail", e.target.value)}
-            maxLength={254}
-            autoComplete="email"
-          />
-        </Field>
-        <Field label="Telefone do contato" htmlFor="contactPhone" error={errors.contactPhone}>
-          <Input
-            id="contactPhone"
-            value={values.contactPhone ?? ""}
-            onChange={(e) => update("contactPhone", e.target.value)}
-            maxLength={40}
-            autoComplete="tel"
-          />
-        </Field>
       </div>
+
+      <fieldset className="space-y-4">
+        <legend className="text-sm font-semibold text-foreground">Contatos</legend>
+        <div className="space-y-4">
+          {values.contacts.map((contact, index) => (
+            <div
+              key={contact.id ?? `new-contact-${index}`}
+              className="rounded-lg border border-border bg-card p-4"
+            >
+              <div className="grid gap-4 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_auto] md:items-start">
+                <Field
+                  label="E-mail"
+                  htmlFor={`contact-email-${index}`}
+                  error={errors[`contacts.${index}.email`]}
+                >
+                  <Input
+                    id={`contact-email-${index}`}
+                    type="email"
+                    value={contact.email ?? ""}
+                    onChange={(event) => updateContact(index, "email", event.target.value)}
+                    maxLength={254}
+                    autoComplete="email"
+                  />
+                </Field>
+                <Field
+                  label="Contato telefônico"
+                  htmlFor={`contact-phone-${index}`}
+                  error={errors[`contacts.${index}.phone`]}
+                >
+                  <Input
+                    id={`contact-phone-${index}`}
+                    value={contact.phone ?? ""}
+                    onChange={(event) => updateContact(index, "phone", event.target.value)}
+                    maxLength={40}
+                    autoComplete="tel"
+                  />
+                </Field>
+                <Field
+                  label="Setor/Área responsável"
+                  htmlFor={`contact-area-${index}`}
+                  error={errors[`contacts.${index}.responsibleArea`]}
+                >
+                  <Input
+                    id={`contact-area-${index}`}
+                    value={contact.responsibleArea ?? ""}
+                    onChange={(event) =>
+                      updateContact(index, "responsibleArea", event.target.value)
+                    }
+                    maxLength={120}
+                  />
+                </Field>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="mt-7"
+                  aria-label={`Remover contato ${index + 1}`}
+                  onClick={() => removeContact(index)}
+                >
+                  <Trash2 className="size-4" aria-hidden />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={addContact}
+          disabled={values.contacts.length >= 20}
+        >
+          <Plus className="mr-2 size-4" aria-hidden />
+          Adicionar outro e-mail
+        </Button>
+        {errors.contacts ? (
+          <p className="text-xs text-destructive" role="alert">
+            {errors.contacts}
+          </p>
+        ) : null}
+      </fieldset>
 
       {formError ? (
         <p

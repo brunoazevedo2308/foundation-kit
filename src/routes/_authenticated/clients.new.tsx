@@ -66,10 +66,7 @@ function NewClientPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Novo cliente"
-        description="Informe os dados do cliente e o contato principal."
-      />
+      <PageHeader title="Novo cliente" description="Informe os dados do cliente e seus contatos." />
       <ClientForm
         key={formKey}
         initialValues={EMPTY_CLIENT_FORM}
