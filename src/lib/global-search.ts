@@ -167,7 +167,6 @@ export function mapClientResult(row: ClientSearchRow): SearchResultItem {
 export type VesselSearchRow = {
   id: string;
   name: string;
-  imo_number: string | null;
   vessel_type: string | null;
   dp_class: string | null;
 };
@@ -177,11 +176,7 @@ export function mapVesselResult(row: VesselSearchRow): SearchResultItem {
     id: row.id,
     group: "vessels",
     title: row.name,
-    subtitle: joinSubtitle([
-      row.imo_number ? `IMO ${row.imo_number}` : null,
-      row.vessel_type,
-      row.dp_class,
-    ]),
+    subtitle: joinSubtitle([row.vessel_type, row.dp_class]),
     target: { route: "/vessels/$vesselId/edit", vesselId: row.id },
   };
 }
@@ -254,7 +249,7 @@ export function mapEvidenceResult(
 // ---------------------------------------------------------------------------
 
 const CLIENT_COLUMNS = ["name", "code", "contact_name", "contact_email"] as const;
-const VESSEL_COLUMNS = ["name", "imo_number", "vessel_type", "dp_class"] as const;
+const VESSEL_COLUMNS = ["name", "vessel_type", "dp_class"] as const;
 const ACTION_COLUMNS = ["title", "description", "origin", "action_type"] as const;
 const DELIVERABLE_COLUMNS = ["title", "description"] as const;
 const EVIDENCE_COLUMNS = ["title", "description", "file_name"] as const;
@@ -328,7 +323,7 @@ export async function globalSearch(rawTerm: string): Promise<GlobalSearchResult>
     runGroup<VesselSearchRow>("vessels", () =>
       c
         .from("vessels")
-        .select("id, name, imo_number, vessel_type, dp_class")
+        .select("id, name, vessel_type, dp_class")
         .is("deleted_at", null)
         .or(buildOrFilter(VESSEL_COLUMNS, term))
         .order("name", { ascending: true })

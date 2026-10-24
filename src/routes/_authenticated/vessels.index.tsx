@@ -103,11 +103,10 @@ function VesselsPage() {
         </div>
       ) : vessels.length > 0 ? (
         <div className="overflow-x-auto rounded-lg border border-border">
-          <Table className="min-w-[1420px]">
+          <Table className="min-w-[1320px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
-                <TableHead>IMO</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Classe DP</TableHead>
                 <TableHead>Cliente</TableHead>
@@ -123,7 +122,6 @@ function VesselsPage() {
               {vessels.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell>{item.imoNumber ?? "—"}</TableCell>
                   <TableCell>{item.vesselType ?? "—"}</TableCell>
                   <TableCell>{item.dpClass ?? "—"}</TableCell>
                   <TableCell>{item.clientName ?? "Sem vínculo"}</TableCell>

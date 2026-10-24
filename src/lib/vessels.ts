@@ -39,16 +39,6 @@ export const VesselFormSchema = z.object({
     .trim()
     .min(2, "Informe o nome da embarcação.")
     .max(120, "Máximo de 120 caracteres."),
-  imoNumber: z
-    .string()
-    .trim()
-    .max(20, "Máximo de 20 caracteres.")
-    .refine((value) => value === "" || /^[0-9]{7}$/.test(value), {
-      message: "O número IMO deve conter exatamente 7 dígitos.",
-    })
-    .transform((value) => (value === "" ? null : value))
-    .nullable()
-    .default(null),
   vesselType: optionalText(80, "Máximo de 80 caracteres."),
   dpClass: optionalText(20, "Máximo de 20 caracteres."),
   companyName: optionalText(160, "Máximo de 160 caracteres."),
@@ -72,7 +62,6 @@ export type VesselFormValues = z.output<typeof VesselFormSchema>;
 export type VesselListItem = {
   id: string;
   name: string;
-  imoNumber: string | null;
   vesselType: string | null;
   dpClass: string | null;
   companyName: string | null;
@@ -91,12 +80,11 @@ export type VesselKeyDpPerson = {
 };
 
 const SELECT_COLUMNS =
-  "id, name, imo_number, vessel_type, dp_class, company_name, contract_management, contract_manager, status, client_id, created_at, clients(name), user_vessels(profile_id, profiles!user_vessels_profile_id_fkey(full_name))";
+  "id, name, vessel_type, dp_class, company_name, contract_management, contract_manager, status, client_id, created_at, clients(name), user_vessels(profile_id, profiles!user_vessels_profile_id_fkey(full_name))";
 
 type VesselRow = {
   id: string;
   name: string;
-  imo_number: string | null;
   vessel_type: string | null;
   dp_class: string | null;
   company_name: string | null;
@@ -129,7 +117,6 @@ function mapVessel(row: VesselRow): VesselListItem {
   return {
     id: row.id,
     name: row.name,
-    imoNumber: row.imo_number,
     vesselType: row.vessel_type,
     dpClass: row.dp_class,
     companyName: row.company_name,
@@ -174,7 +161,6 @@ export async function createVessel(input: VesselFormInput): Promise<VesselListIt
       organization_id: organizationId,
       client_id: parsed.clientId,
       name: parsed.name,
-      imo_number: parsed.imoNumber,
       vessel_type: parsed.vesselType,
       dp_class: parsed.dpClass,
       company_name: parsed.companyName,
@@ -192,7 +178,7 @@ export async function createVessel(input: VesselFormInput): Promise<VesselListIt
       context: { operation: "vessels.create", supabase_error: sanitize(error) },
     });
     if (error?.code === "23505") {
-      throw new Error("Já existe uma embarcação ativa com este nome ou número IMO.");
+      throw new Error("Já existe uma embarcação ativa com este nome.");
     }
     throw new Error("Não foi possível cadastrar a embarcação agora. Tente novamente.");
   }
@@ -204,7 +190,6 @@ export async function createVessel(input: VesselFormInput): Promise<VesselListIt
 export function toVesselFormInput(item: VesselListItem): VesselFormInput {
   return {
     name: item.name,
-    imoNumber: item.imoNumber ?? "",
     vesselType: item.vesselType ?? "",
     dpClass: item.dpClass ?? "",
     companyName: item.companyName ?? "",
@@ -322,7 +307,6 @@ export async function updateVessel(
     .update({
       client_id: parsed.clientId,
       name: parsed.name,
-      imo_number: parsed.imoNumber,
       vessel_type: parsed.vesselType,
       dp_class: parsed.dpClass,
       company_name: parsed.companyName,
@@ -341,7 +325,7 @@ export async function updateVessel(
       context: { operation: "vessels.update", supabase_error: sanitize(error) },
     });
     if (error?.code === "23505") {
-      throw new Error("Já existe uma embarcação ativa com este nome ou número IMO.");
+      throw new Error("Já existe uma embarcação ativa com este nome.");
     }
     throw new Error("Não foi possível salvar as alterações da embarcação.");
   }

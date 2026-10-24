@@ -50,7 +50,6 @@ function NewVesselPage() {
             <div>
               <p className="font-medium">{created.name}</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                {created.imoNumber ? `IMO ${created.imoNumber}` : "Sem IMO informado"} ·{" "}
                 {created.clientName ?? "Sem cliente vinculado"}
               </p>
             </div>

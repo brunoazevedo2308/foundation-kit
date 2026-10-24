@@ -22,7 +22,6 @@ import { VesselFormSchema, type VesselFormInput } from "@/lib/vessels";
 
 export const EMPTY_VESSEL_FORM: VesselFormInput = {
   name: "",
-  imoNumber: "",
   vesselType: "",
   dpClass: "",
   companyName: "",
@@ -144,16 +143,6 @@ export function VesselForm({
             onChange={(e) => update("name", e.target.value)}
             maxLength={120}
             required
-          />
-        </Field>
-        <Field label="Número IMO (opcional)" htmlFor="imoNumber" error={errors.imoNumber}>
-          <Input
-            id="imoNumber"
-            value={values.imoNumber ?? ""}
-            onChange={(e) => update("imoNumber", e.target.value)}
-            inputMode="numeric"
-            maxLength={20}
-            placeholder="7 dígitos"
           />
         </Field>
         <Field label="Tipo de embarcação" htmlFor="vesselType" error={errors.vesselType}>
