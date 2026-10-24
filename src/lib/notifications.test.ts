@@ -156,6 +156,8 @@ describe("notificationTypeLabel", () => {
     expect(notificationTypeLabel("deliverable.assigned")).toBe("Entregável atribuído");
     expect(notificationTypeLabel("comment.created")).toBe("Novo comentário");
     expect(notificationTypeLabel("action.updated")).toBe("Ação atualizada");
+    expect(notificationTypeLabel("action.due_soon")).toBe("Prazo próximo");
+    expect(notificationTypeLabel("action.overdue")).toBe("Ação atrasada");
   });
 
   it("usa rótulo genérico para tipos desconhecidos", () => {

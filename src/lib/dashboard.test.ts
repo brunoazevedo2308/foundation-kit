@@ -4,6 +4,7 @@ import type { ActionListItem } from "./actions";
 import type { DeliverableListItem } from "./deliverables";
 import {
   activeFilterCount,
+  actionDeadlineStatus,
   addDaysKey,
   applyFilters,
   attentionList,
@@ -23,6 +24,7 @@ import {
   rankClients,
   rankResponsibles,
   rankVessels,
+  summarizeActionDeadlineStatuses,
 } from "./dashboard";
 
 const TODAY = "2026-08-20";
@@ -103,6 +105,57 @@ describe("estados abertos e vencimento", () => {
         TODAY,
       ),
     ).toBe(false);
+  });
+});
+
+describe("status operacional automático por prazo", () => {
+  it("classifica os quatro estados com limites inclusivos", () => {
+    expect(actionDeadlineStatus(action({ id: "done", status: "completed" }), TODAY)).toBe(
+      "completed",
+    );
+    expect(actionDeadlineStatus(action({ id: "open", dueDate: "2026-08-28" }), TODAY)).toBe(
+      "in_progress",
+    );
+    expect(actionDeadlineStatus(action({ id: "seven", dueDate: "2026-08-27" }), TODAY)).toBe(
+      "due_soon",
+    );
+    expect(actionDeadlineStatus(action({ id: "today", dueDate: TODAY }), TODAY)).toBe("due_soon");
+    expect(actionDeadlineStatus(action({ id: "late", dueDate: "2026-08-19" }), TODAY)).toBe(
+      "overdue",
+    );
+  });
+
+  it("ignora canceladas e mantém ação sem prazo em andamento", () => {
+    expect(
+      actionDeadlineStatus(action({ id: "cancelled", status: "cancelled" }), TODAY),
+    ).toBeNull();
+    expect(actionDeadlineStatus(action({ id: "undated", dueDate: null }), TODAY)).toBe(
+      "in_progress",
+    );
+  });
+
+  it("resume automaticamente a quantidade de ações por faixa", () => {
+    expect(
+      summarizeActionDeadlineStatuses(
+        [
+          action({ id: "done", status: "completed" }),
+          action({ id: "open", dueDate: "2027-01-01" }),
+          action({ id: "soon", dueDate: "2026-08-25" }),
+          action({ id: "late", dueDate: "2026-08-19" }),
+          action({ id: "cancelled", status: "cancelled" }),
+        ],
+        TODAY,
+      ),
+    ).toEqual({ completed: 1, in_progress: 1, due_soon: 1, overdue: 1 });
+  });
+
+  it("respeita viradas de ano no cálculo dos sete dias", () => {
+    expect(
+      actionDeadlineStatus(action({ id: "new-year", dueDate: "2027-01-05" }), "2026-12-29"),
+    ).toBe("due_soon");
+    expect(actionDeadlineStatus(action({ id: "later", dueDate: "2027-01-06" }), "2026-12-29")).toBe(
+      "in_progress",
+    );
   });
 });
 

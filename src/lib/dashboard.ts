@@ -56,6 +56,58 @@ export function isActionOverdueLocal(item: ActionListItem, today = localDateKey(
   return item.dueDate < today;
 }
 
+export const ACTION_DEADLINE_STATUSES = [
+  "completed",
+  "in_progress",
+  "due_soon",
+  "overdue",
+] as const;
+
+export type ActionDeadlineStatus = (typeof ACTION_DEADLINE_STATUSES)[number];
+
+export const ACTION_DEADLINE_STATUS_LABELS: Record<ActionDeadlineStatus, string> = {
+  completed: "Finalizada",
+  in_progress: "Em andamento",
+  due_soon: "Próxima do vencimento",
+  overdue: "Atrasada",
+};
+
+/**
+ * Status operacional derivado do calendário, sem sobrescrever o status de
+ * workflow da ação. A janela amarela inclui hoje e os próximos sete dias;
+ * a vermelha começa no primeiro dia após o prazo.
+ */
+export function actionDeadlineStatus(
+  item: ActionListItem,
+  today = localDateKey(),
+): ActionDeadlineStatus | null {
+  if (item.status === "cancelled") return null;
+  if (item.status === "completed") return "completed";
+  if (!item.dueDate || item.dueDate > addDaysKey(today, 7)) return "in_progress";
+  if (item.dueDate < today) return "overdue";
+  return "due_soon";
+}
+
+export type ActionDeadlineSummary = Record<ActionDeadlineStatus, number>;
+
+export function summarizeActionDeadlineStatuses(
+  actions: ActionListItem[],
+  today = localDateKey(),
+): ActionDeadlineSummary {
+  const summary: ActionDeadlineSummary = {
+    completed: 0,
+    in_progress: 0,
+    due_soon: 0,
+    overdue: 0,
+  };
+
+  for (const item of actions) {
+    const status = actionDeadlineStatus(item, today);
+    if (status) summary[status] += 1;
+  }
+  return summary;
+}
+
 export function isDeliverablePending(item: DeliverableListItem): boolean {
   return !CLOSED_DELIVERABLE_STATUSES.has(item.status);
 }

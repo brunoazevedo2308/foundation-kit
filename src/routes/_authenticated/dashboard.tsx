@@ -2,9 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   AlertTriangle,
   CalendarClock,
+  CheckCircle2,
+  CircleAlert,
+  Clock3,
   Flame,
   ListChecks,
   PackageCheck,
+  PlayCircle,
   RefreshCw,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -35,6 +39,8 @@ import {
   rankClients,
   rankResponsibles,
   rankVessels,
+  summarizeActionDeadlineStatuses,
+  type ActionDeadlineSummary,
   type DashboardData,
   type DashboardFilters,
   type RankingEntry,
@@ -85,6 +91,76 @@ function KpiCard({
       <CardContent>
         <p className={`text-3xl font-semibold tracking-tight ${toneClass}`}>{value}</p>
         <p className="mt-2 text-xs text-muted-foreground">{hint}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+const DEADLINE_STATUS_ITEMS = [
+  {
+    key: "completed",
+    label: "Finalizada",
+    description: "Ações concluídas.",
+    icon: CheckCircle2,
+    className:
+      "border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-100",
+    iconClassName: "text-emerald-600 dark:text-emerald-400",
+  },
+  {
+    key: "in_progress",
+    label: "Em andamento",
+    description: "Mais de 7 dias ou sem prazo.",
+    icon: PlayCircle,
+    className:
+      "border-sky-300 bg-sky-50 text-sky-900 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-100",
+    iconClassName: "text-sky-600 dark:text-sky-400",
+  },
+  {
+    key: "due_soon",
+    label: "Próxima do vencimento",
+    description: "Prazo entre hoje e 7 dias.",
+    icon: Clock3,
+    className:
+      "border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100",
+    iconClassName: "text-amber-600 dark:text-amber-400",
+  },
+  {
+    key: "overdue",
+    label: "Atrasada",
+    description: "A partir do dia seguinte ao prazo.",
+    icon: CircleAlert,
+    className:
+      "border-red-300 bg-red-50 text-red-950 dark:border-red-800 dark:bg-red-950/40 dark:text-red-100",
+    iconClassName: "text-red-600 dark:text-red-400",
+  },
+] as const;
+
+function DeadlineStatusPanel({ summary }: { summary: ActionDeadlineSummary }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Status automático das ações</CardTitle>
+        <CardDescription>
+          Atualizado pelo calendário conforme o prazo de cada ação. Ações canceladas não entram na
+          contagem.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Status por prazo">
+          {DEADLINE_STATUS_ITEMS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.key} className={`rounded-lg border p-4 ${item.className}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold">{item.label}</p>
+                  <Icon className={`h-5 w-5 ${item.iconClassName}`} aria-hidden="true" />
+                </div>
+                <p className="mt-3 text-3xl font-semibold tabular-nums">{summary[item.key]}</p>
+                <p className="mt-1 text-xs opacity-80">{item.description}</p>
+              </div>
+            );
+          })}
+        </div>
       </CardContent>
     </Card>
   );
@@ -284,6 +360,7 @@ function DashboardPage() {
       vessels: rankVessels(scoped.actions),
       responsibles: rankResponsibles(scoped.actions),
       attention: attentionList(scoped.actions, today),
+      deadlineStatuses: summarizeActionDeadlineStatuses(scoped.actions, today),
     };
   }, [data, filters, today]);
 
@@ -351,6 +428,8 @@ function DashboardPage() {
         </Card>
       ) : view ? (
         <>
+          <DeadlineStatusPanel summary={view.deadlineStatuses} />
+
           <DashboardFiltersCard
             filters={filters}
             options={filterOptions}
