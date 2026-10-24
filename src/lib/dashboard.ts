@@ -108,6 +108,14 @@ export function summarizeActionDeadlineStatuses(
   return summary;
 }
 
+export function filterActionsByDeadlineStatus(
+  actions: ActionListItem[],
+  status: ActionDeadlineStatus,
+  today = localDateKey(),
+): ActionListItem[] {
+  return actions.filter((item) => actionDeadlineStatus(item, today) === status);
+}
+
 export function isDeliverablePending(item: DeliverableListItem): boolean {
   return !CLOSED_DELIVERABLE_STATUSES.has(item.status);
 }

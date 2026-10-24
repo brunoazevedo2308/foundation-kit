@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+  ArrowRight,
   AlertTriangle,
   CalendarClock,
   CheckCircle2,
@@ -150,14 +151,27 @@ function DeadlineStatusPanel({ summary }: { summary: ActionDeadlineSummary }) {
           {DEADLINE_STATUS_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
-              <div key={item.key} className={`rounded-lg border p-4 ${item.className}`}>
+              <Link
+                key={item.key}
+                to="/actions"
+                search={{ prazo: item.key }}
+                className={`group rounded-lg border p-4 transition-transform hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${item.className}`}
+                aria-label={`Ver ${summary[item.key]} ações com status ${item.label}`}
+              >
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold">{item.label}</p>
                   <Icon className={`h-5 w-5 ${item.iconClassName}`} aria-hidden="true" />
                 </div>
                 <p className="mt-3 text-3xl font-semibold tabular-nums">{summary[item.key]}</p>
                 <p className="mt-1 text-xs opacity-80">{item.description}</p>
-              </div>
+                <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold">
+                  Ver ações
+                  <ArrowRight
+                    className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+                    aria-hidden="true"
+                  />
+                </span>
+              </Link>
             );
           })}
         </div>

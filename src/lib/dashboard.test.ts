@@ -14,6 +14,7 @@ import {
   distributionByStatus,
   EMPTY_FILTERS,
   filterActions,
+  filterActionsByDeadlineStatus,
   hasActiveFilters,
   isActionOpen,
   isActionOverdueLocal,
@@ -155,6 +156,22 @@ describe("status operacional automático por prazo", () => {
     ).toBe("due_soon");
     expect(actionDeadlineStatus(action({ id: "later", dueDate: "2027-01-06" }), "2026-12-29")).toBe(
       "in_progress",
+    );
+  });
+
+  it("filtra as ações pela faixa selecionada no painel", () => {
+    const actions = [
+      action({ id: "done", status: "completed" }),
+      action({ id: "soon", dueDate: "2026-08-25" }),
+      action({ id: "late", dueDate: "2026-08-19" }),
+      action({ id: "cancelled", status: "cancelled" }),
+    ];
+
+    expect(
+      filterActionsByDeadlineStatus(actions, "due_soon", TODAY).map((item) => item.id),
+    ).toEqual(["soon"]);
+    expect(filterActionsByDeadlineStatus(actions, "overdue", TODAY).map((item) => item.id)).toEqual(
+      ["late"],
     );
   });
 });
