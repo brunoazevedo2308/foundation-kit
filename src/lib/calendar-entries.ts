@@ -4,8 +4,19 @@ import { fetchCurrentOrganizationId } from "./clients";
 import { emitEvent, sanitize } from "./observability";
 import { supabase } from "./supabase";
 
-export const CALENDAR_ENTRY_TYPES = ["note", "activity"] as const;
+export const CALENDAR_ACTIVITY_TYPES = ["annual_trials", "proving_trials", "dp_audit"] as const;
+export type CalendarActivityType = (typeof CALENDAR_ACTIVITY_TYPES)[number];
+
+export const CALENDAR_ENTRY_TYPES = [...CALENDAR_ACTIVITY_TYPES, "note", "activity"] as const;
 export type CalendarEntryType = (typeof CALENDAR_ENTRY_TYPES)[number];
+
+export const CALENDAR_ENTRY_TYPE_LABELS: Record<CalendarEntryType, string> = {
+  annual_trials: "Annual Trials",
+  proving_trials: "Proving Trials",
+  dp_audit: "Auditoria DP",
+  note: "Nota",
+  activity: "Atividade",
+};
 
 export const VESSEL_CALENDAR_COLORS = [
   {
@@ -69,7 +80,7 @@ export function getVesselCalendarColor(vesselId: string) {
 
 export const CalendarEntryFormSchema = z
   .object({
-    entryType: z.enum(CALENDAR_ENTRY_TYPES),
+    entryType: z.enum(CALENDAR_ACTIVITY_TYPES),
     vesselId: z.string().uuid("Selecione uma embarcação."),
     title: z.string().trim().min(2, "Informe um título.").max(160, "Máximo de 160 caracteres."),
     description: z
@@ -84,7 +95,7 @@ export const CalendarEntryFormSchema = z
     endTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Informe um horário válido."),
   })
   .superRefine((value, context) => {
-    if (value.entryType === "activity" && value.endTime < value.startTime) {
+    if (value.endTime < value.startTime) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["endTime"],
@@ -194,9 +205,8 @@ export async function createCalendarEntry(
   const organizationId = await fetchCurrentOrganizationId();
   if (!organizationId) throw new Error("Seu perfil não está vinculado a uma organização.");
 
-  const isNote = parsed.entryType === "note";
-  const startsAt = localDateTime(parsed.date, isNote ? "12:00" : parsed.startTime);
-  const endsAt = isNote ? null : localDateTime(parsed.date, parsed.endTime);
+  const startsAt = localDateTime(parsed.date, parsed.startTime);
+  const endsAt = localDateTime(parsed.date, parsed.endTime);
 
   const { data, error } = await client()
     .from("calendar_entries")
@@ -208,7 +218,7 @@ export async function createCalendarEntry(
       description: parsed.description,
       starts_at: startsAt,
       ends_at: endsAt,
-      all_day: isNote,
+      all_day: false,
       created_by: createdBy,
     })
     .select(SELECT_COLUMNS)

@@ -27,13 +27,14 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   CalendarEntryFormSchema,
+  CALENDAR_ENTRY_TYPE_LABELS,
   createCalendarEntry,
   getVesselCalendarColor,
   isSameCalendarDay,
   listCalendarEntries,
   VESSEL_CALENDAR_COLORS,
   type CalendarEntry,
-  type CalendarEntryType,
+  type CalendarActivityType,
 } from "@/lib/calendar-entries";
 import { cn } from "@/lib/utils";
 import { listVessels, type VesselListItem } from "@/lib/vessels";
@@ -42,7 +43,7 @@ export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({
     meta: [
       { title: "Calendário · Atino DP Suite" },
-      { name: "description", content: "Notas e atividades programadas da organização." },
+      { name: "description", content: "Atividades programadas da organização." },
     ],
   }),
   component: CalendarPage,
@@ -123,7 +124,7 @@ function CalendarPage() {
     <div className="space-y-6">
       <PageHeader
         title="Calendário"
-        description="Crie notas e programe atividades compartilhadas com sua organização."
+        description="Programe atividades compartilhadas com sua organização."
         actions={
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -204,7 +205,7 @@ function CalendarPage() {
               <CalendarDays className="mx-auto size-9 text-muted-foreground" aria-hidden />
               <p className="mt-3 text-sm font-medium">Dia livre</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Inclua uma nota ou agende uma atividade.
+                Agende uma atividade para esta embarcação.
               </p>
             </div>
           ) : (
@@ -242,11 +243,15 @@ function CalendarEntryCard({ entry }: { entry: CalendarEntry }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-medium text-foreground">{entry.title}</h3>
-            <span className="text-xs font-medium text-muted-foreground">
-              {isNote
-                ? "Nota"
-                : `${format(new Date(entry.startsAt), "HH:mm")}–${format(new Date(entry.endsAt ?? entry.startsAt), "HH:mm")}`}
-            </span>
+            <div className="flex flex-wrap items-center justify-end gap-2 text-xs font-medium text-muted-foreground">
+              <span>{CALENDAR_ENTRY_TYPE_LABELS[entry.entryType]}</span>
+              {isNote ? null : (
+                <span>
+                  {format(new Date(entry.startsAt), "HH:mm")}–
+                  {format(new Date(entry.endsAt ?? entry.startsAt), "HH:mm")}
+                </span>
+              )}
+            </div>
           </div>
           <span
             className={cn(
@@ -282,7 +287,7 @@ function CalendarEntryDialog({
   vessels: VesselListItem[];
   onCreated: (entry: CalendarEntry) => Promise<void>;
 }) {
-  const [entryType, setEntryType] = useState<CalendarEntryType>("activity");
+  const [entryType, setEntryType] = useState<CalendarActivityType>("annual_trials");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [vesselId, setVesselId] = useState("");
@@ -328,9 +333,7 @@ function CalendarEntryDialog({
     <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
       <DialogHeader>
         <DialogTitle>Novo registro</DialogTitle>
-        <DialogDescription>
-          Adicione uma nota ou agende uma atividade no calendário compartilhado.
-        </DialogDescription>
+        <DialogDescription>Agende uma atividade no calendário compartilhado.</DialogDescription>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -338,14 +341,15 @@ function CalendarEntryDialog({
             <Label htmlFor="calendar-type">Tipo</Label>
             <Select
               value={entryType}
-              onValueChange={(value) => setEntryType(value as CalendarEntryType)}
+              onValueChange={(value) => setEntryType(value as CalendarActivityType)}
             >
               <SelectTrigger id="calendar-type">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="activity">Atividade</SelectItem>
-                <SelectItem value="note">Nota</SelectItem>
+                <SelectItem value="annual_trials">Annual Trials</SelectItem>
+                <SelectItem value="proving_trials">Proving Trials</SelectItem>
+                <SelectItem value="dp_audit">Auditoria DP</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -396,30 +400,28 @@ function CalendarEntryDialog({
             required
           />
         </div>
-        {entryType === "activity" ? (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="calendar-start">Início</Label>
-              <Input
-                id="calendar-start"
-                type="time"
-                value={startTime}
-                onChange={(event) => setStartTime(event.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="calendar-end">Término</Label>
-              <Input
-                id="calendar-end"
-                type="time"
-                value={endTime}
-                onChange={(event) => setEndTime(event.target.value)}
-                required
-              />
-            </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="calendar-start">Início</Label>
+            <Input
+              id="calendar-start"
+              type="time"
+              value={startTime}
+              onChange={(event) => setStartTime(event.target.value)}
+              required
+            />
           </div>
-        ) : null}
+          <div className="space-y-2">
+            <Label htmlFor="calendar-end">Término</Label>
+            <Input
+              id="calendar-end"
+              type="time"
+              value={endTime}
+              onChange={(event) => setEndTime(event.target.value)}
+              required
+            />
+          </div>
+        </div>
         <div className="space-y-2">
           <Label htmlFor="calendar-description">Descrição (opcional)</Label>
           <Textarea

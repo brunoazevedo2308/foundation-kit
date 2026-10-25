@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { CalendarEntryFormSchema, isSameCalendarDay, mapCalendarEntry } from "./calendar-entries";
+import {
+  CALENDAR_ACTIVITY_TYPES,
+  CalendarEntryFormSchema,
+  isSameCalendarDay,
+  mapCalendarEntry,
+} from "./calendar-entries";
 
 describe("CalendarEntryFormSchema", () => {
   const base = {
-    entryType: "activity" as const,
+    entryType: "annual_trials" as const,
     vesselId: "11111111-1111-4111-8111-111111111111",
     title: "Reunião de planejamento",
     description: "Alinhar as próximas atividades.",
@@ -13,16 +18,23 @@ describe("CalendarEntryFormSchema", () => {
     endTime: "10:00",
   };
 
-  it("accepts a scheduled activity", () => {
-    expect(CalendarEntryFormSchema.safeParse(base).success).toBe(true);
+  it.each(CALENDAR_ACTIVITY_TYPES)("accepts the scheduled activity type %s", (entryType) => {
+    expect(CalendarEntryFormSchema.safeParse({ ...base, entryType }).success).toBe(true);
   });
 
   it("rejects an activity ending before it starts", () => {
     expect(CalendarEntryFormSchema.safeParse({ ...base, endTime: "08:59" }).success).toBe(false);
   });
 
+  it("does not accept legacy types for new records", () => {
+    expect(CalendarEntryFormSchema.safeParse({ ...base, entryType: "activity" }).success).toBe(
+      false,
+    );
+    expect(CalendarEntryFormSchema.safeParse({ ...base, entryType: "note" }).success).toBe(false);
+  });
+
   it("normalizes an empty description", () => {
-    const parsed = CalendarEntryFormSchema.parse({ ...base, entryType: "note", description: "" });
+    const parsed = CalendarEntryFormSchema.parse({ ...base, description: "" });
     expect(parsed.description).toBeNull();
   });
 });
