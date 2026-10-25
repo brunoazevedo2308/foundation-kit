@@ -132,6 +132,19 @@ function DocumentCompanyPage() {
       <PageHeader
         title={company.name}
         description="Biblioteca documental da empresa organizada por embarcação e categoria DP."
+        actions={
+          canManage ? (
+            <Button asChild className="w-full sm:w-auto">
+              <Link
+                to="/vessels/new"
+                search={{ companyName: company.name, documentCompanyId: company.id }}
+              >
+                <Plus className="size-4" aria-hidden />
+                Inserir nova embarcação
+              </Link>
+            </Button>
+          ) : null
+        }
       />
 
       <section className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
@@ -140,25 +153,10 @@ function DocumentCompanyPage() {
             <Ship className="size-5" aria-hidden />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <Label htmlFor="document-vessel">Embarcação</Label>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Selecione o barco para acessar sua biblioteca documental.
-                </p>
-              </div>
-              {canManage ? (
-                <Button asChild size="sm" className="w-full shrink-0 sm:w-auto">
-                  <Link
-                    to="/vessels/new"
-                    search={{ companyName: company.name, documentCompanyId: company.id }}
-                  >
-                    <Plus className="size-4" aria-hidden />
-                    Inserir nova embarcação
-                  </Link>
-                </Button>
-              ) : null}
-            </div>
+            <Label htmlFor="document-vessel">Embarcação</Label>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Selecione o barco para acessar sua biblioteca documental.
+            </p>
             {vessels.length > 0 ? (
               <Select value={selectedVesselId} onValueChange={setSelectedVesselId}>
                 <SelectTrigger id="document-vessel" className="mt-3 w-full sm:max-w-md">
