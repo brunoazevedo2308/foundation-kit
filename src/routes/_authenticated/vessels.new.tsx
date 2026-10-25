@@ -13,7 +13,22 @@ import {
   type VesselListItem,
 } from "@/lib/vessels";
 
+type NewVesselSearch = {
+  companyName?: string;
+  documentCompanyId?: string;
+};
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export const Route = createFileRoute("/_authenticated/vessels/new")({
+  validateSearch: (search: Record<string, unknown>): NewVesselSearch => ({
+    companyName:
+      typeof search.companyName === "string" ? search.companyName.trim().slice(0, 160) : undefined,
+    documentCompanyId:
+      typeof search.documentCompanyId === "string" && UUID_PATTERN.test(search.documentCompanyId)
+        ? search.documentCompanyId
+        : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Nova embarcação · Atino DP Suite" },
@@ -31,8 +46,17 @@ export const Route = createFileRoute("/_authenticated/vessels/new")({
 });
 
 function NewVesselPage() {
+  const { companyName, documentCompanyId } = Route.useSearch();
   const [created, setCreated] = useState<VesselListItem | null>(null);
   const [formKey, setFormKey] = useState(0);
+  const initialValues = { ...EMPTY_VESSEL_FORM, companyName: companyName ?? "" };
+  const returnLink = documentCompanyId ? (
+    <Link to="/documents/$companyId" params={{ companyId: documentCompanyId }}>
+      Voltar para a empresa
+    </Link>
+  ) : (
+    <Link to="/vessels">Voltar para embarcações</Link>
+  );
 
   if (created) {
     return (
@@ -55,9 +79,7 @@ function NewVesselPage() {
             </div>
           </div>
           <div className="mt-6 flex gap-2">
-            <Button asChild>
-              <Link to="/vessels">Voltar para embarcações</Link>
-            </Button>
+            <Button asChild>{returnLink}</Button>
             <Button
               variant="outline"
               onClick={() => {
@@ -81,10 +103,18 @@ function NewVesselPage() {
       />
       <VesselForm
         key={formKey}
-        initialValues={EMPTY_VESSEL_FORM}
+        initialValues={initialValues}
         submitLabel="Cadastrar embarcação"
         submittingLabel="Salvando..."
-        cancelTo={<Link to="/vessels">Cancelar</Link>}
+        cancelTo={
+          documentCompanyId ? (
+            <Link to="/documents/$companyId" params={{ companyId: documentCompanyId }}>
+              Cancelar
+            </Link>
+          ) : (
+            <Link to="/vessels">Cancelar</Link>
+          )
+        }
         onSubmit={async (values, extras) => {
           const vessel = await createVessel(values);
           try {

@@ -1,5 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ClipboardList, FileCheck2, FileSearch, FileText, FlaskConical, Ship } from "lucide-react";
+import {
+  ClipboardList,
+  FileCheck2,
+  FileSearch,
+  FileText,
+  FlaskConical,
+  Plus,
+  Ship,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { DocumentFilesSection } from "@/components/document-files-section";
@@ -132,10 +140,25 @@ function DocumentCompanyPage() {
             <Ship className="size-5" aria-hidden />
           </div>
           <div className="min-w-0 flex-1">
-            <Label htmlFor="document-vessel">Embarcação</Label>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Selecione o barco para acessar sua biblioteca documental.
-            </p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <Label htmlFor="document-vessel">Embarcação</Label>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Selecione o barco para acessar sua biblioteca documental.
+                </p>
+              </div>
+              {canManage ? (
+                <Button asChild size="sm" className="w-full shrink-0 sm:w-auto">
+                  <Link
+                    to="/vessels/new"
+                    search={{ companyName: company.name, documentCompanyId: company.id }}
+                  >
+                    <Plus className="size-4" aria-hidden />
+                    Inserir nova embarcação
+                  </Link>
+                </Button>
+              ) : null}
+            </div>
             {vessels.length > 0 ? (
               <Select value={selectedVesselId} onValueChange={setSelectedVesselId}>
                 <SelectTrigger id="document-vessel" className="mt-3 w-full sm:max-w-md">
@@ -154,11 +177,6 @@ function DocumentCompanyPage() {
                 <p className="text-sm text-muted-foreground">
                   Cadastre uma embarcação ativa para organizar os documentos desta empresa.
                 </p>
-                {canManage ? (
-                  <Button asChild variant="outline" size="sm" className="mt-3">
-                    <Link to="/vessels/new">Cadastrar embarcação</Link>
-                  </Button>
-                ) : null}
               </div>
             )}
           </div>
