@@ -18,6 +18,7 @@ import {
 
 interface DocumentFilesSectionProps {
   companyId: string;
+  vesselId: string;
   category: DocumentCategory;
   canManage: boolean;
 }
@@ -32,6 +33,7 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
 
 export function DocumentFilesSection({
   companyId,
+  vesselId,
   category,
   canManage,
 }: DocumentFilesSectionProps) {
@@ -42,16 +44,16 @@ export function DocumentFilesSection({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const reload = useCallback(async () => {
-    const rows = await listDocumentFiles(companyId, category);
+    const rows = await listDocumentFiles(companyId, vesselId, category);
     setItems(rows);
     setError(null);
-  }, [category, companyId]);
+  }, [category, companyId, vesselId]);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
     setError(null);
-    listDocumentFiles(companyId, category)
+    listDocumentFiles(companyId, vesselId, category)
       .then((rows) => {
         if (active) setItems(rows);
       })
@@ -68,7 +70,7 @@ export function DocumentFilesSection({
     return () => {
       active = false;
     };
-  }, [category, companyId]);
+  }, [category, companyId, vesselId]);
 
   return (
     <div className="mt-6 space-y-4">
@@ -88,12 +90,12 @@ export function DocumentFilesSection({
 
       {canManage ? (
         <div>
-          <Label htmlFor={`document-file-${companyId}-${category}`} className="sr-only">
+          <Label htmlFor={`document-file-${companyId}-${vesselId}-${category}`} className="sr-only">
             Selecionar documento
           </Label>
           <Input
             ref={inputRef}
-            id={`document-file-${companyId}-${category}`}
+            id={`document-file-${companyId}-${vesselId}-${category}`}
             type="file"
             className="hidden"
             accept={DOCUMENT_FILE_ALLOWED_MIME_TYPES.join(",")}
@@ -104,7 +106,7 @@ export function DocumentFilesSection({
               setBusy(true);
               setError(null);
               try {
-                await createDocumentFile({ companyId, category, file });
+                await createDocumentFile({ companyId, vesselId, category, file });
                 await reload();
               } catch (caught) {
                 setError(

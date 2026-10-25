@@ -28,6 +28,7 @@ export type DocumentCategory = (typeof DOCUMENT_CATEGORIES)[number];
 export type DocumentFileListItem = {
   id: string;
   companyId: string;
+  vesselId: string;
   category: DocumentCategory;
   fileName: string;
   storagePath: string;
@@ -42,6 +43,7 @@ type Related<T> = T | T[] | null | undefined;
 type DocumentFileRow = {
   id: string;
   company_id: string;
+  vessel_id: string;
   category: string;
   file_name: string;
   storage_path: string;
@@ -53,7 +55,7 @@ type DocumentFileRow = {
 };
 
 const SELECT_COLUMNS =
-  "id, company_id, category, file_name, storage_path, mime_type, size_bytes, uploaded_by, created_at, profiles!document_files_uploaded_by_fkey(full_name)";
+  "id, company_id, vessel_id, category, file_name, storage_path, mime_type, size_bytes, uploaded_by, created_at, profiles!document_files_uploaded_by_fkey(full_name)";
 
 function one<T>(value: Related<T>): T | null {
   if (!value) return null;
@@ -80,6 +82,7 @@ export function mapDocumentFile(row: DocumentFileRow): DocumentFileListItem {
   return {
     id: row.id,
     companyId: row.company_id,
+    vesselId: row.vessel_id,
     category: row.category,
     fileName: row.file_name,
     storagePath: row.storage_path,
@@ -101,12 +104,14 @@ export function formatDocumentFileSize(bytes: number): string {
 
 export async function listDocumentFiles(
   companyId: string,
+  vesselId: string,
   category: DocumentCategory,
 ): Promise<DocumentFileListItem[]> {
   const { data, error } = await client()
     .from("document_files")
     .select(SELECT_COLUMNS)
     .eq("company_id", companyId)
+    .eq("vessel_id", vesselId)
     .eq("category", category)
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
@@ -131,6 +136,7 @@ function newUuid(): string {
 export interface UploadDocumentFileInput {
   organizationId: string;
   companyId: string;
+  vesselId: string;
   category: DocumentCategory;
   uploadedBy: string;
   file: File;
@@ -172,6 +178,7 @@ export async function uploadDocumentFile(
       id: documentFileId,
       organization_id: input.organizationId,
       company_id: input.companyId,
+      vessel_id: input.vesselId,
       category: input.category,
       file_name: fileName,
       storage_path: storagePath,
@@ -191,6 +198,7 @@ export async function uploadDocumentFile(
         domain: "document_file",
         stage: "metadata_insert",
         company_id: input.companyId,
+        vessel_id: input.vesselId,
         category: input.category,
         error: sanitize(insertError),
       },
@@ -243,6 +251,7 @@ export async function uploadDocumentFile(
       domain: "document_file",
       document_file_id: documentFileId,
       company_id: input.companyId,
+      vessel_id: input.vesselId,
       category: input.category,
       mime_type: mimeType,
       size_bytes: input.file.size,
@@ -254,6 +263,7 @@ export async function uploadDocumentFile(
 
 export async function createDocumentFile(input: {
   companyId: string;
+  vesselId: string;
   category: DocumentCategory;
   file: File;
 }): Promise<UploadDocumentFileResult> {
@@ -272,6 +282,7 @@ export async function createDocumentFile(input: {
     {
       organizationId,
       companyId: input.companyId,
+      vesselId: input.vesselId,
       category: input.category,
       uploadedBy: data.user.id,
       file: input.file,

@@ -693,6 +693,7 @@ export type Database = {
           storage_path: string;
           updated_at: string;
           uploaded_by: string;
+          vessel_id: string;
         };
         Insert: {
           category: string;
@@ -707,6 +708,7 @@ export type Database = {
           storage_path: string;
           updated_at?: string;
           uploaded_by?: string;
+          vessel_id: string;
         };
         Update: {
           category?: string;
@@ -721,6 +723,7 @@ export type Database = {
           storage_path?: string;
           updated_at?: string;
           uploaded_by?: string;
+          vessel_id?: string;
         };
         Relationships: [
           {
@@ -735,6 +738,13 @@ export type Database = {
             columns: ["organization_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "document_files_vessel_id_fkey";
+            columns: ["vessel_id"];
+            isOneToOne: false;
+            referencedRelation: "vessels";
             referencedColumns: ["id"];
           },
           {
