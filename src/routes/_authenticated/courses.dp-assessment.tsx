@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { CoursePage } from "@/components/course-page";
+import { DpAssessmentPage } from "@/components/dp-assessment-page";
 
 export const Route = createFileRoute("/_authenticated/courses/dp-assessment")({
   head: () => ({
@@ -13,10 +13,6 @@ export const Route = createFileRoute("/_authenticated/courses/dp-assessment")({
 });
 
 function DpAssessmentCoursePage() {
-  return (
-    <CoursePage
-      title="DP Assessment"
-      description="Conteúdo e materiais de capacitação do curso DP Assessment."
-    />
-  );
+  const { profile } = Route.useRouteContext();
+  return <DpAssessmentPage role={profile.role} />;
 }
