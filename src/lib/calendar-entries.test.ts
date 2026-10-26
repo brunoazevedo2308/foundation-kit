@@ -11,19 +11,12 @@ describe("CalendarEntryFormSchema", () => {
   const base = {
     entryType: "annual_trials" as const,
     vesselId: "11111111-1111-4111-8111-111111111111",
-    title: "Reunião de planejamento",
     description: "Alinhar as próximas atividades.",
     date: "2026-10-24",
-    startTime: "09:00",
-    endTime: "10:00",
   };
 
   it.each(CALENDAR_ACTIVITY_TYPES)("accepts the scheduled activity type %s", (entryType) => {
     expect(CalendarEntryFormSchema.safeParse({ ...base, entryType }).success).toBe(true);
-  });
-
-  it("rejects an activity ending before it starts", () => {
-    expect(CalendarEntryFormSchema.safeParse({ ...base, endTime: "08:59" }).success).toBe(false);
   });
 
   it("does not accept legacy types for new records", () => {

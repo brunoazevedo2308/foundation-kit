@@ -78,31 +78,18 @@ export function getVesselCalendarColor(vesselId: string) {
   return VESSEL_CALENDAR_COLORS[(hash >>> 0) % VESSEL_CALENDAR_COLORS.length];
 }
 
-export const CalendarEntryFormSchema = z
-  .object({
-    entryType: z.enum(CALENDAR_ACTIVITY_TYPES),
-    vesselId: z.string().uuid("Selecione uma embarcação."),
-    title: z.string().trim().min(2, "Informe um título.").max(160, "Máximo de 160 caracteres."),
-    description: z
-      .string()
-      .trim()
-      .max(4000, "Máximo de 4000 caracteres.")
-      .transform((value) => (value === "" ? null : value))
-      .nullable()
-      .default(null),
-    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Informe uma data válida."),
-    startTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Informe um horário válido."),
-    endTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Informe um horário válido."),
-  })
-  .superRefine((value, context) => {
-    if (value.endTime < value.startTime) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["endTime"],
-        message: "O término não pode ser anterior ao início.",
-      });
-    }
-  });
+export const CalendarEntryFormSchema = z.object({
+  entryType: z.enum(CALENDAR_ACTIVITY_TYPES),
+  vesselId: z.string().uuid("Selecione uma embarcação."),
+  description: z
+    .string()
+    .trim()
+    .max(4000, "Máximo de 4000 caracteres.")
+    .transform((value) => (value === "" ? null : value))
+    .nullable()
+    .default(null),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Informe uma data válida."),
+});
 
 export type CalendarEntryFormInput = z.input<typeof CalendarEntryFormSchema>;
 
@@ -193,8 +180,8 @@ export async function listCalendarEntries(from: Date, to: Date): Promise<Calenda
   return ((data ?? []) as CalendarEntryRow[]).map(mapCalendarEntry);
 }
 
-function localDateTime(date: string, time: string): string {
-  return new Date(`${date}T${time}:00`).toISOString();
+function localCalendarDate(date: string): string {
+  return new Date(`${date}T12:00:00`).toISOString();
 }
 
 export async function createCalendarEntry(
@@ -205,8 +192,7 @@ export async function createCalendarEntry(
   const organizationId = await fetchCurrentOrganizationId();
   if (!organizationId) throw new Error("Seu perfil não está vinculado a uma organização.");
 
-  const startsAt = localDateTime(parsed.date, parsed.startTime);
-  const endsAt = localDateTime(parsed.date, parsed.endTime);
+  const startsAt = localCalendarDate(parsed.date);
 
   const { data, error } = await client()
     .from("calendar_entries")
@@ -214,11 +200,11 @@ export async function createCalendarEntry(
       organization_id: organizationId,
       entry_type: parsed.entryType,
       vessel_id: parsed.vesselId,
-      title: parsed.title,
+      title: CALENDAR_ENTRY_TYPE_LABELS[parsed.entryType],
       description: parsed.description,
       starts_at: startsAt,
-      ends_at: endsAt,
-      all_day: false,
+      ends_at: null,
+      all_day: true,
       created_by: createdBy,
     })
     .select(SELECT_COLUMNS)

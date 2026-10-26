@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { endOfMonth, endOfWeek, format, startOfMonth, startOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarDays, Clock3, NotebookPen, Plus } from "lucide-react";
+import { CalendarDays, NotebookPen, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 
 import { PageHeader } from "@/components/page-header";
@@ -223,6 +223,7 @@ function CalendarPage() {
 
 function CalendarEntryCard({ entry }: { entry: CalendarEntry }) {
   const isNote = entry.entryType === "note";
+  const isLegacyEntry = entry.entryType === "note" || entry.entryType === "activity";
   const vesselColor = getVesselCalendarColor(entry.vesselId);
   return (
     <li
@@ -238,21 +239,12 @@ function CalendarEntryCard({ entry }: { entry: CalendarEntry }) {
             isNote ? "bg-secondary/15 text-secondary" : "bg-primary/10 text-primary",
           )}
         >
-          {isNote ? <NotebookPen className="size-4" /> : <Clock3 className="size-4" />}
+          {isNote ? <NotebookPen className="size-4" /> : <CalendarDays className="size-4" />}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 className="font-medium text-foreground">{entry.title}</h3>
-            <div className="flex flex-wrap items-center justify-end gap-2 text-xs font-medium text-muted-foreground">
-              <span>{CALENDAR_ENTRY_TYPE_LABELS[entry.entryType]}</span>
-              {isNote ? null : (
-                <span>
-                  {format(new Date(entry.startsAt), "HH:mm")}–
-                  {format(new Date(entry.endsAt ?? entry.startsAt), "HH:mm")}
-                </span>
-              )}
-            </div>
-          </div>
+          <h3 className="font-medium text-foreground">
+            {isLegacyEntry ? entry.title : CALENDAR_ENTRY_TYPE_LABELS[entry.entryType]}
+          </h3>
           <span
             className={cn(
               "mt-2 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium",
@@ -288,12 +280,9 @@ function CalendarEntryDialog({
   onCreated: (entry: CalendarEntry) => Promise<void>;
 }) {
   const [entryType, setEntryType] = useState<CalendarActivityType>("annual_trials");
-  const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [vesselId, setVesselId] = useState("");
   const [date, setDate] = useState(() => format(day, "yyyy-MM-dd"));
-  const [startTime, setStartTime] = useState("09:00");
-  const [endTime, setEndTime] = useState("10:00");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -305,11 +294,8 @@ function CalendarEntryDialog({
     const parsed = CalendarEntryFormSchema.safeParse({
       entryType,
       vesselId,
-      title,
       description,
       date,
-      startTime,
-      endTime,
     });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Revise os dados informados.");
@@ -319,7 +305,6 @@ function CalendarEntryDialog({
     setSubmitting(true);
     try {
       const created = await createCalendarEntry(parsed.data, createdBy);
-      setTitle("");
       setDescription("");
       await onCreated(created);
     } catch (caught) {
@@ -388,39 +373,6 @@ function CalendarEntryDialog({
               Cadastre uma embarcação ativa antes de criar registros no calendário.
             </p>
           ) : null}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="calendar-title">Título</Label>
-          <Input
-            id="calendar-title"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            maxLength={160}
-            autoFocus
-            required
-          />
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="calendar-start">Início</Label>
-            <Input
-              id="calendar-start"
-              type="time"
-              value={startTime}
-              onChange={(event) => setStartTime(event.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="calendar-end">Término</Label>
-            <Input
-              id="calendar-end"
-              type="time"
-              value={endTime}
-              onChange={(event) => setEndTime(event.target.value)}
-              required
-            />
-          </div>
         </div>
         <div className="space-y-2">
           <Label htmlFor="calendar-description">Descrição (opcional)</Label>
