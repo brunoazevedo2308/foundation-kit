@@ -72,14 +72,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "DP Suite — Dynamic Positioning Governance" },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover",
+      },
+      { title: "Atino DP Suite — Dynamic Positioning Governance" },
       {
         name: "description",
         content:
           "Plataforma SaaS de governança e conformidade para operações de Dynamic Positioning.",
       },
-      { property: "og:title", content: "DP Suite" },
+      { name: "theme-color", content: "#061b3a" },
+      { name: "application-name", content: "Atino DP Suite" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "Atino DP Suite" },
+      { property: "og:title", content: "Atino DP Suite" },
       {
         property: "og:description",
         content: "Plataforma SaaS de governança para operações de Dynamic Positioning.",
@@ -93,6 +101,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png", sizes: "180x180" },
     ],
   }),
   shellComponent: RootShell,
@@ -103,7 +113,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>
@@ -133,6 +143,18 @@ function RootComponent() {
       data.subscription.unsubscribe();
     };
   }, [router, queryClient]);
+
+  useEffect(() => {
+    if (!import.meta.env.PROD || !("serviceWorker" in navigator)) return;
+
+    void navigator.serviceWorker.register("/service-worker.js").catch((error) => {
+      emitEvent({
+        event_name: "pwa.service_worker.registration_failed",
+        severity: "warning",
+        context: { error: sanitize(error) },
+      });
+    });
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

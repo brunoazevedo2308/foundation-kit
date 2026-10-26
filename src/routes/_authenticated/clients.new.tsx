@@ -10,9 +10,9 @@ import { canManageOperationalData, createClient, type ClientListItem } from "@/l
 export const Route = createFileRoute("/_authenticated/clients/new")({
   head: () => ({
     meta: [
-      { title: "Novo cliente · DP Suite" },
+      { title: "Novo cliente · Atino DP Suite" },
       { name: "description", content: "Cadastro de um novo cliente da organização." },
-      { property: "og:title", content: "Novo cliente · DP Suite" },
+      { property: "og:title", content: "Novo cliente · Atino DP Suite" },
       { property: "og:description", content: "Cadastro de um novo cliente da organização." },
     ],
   }),
@@ -66,10 +66,7 @@ function NewClientPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Novo cliente"
-        description="Informe os dados do cliente e o contato principal."
-      />
+      <PageHeader title="Novo cliente" description="Informe os dados do cliente e seus contatos." />
       <ClientForm
         key={formKey}
         initialValues={EMPTY_CLIENT_FORM}

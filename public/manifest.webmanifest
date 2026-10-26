@@ -1,0 +1,42 @@
+{
+  "id": "/",
+  "name": "Atino DP Suite — Dynamic Positioning Governance",
+  "short_name": "Atino DP Suite",
+  "description": "Governança e conformidade para operações de Dynamic Positioning.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#F5F7FA",
+  "theme_color": "#0A2D4A",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Painel",
+      "short_name": "Painel",
+      "url": "/dashboard"
+    },
+    {
+      "name": "Ações",
+      "short_name": "Ações",
+      "url": "/actions"
+    }
+  ]
+}

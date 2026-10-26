@@ -11,6 +11,7 @@ import {
   type ActionListItem,
 } from "@/lib/actions";
 import { canManageOperationalData } from "@/lib/clients";
+import { listActionParticipants, replaceActionParticipants } from "@/lib/action-participants";
 
 /**
  * US-004 (2º ciclo) — edição de ação.
@@ -22,7 +23,7 @@ import { canManageOperationalData } from "@/lib/clients";
 export const Route = createFileRoute("/_authenticated/actions/$actionId/edit")({
   head: () => ({
     meta: [
-      { title: "Editar ação · DP Suite" },
+      { title: "Editar ação · Atino DP Suite" },
       { name: "description", content: "Edição de uma ação operacional DP." },
       { name: "robots", content: "noindex" },
     ],
@@ -40,14 +41,18 @@ function EditActionPage() {
   const navigate = useNavigate();
   const [action, setAction] = useState<ActionListItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const [participantUserIds, setParticipantUserIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
-    getAction(actionId)
-      .then((row) => {
-        if (active) setAction(row);
+    Promise.all([getAction(actionId), listActionParticipants(actionId)])
+      .then(([row, participants]) => {
+        if (active) {
+          setAction(row);
+          setParticipantUserIds(participants.map((item) => item.userId));
+        }
       })
       .catch((err) => {
         if (active)
@@ -95,6 +100,7 @@ function EditActionPage() {
       ) : (
         <ActionForm
           initialValues={initialValues}
+          initialContributorUserIds={participantUserIds}
           submitLabel="Salvar alterações"
           submittingLabel="Salvando..."
           cancelTo={
@@ -102,8 +108,9 @@ function EditActionPage() {
               Cancelar
             </Link>
           }
-          onSubmit={async (values) => {
+          onSubmit={async (values, extras) => {
             await updateAction(actionId, values, action.completedAt);
+            await replaceActionParticipants(actionId, extras.contributorUserIds);
             await navigate({ to: "/actions/$actionId", params: { actionId } });
           }}
         />

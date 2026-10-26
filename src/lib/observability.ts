@@ -1,5 +1,5 @@
 /**
- * DP Suite — Observabilidade mínima (TT-008).
+ * Atino DP Suite — Observabilidade mínima (TT-008).
  *
  * Módulo central de emissão de eventos estruturados e sanitizados no
  * frontend. Nenhum segredo, token, senha, cookie, header de autorização,
@@ -48,6 +48,8 @@ export type EventName =
   // Relatórios / exportação (US-009)
   | "report.export.success"
   | "report.export.failure"
+  // Progressive Web App
+  | "pwa.service_worker.registration_failed"
   // Erros de renderização
   | "ui.error_boundary.caught"
   // Diagnóstico controlado (dev only)

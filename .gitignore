@@ -50,3 +50,8 @@ dist-ssr
 /src/lib/lovable-error-reporting.ts
 /bun.lock
 /bunfig.toml
+
+# Playwright E2E artifacts and cached authenticated state
+/playwright-report/
+/test-results/
+/playwright/.auth/

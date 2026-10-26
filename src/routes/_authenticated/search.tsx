@@ -26,15 +26,15 @@ export const Route = createFileRoute("/_authenticated/search")({
   }),
   head: () => ({
     meta: [
-      { title: "Busca global · DP Suite" },
+      { title: "Busca global · Atino DP Suite" },
       {
         name: "description",
-        content: "Busque ações, entregáveis, evidências, clientes e embarcações do DP Suite.",
+        content: "Busque ações, entregáveis, evidências, clientes e embarcações do Atino DP Suite.",
       },
-      { property: "og:title", content: "Busca global · DP Suite" },
+      { property: "og:title", content: "Busca global · Atino DP Suite" },
       {
         property: "og:description",
-        content: "Busque ações, entregáveis, evidências, clientes e embarcações do DP Suite.",
+        content: "Busque ações, entregáveis, evidências, clientes e embarcações do Atino DP Suite.",
       },
     ],
   }),
@@ -160,7 +160,7 @@ function SearchPage() {
         <Input
           value={term}
           onChange={(e) => setTerm(e.target.value)}
-          placeholder="Buscar no DP Suite..."
+          placeholder="Buscar no Atino DP Suite..."
           aria-label="Termo de busca"
           autoFocus
         />

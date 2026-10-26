@@ -3,6 +3,7 @@ import { ListChecks, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { PageHeader } from "@/components/page-header";
+import { SoftDeleteDialog } from "@/components/soft-delete-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,17 +27,37 @@ import {
   ACTION_STATUS_LABELS,
   isOverdue,
   listActions,
+  softDeleteAction,
   type ActionListItem,
   type ActionStatus,
 } from "@/lib/actions";
 import { canManageOperationalData } from "@/lib/clients";
+import {
+  ACTION_DEADLINE_STATUSES,
+  ACTION_DEADLINE_STATUS_LABELS,
+  actionDeadlineStatus,
+  filterActionsByDeadlineStatus,
+  localDateKey,
+  type ActionDeadlineStatus,
+} from "@/lib/dashboard";
+
+type ActionsSearch = {
+  prazo?: ActionDeadlineStatus;
+};
 
 export const Route = createFileRoute("/_authenticated/actions/")({
+  validateSearch: (search: Record<string, unknown>): ActionsSearch => {
+    const prazo = search.prazo;
+    return typeof prazo === "string" &&
+      ACTION_DEADLINE_STATUSES.includes(prazo as ActionDeadlineStatus)
+      ? { prazo: prazo as ActionDeadlineStatus }
+      : {};
+  },
   head: () => ({
     meta: [
-      { title: "Ações · DP Suite" },
+      { title: "Ações · Atino DP Suite" },
       { name: "description", content: "Ações operacionais DP da organização." },
-      { property: "og:title", content: "Ações · DP Suite" },
+      { property: "og:title", content: "Ações · Atino DP Suite" },
       { property: "og:description", content: "Ações operacionais DP da organização." },
     ],
   }),
@@ -47,6 +68,7 @@ const ALL = "__all__";
 
 function ActionsPage() {
   const { profile } = Route.useRouteContext();
+  const { prazo } = Route.useSearch();
   const canManage = canManageOperationalData(profile.role);
   const [actions, setActions] = useState<ActionListItem[]>([]);
   const [status, setStatus] = useState<string>(ALL);
@@ -71,10 +93,11 @@ function ActionsPage() {
     };
   }, []);
 
-  const visible = useMemo(
-    () => (status === ALL ? actions : actions.filter((item) => item.status === status)),
-    [actions, status],
-  );
+  const today = localDateKey();
+  const visible = useMemo(() => {
+    const byWorkflow = status === ALL ? actions : actions.filter((item) => item.status === status);
+    return prazo ? filterActionsByDeadlineStatus(byWorkflow, prazo, today) : byWorkflow;
+  }, [actions, prazo, status, today]);
 
   return (
     <div className="space-y-6">
@@ -100,6 +123,23 @@ function ActionsPage() {
         >
           {error}
         </p>
+      ) : null}
+
+      {prazo ? (
+        <div
+          role="status"
+          className="flex flex-col gap-3 rounded-lg border border-primary/25 bg-primary/5 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
+        >
+          <span>
+            Exibindo ações com status de prazo:{" "}
+            <strong>{ACTION_DEADLINE_STATUS_LABELS[prazo]}</strong>.
+          </span>
+          <Button asChild variant="outline" size="sm" className="self-start sm:self-auto">
+            <Link to="/actions" search={{ prazo: undefined }}>
+              Remover filtro de prazo
+            </Link>
+          </Button>
+        </div>
       ) : null}
 
       {!loading && actions.length > 0 ? (
@@ -137,52 +177,83 @@ function ActionsPage() {
         </div>
       ) : visible.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          Nenhuma ação com este status.
+          {prazo
+            ? `Nenhuma ação com status de prazo “${ACTION_DEADLINE_STATUS_LABELS[prazo]}”.`
+            : "Nenhuma ação com este status."}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border">
-          <Table>
+        <div className="overflow-x-auto rounded-lg border border-border">
+          <Table className="min-w-[760px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Título</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Status de prazo</TableHead>
                 <TableHead>Prioridade</TableHead>
                 <TableHead>Responsável</TableHead>
                 <TableHead>Cliente / Embarcação</TableHead>
                 <TableHead>Prazo</TableHead>
+                {canManage ? <TableHead className="w-16 text-right">Excluir</TableHead> : null}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {visible.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-medium">
-                    <Link
-                      to="/actions/$actionId"
-                      params={{ actionId: item.id }}
-                      className="hover:underline"
-                    >
-                      {item.title}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{ACTION_STATUS_LABELS[item.status]}</Badge>
-                  </TableCell>
-                  <TableCell>{ACTION_PRIORITY_LABELS[item.executionPriority]}</TableCell>
-                  <TableCell>{item.responsibleName ?? "—"}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {item.clientName ?? "—"} / {item.vesselName ?? "—"}
-                  </TableCell>
-                  <TableCell>
-                    {item.dueDate ? (
-                      <span className={isOverdue(item) ? "font-medium text-destructive" : ""}>
-                        {item.dueDate}
-                      </span>
-                    ) : (
-                      "—"
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {visible.map((item) => {
+                const deadlineStatus = actionDeadlineStatus(item, today);
+                return (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">
+                      <Link
+                        to="/actions/$actionId"
+                        params={{ actionId: item.id }}
+                        className="hover:underline"
+                      >
+                        {item.title}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{ACTION_STATUS_LABELS[item.status]}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {deadlineStatus ? (
+                        <Badge variant={deadlineStatus === "overdue" ? "destructive" : "outline"}>
+                          {ACTION_DEADLINE_STATUS_LABELS[deadlineStatus]}
+                        </Badge>
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
+                    <TableCell>{ACTION_PRIORITY_LABELS[item.executionPriority]}</TableCell>
+                    <TableCell>{item.responsibleName ?? "—"}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {item.clientName ?? "—"} / {item.vesselName ?? "—"}
+                    </TableCell>
+                    <TableCell>
+                      {item.dueDate ? (
+                        <span className={isOverdue(item) ? "font-medium text-destructive" : ""}>
+                          {item.dueDate}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
+                    {canManage ? (
+                      <TableCell className="text-right">
+                        <SoftDeleteDialog
+                          title="Excluir esta ação?"
+                          description={`A ação “${item.title}” sairá das listagens, mas seu histórico será preservado para auditoria.`}
+                          triggerLabel={`Excluir ação ${item.title}`}
+                          onConfirm={async () => {
+                            await softDeleteAction(item.id);
+                            setActions((current) =>
+                              current.filter((action) => action.id !== item.id),
+                            );
+                          }}
+                        />
+                      </TableCell>
+                    ) : null}
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>

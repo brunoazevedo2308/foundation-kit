@@ -39,8 +39,8 @@ import {
 export const Route = createFileRoute("/_authenticated/organizations/new")({
   head: () => ({
     meta: [
-      { title: "Nova Organization · DP Suite" },
-      { name: "description", content: "Cadastro de nova organização no DP Suite." },
+      { title: "Nova Organization · Atino DP Suite" },
+      { name: "description", content: "Cadastro de nova organização no Atino DP Suite." },
     ],
   }),
   beforeLoad: ({ context }) => {
@@ -175,7 +175,7 @@ function NewOrganizationPage() {
     <div className="space-y-6">
       <PageHeader
         title="Nova Organization"
-        description="Cadastre uma nova organização cliente do DP Suite."
+        description="Cadastre uma nova organização cliente do Atino DP Suite."
       />
 
       <form onSubmit={onSubmit} className="max-w-2xl space-y-6" noValidate>

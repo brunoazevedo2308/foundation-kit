@@ -26,9 +26,18 @@ interface EvidencesSectionProps {
   actionId: string;
   deliverableId: string;
   canManage: boolean;
+  canUpload?: boolean;
+  onChanged?: () => void;
 }
 
-export function EvidencesSection({ actionId, deliverableId, canManage }: EvidencesSectionProps) {
+export function EvidencesSection({
+  actionId,
+  deliverableId,
+  canManage,
+  canUpload,
+  onChanged,
+}: EvidencesSectionProps) {
+  const uploadAllowed = canUpload ?? canManage;
   const [items, setItems] = useState<EvidenceListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +85,7 @@ export function EvidencesSection({ actionId, deliverableId, canManage }: Evidenc
             </Badge>
           ) : null}
         </h4>
-        {canManage && !uploading ? (
+        {uploadAllowed && !uploading ? (
           <Button size="sm" variant="outline" onClick={() => setUploading(true)}>
             <Upload className="mr-1.5 h-4 w-4" />
             Enviar evidência
@@ -90,7 +99,7 @@ export function EvidencesSection({ actionId, deliverableId, canManage }: Evidenc
         </p>
       ) : null}
 
-      {canManage && uploading ? (
+      {uploadAllowed && uploading ? (
         <div className="mt-3">
           <EvidenceUploadForm
             onCancel={() => setUploading(false)}
@@ -110,6 +119,7 @@ export function EvidencesSection({ actionId, deliverableId, canManage }: Evidenc
               });
               await reload();
               setUploading(false);
+              onChanged?.();
             }}
           />
         </div>
@@ -181,6 +191,7 @@ export function EvidencesSection({ actionId, deliverableId, canManage }: Evidenc
                             try {
                               await softDeleteEvidence(evidence.id);
                               await reload();
+                              onChanged?.();
                             } catch (err) {
                               setError(
                                 err instanceof Error

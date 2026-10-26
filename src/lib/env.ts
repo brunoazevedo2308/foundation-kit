@@ -2,7 +2,7 @@ import { z } from "zod";
 import { resolveEnvironment } from "./env-config";
 
 /**
- * Environment configuration for DP Suite.
+ * Environment configuration for Atino DP Suite.
  *
  * Values are read from Vite's `import.meta.env` and validated with Zod.
  * Do NOT read or expose service_role or any backend-only secret here — this

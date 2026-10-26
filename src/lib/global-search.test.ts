@@ -66,15 +66,14 @@ describe("mapping por grupo", () => {
     });
   });
 
-  it("embarcação exibe IMO e aponta para a edição", () => {
+  it("embarcação exibe tipo e classe DP e aponta para a edição", () => {
     const item = mapVesselResult({
       id: "v1",
       name: "Skandi",
-      imo_number: "12345",
-      vessel_type: null,
+      vessel_type: "PSV",
       dp_class: "DP2",
     });
-    expect(item.subtitle).toBe("IMO 12345 · DP2");
+    expect(item.subtitle).toBe("PSV · DP2");
     expect(item.target).toEqual({ route: "/vessels/$vesselId/edit", vesselId: "v1" });
   });
 

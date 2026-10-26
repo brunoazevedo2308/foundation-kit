@@ -1,0 +1,59 @@
+name: E2E Public
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dp-suite-e2e-public-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  public-flows:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: staging
+    env:
+      CI: "true"
+      VITE_APP_ENV: staging
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.0
+          cache: pnpm
+
+      - name: Validate staging configuration
+        shell: bash
+        run: |
+          test "$VITE_SUPABASE_URL" = "https://ggehwncqjetinynwlqhj.supabase.co"
+          test -n "$VITE_SUPABASE_PUBLISHABLE_KEY"
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e:public
+
+      - name: Upload failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-public-${{ github.run_id }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14

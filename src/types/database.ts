@@ -4,10 +4,118 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5";
+    PostgrestVersion: "14.17";
   };
   public: {
     Tables: {
+      action_activity: {
+        Row: {
+          action_id: string;
+          actor_user_id: string | null;
+          created_at: string;
+          event_type: string;
+          id: string;
+          metadata: Json;
+          organization_id: string;
+          summary: string;
+        };
+        Insert: {
+          action_id: string;
+          actor_user_id?: string | null;
+          created_at?: string;
+          event_type: string;
+          id?: string;
+          metadata?: Json;
+          organization_id?: string;
+          summary: string;
+        };
+        Update: {
+          action_id?: string;
+          actor_user_id?: string | null;
+          created_at?: string;
+          event_type?: string;
+          id?: string;
+          metadata?: Json;
+          organization_id?: string;
+          summary?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "action_activity_action_id_fkey";
+            columns: ["action_id"];
+            isOneToOne: false;
+            referencedRelation: "actions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "action_activity_actor_user_id_fkey";
+            columns: ["actor_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "action_activity_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      action_participants: {
+        Row: {
+          action_id: string;
+          added_by: string;
+          created_at: string;
+          organization_id: string;
+          user_id: string;
+        };
+        Insert: {
+          action_id: string;
+          added_by?: string;
+          created_at?: string;
+          organization_id?: string;
+          user_id: string;
+        };
+        Update: {
+          action_id?: string;
+          added_by?: string;
+          created_at?: string;
+          organization_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "action_participants_action_id_fkey";
+            columns: ["action_id"];
+            isOneToOne: false;
+            referencedRelation: "actions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "action_participants_added_by_fkey";
+            columns: ["added_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "action_participants_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "action_participants_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       actions: {
         Row: {
           action_type: string | null;
@@ -109,6 +217,262 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      assessment_assignments: {
+        Row: {
+          assigned_at: string;
+          attempt_number: number;
+          department: string;
+          id: string;
+          model_id: string;
+          organization_id: string;
+          started_at: string | null;
+          status: string;
+          submitted_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          assigned_at?: string;
+          attempt_number?: number;
+          department: string;
+          id?: string;
+          model_id: string;
+          organization_id: string;
+          started_at?: string | null;
+          status?: string;
+          submitted_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          assigned_at?: string;
+          attempt_number?: number;
+          department?: string;
+          id?: string;
+          model_id?: string;
+          organization_id?: string;
+          started_at?: string | null;
+          status?: string;
+          submitted_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "assessment_assignments_model_id_fkey";
+            columns: ["model_id"];
+            isOneToOne: false;
+            referencedRelation: "assessment_models";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assessment_assignments_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assessment_assignments_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      assessment_candidate_tracks: {
+        Row: {
+          assigned_by: string;
+          created_at: string;
+          department: string;
+          organization_id: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          assigned_by?: string;
+          created_at?: string;
+          department: string;
+          organization_id: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          assigned_by?: string;
+          created_at?: string;
+          department?: string;
+          organization_id?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "assessment_candidate_tracks_assigned_by_fkey";
+            columns: ["assigned_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assessment_candidate_tracks_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assessment_candidate_tracks_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      assessment_model_slots: {
+        Row: {
+          created_at: string;
+          difficulty: string;
+          id: string;
+          model_id: string;
+          sequence_number: number;
+          theme_code: string;
+          weight: number | null;
+        };
+        Insert: {
+          created_at?: string;
+          difficulty: string;
+          id?: string;
+          model_id: string;
+          sequence_number: number;
+          theme_code: string;
+          weight?: number | null;
+        };
+        Update: {
+          created_at?: string;
+          difficulty?: string;
+          id?: string;
+          model_id?: string;
+          sequence_number?: number;
+          theme_code?: string;
+          weight?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "assessment_model_slots_model_id_fkey";
+            columns: ["model_id"];
+            isOneToOne: false;
+            referencedRelation: "assessment_models";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      assessment_models: {
+        Row: {
+          created_at: string;
+          department: string;
+          duration_minutes: number;
+          id: string;
+          is_active: boolean;
+          model_number: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          department: string;
+          duration_minutes?: number;
+          id?: string;
+          is_active?: boolean;
+          model_number: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          department?: string;
+          duration_minutes?: number;
+          id?: string;
+          is_active?: boolean;
+          model_number?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      assessment_questions: {
+        Row: {
+          correct_option: number;
+          created_at: string;
+          created_by: string;
+          criticality: string;
+          explanation: string | null;
+          id: string;
+          is_published: boolean;
+          options: Json;
+          prompt: string;
+          slot_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          correct_option: number;
+          created_at?: string;
+          created_by?: string;
+          criticality?: string;
+          explanation?: string | null;
+          id?: string;
+          is_published?: boolean;
+          options: Json;
+          prompt: string;
+          slot_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          correct_option?: number;
+          created_at?: string;
+          created_by?: string;
+          criticality?: string;
+          explanation?: string | null;
+          id?: string;
+          is_published?: boolean;
+          options?: Json;
+          prompt?: string;
+          slot_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "assessment_questions_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assessment_questions_slot_id_fkey";
+            columns: ["slot_id"];
+            isOneToOne: true;
+            referencedRelation: "assessment_model_slots";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      assessment_theme_rules: {
+        Row: {
+          created_at: string;
+          department: string;
+          minimum_percentage: number;
+          theme_code: string;
+        };
+        Insert: {
+          created_at?: string;
+          department: string;
+          minimum_percentage: number;
+          theme_code: string;
+        };
+        Update: {
+          created_at?: string;
+          department?: string;
+          minimum_percentage?: number;
+          theme_code?: string;
+        };
+        Relationships: [];
       };
       attachments: {
         Row: {
@@ -242,12 +606,132 @@ export type Database = {
           },
         ];
       };
+      calendar_entries: {
+        Row: {
+          all_day: boolean;
+          created_at: string;
+          created_by: string;
+          description: string | null;
+          ends_at: string | null;
+          entry_type: string;
+          id: string;
+          organization_id: string;
+          starts_at: string;
+          title: string;
+          updated_at: string;
+          vessel_id: string;
+        };
+        Insert: {
+          all_day?: boolean;
+          created_at?: string;
+          created_by?: string;
+          description?: string | null;
+          ends_at?: string | null;
+          entry_type: string;
+          id?: string;
+          organization_id: string;
+          starts_at: string;
+          title: string;
+          updated_at?: string;
+          vessel_id: string;
+        };
+        Update: {
+          all_day?: boolean;
+          created_at?: string;
+          created_by?: string;
+          description?: string | null;
+          ends_at?: string | null;
+          entry_type?: string;
+          id?: string;
+          organization_id?: string;
+          starts_at?: string;
+          title?: string;
+          updated_at?: string;
+          vessel_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "calendar_entries_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "calendar_entries_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "calendar_entries_vessel_id_fkey";
+            columns: ["vessel_id"];
+            isOneToOne: false;
+            referencedRelation: "vessels";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      client_contacts: {
+        Row: {
+          client_id: string;
+          created_at: string;
+          email: string | null;
+          id: string;
+          organization_id: string;
+          phone: string | null;
+          position: number;
+          responsible_area: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          client_id: string;
+          created_at?: string;
+          email?: string | null;
+          id?: string;
+          organization_id: string;
+          phone?: string | null;
+          position?: number;
+          responsible_area?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          client_id?: string;
+          created_at?: string;
+          email?: string | null;
+          id?: string;
+          organization_id?: string;
+          phone?: string | null;
+          position?: number;
+          responsible_area?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "client_contacts_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_contacts_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       clients: {
         Row: {
           code: string | null;
           contact_email: string | null;
           contact_name: string | null;
           contact_phone: string | null;
+          contract_management: string | null;
+          contract_manager: string | null;
           created_at: string;
           deleted_at: string | null;
           id: string;
@@ -260,6 +744,8 @@ export type Database = {
           contact_email?: string | null;
           contact_name?: string | null;
           contact_phone?: string | null;
+          contract_management?: string | null;
+          contract_manager?: string | null;
           created_at?: string;
           deleted_at?: string | null;
           id?: string;
@@ -272,6 +758,8 @@ export type Database = {
           contact_email?: string | null;
           contact_name?: string | null;
           contact_phone?: string | null;
+          contract_management?: string | null;
+          contract_manager?: string | null;
           created_at?: string;
           deleted_at?: string | null;
           id?: string;
@@ -354,6 +842,60 @@ export type Database = {
           },
         ];
       };
+      data_subject_requests: {
+        Row: {
+          created_at: string;
+          details: string;
+          id: string;
+          organization_id: string;
+          request_type: string;
+          requester_user_id: string;
+          resolved_at: string | null;
+          response_summary: string | null;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          details: string;
+          id?: string;
+          organization_id: string;
+          request_type: string;
+          requester_user_id: string;
+          resolved_at?: string | null;
+          response_summary?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          details?: string;
+          id?: string;
+          organization_id?: string;
+          request_type?: string;
+          requester_user_id?: string;
+          resolved_at?: string | null;
+          response_summary?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "data_subject_requests_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "data_subject_requests_requester_user_id_fkey";
+            columns: ["requester_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       deliverables: {
         Row: {
           action_id: string;
@@ -430,6 +972,128 @@ export type Database = {
             columns: ["responsible_user_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      document_companies: {
+        Row: {
+          created_at: string;
+          created_by: string;
+          deleted_at: string | null;
+          id: string;
+          name: string;
+          organization_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string;
+          deleted_at?: string | null;
+          id?: string;
+          name: string;
+          organization_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string;
+          deleted_at?: string | null;
+          id?: string;
+          name?: string;
+          organization_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "document_companies_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "document_companies_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      document_files: {
+        Row: {
+          category: string;
+          company_id: string;
+          created_at: string;
+          deleted_at: string | null;
+          file_name: string;
+          id: string;
+          mime_type: string;
+          organization_id: string;
+          size_bytes: number;
+          storage_path: string;
+          updated_at: string;
+          uploaded_by: string;
+          vessel_id: string;
+        };
+        Insert: {
+          category: string;
+          company_id: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          file_name: string;
+          id?: string;
+          mime_type: string;
+          organization_id: string;
+          size_bytes: number;
+          storage_path: string;
+          updated_at?: string;
+          uploaded_by?: string;
+          vessel_id: string;
+        };
+        Update: {
+          category?: string;
+          company_id?: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          file_name?: string;
+          id?: string;
+          mime_type?: string;
+          organization_id?: string;
+          size_bytes?: number;
+          storage_path?: string;
+          updated_at?: string;
+          uploaded_by?: string;
+          vessel_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "document_files_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "document_companies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "document_files_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "document_files_uploaded_by_fkey";
+            columns: ["uploaded_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "document_files_vessel_id_fkey";
+            columns: ["vessel_id"];
+            isOneToOne: false;
+            referencedRelation: "vessels";
             referencedColumns: ["id"];
           },
         ];
@@ -722,6 +1386,9 @@ export type Database = {
       vessels: {
         Row: {
           client_id: string | null;
+          company_name: string | null;
+          contract_management: string | null;
+          contract_manager: string | null;
           created_at: string;
           deleted_at: string | null;
           dp_class: string | null;
@@ -735,6 +1402,9 @@ export type Database = {
         };
         Insert: {
           client_id?: string | null;
+          company_name?: string | null;
+          contract_management?: string | null;
+          contract_manager?: string | null;
           created_at?: string;
           deleted_at?: string | null;
           dp_class?: string | null;
@@ -748,6 +1418,9 @@ export type Database = {
         };
         Update: {
           client_id?: string | null;
+          company_name?: string | null;
+          contract_management?: string | null;
+          contract_manager?: string | null;
           created_at?: string;
           deleted_at?: string | null;
           dp_class?: string | null;
@@ -841,6 +1514,7 @@ export type Database = {
         Args: { _actual: string; _expected: string; _label: string };
         Returns: undefined;
       };
+      assign_my_dp_assessment: { Args: never; Returns: Json };
       create_organization: {
         Args: {
           _country_code: string;
@@ -891,6 +1565,12 @@ export type Database = {
           timezone: string;
           updated_at: string;
         }[];
+        SetofOptions: {
+          from: "*";
+          to: "organizations";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
       };
       record_profile_login: {
         Args: never;

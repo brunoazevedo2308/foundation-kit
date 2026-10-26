@@ -6,14 +6,34 @@ import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { EMPTY_VESSEL_FORM, VesselForm } from "@/components/vessel-form";
 import { canManageOperationalData } from "@/lib/clients";
-import { createVessel, type VesselListItem } from "@/lib/vessels";
+import {
+  createVessel,
+  replaceVesselKeyDpPersonnel,
+  softDeleteVessel,
+  type VesselListItem,
+} from "@/lib/vessels";
+
+type NewVesselSearch = {
+  companyName?: string;
+  documentCompanyId?: string;
+};
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export const Route = createFileRoute("/_authenticated/vessels/new")({
+  validateSearch: (search: Record<string, unknown>): NewVesselSearch => ({
+    companyName:
+      typeof search.companyName === "string" ? search.companyName.trim().slice(0, 160) : undefined,
+    documentCompanyId:
+      typeof search.documentCompanyId === "string" && UUID_PATTERN.test(search.documentCompanyId)
+        ? search.documentCompanyId
+        : undefined,
+  }),
   head: () => ({
     meta: [
-      { title: "Nova embarcação · DP Suite" },
+      { title: "Nova embarcação · Atino DP Suite" },
       { name: "description", content: "Cadastro de uma nova embarcação da frota DP." },
-      { property: "og:title", content: "Nova embarcação · DP Suite" },
+      { property: "og:title", content: "Nova embarcação · Atino DP Suite" },
       { property: "og:description", content: "Cadastro de uma nova embarcação da frota DP." },
     ],
   }),
@@ -26,8 +46,17 @@ export const Route = createFileRoute("/_authenticated/vessels/new")({
 });
 
 function NewVesselPage() {
+  const { companyName, documentCompanyId } = Route.useSearch();
   const [created, setCreated] = useState<VesselListItem | null>(null);
   const [formKey, setFormKey] = useState(0);
+  const initialValues = { ...EMPTY_VESSEL_FORM, companyName: companyName ?? "" };
+  const returnLink = documentCompanyId ? (
+    <Link to="/documents/$companyId" params={{ companyId: documentCompanyId }}>
+      Voltar para a empresa
+    </Link>
+  ) : (
+    <Link to="/vessels">Voltar para embarcações</Link>
+  );
 
   if (created) {
     return (
@@ -45,15 +74,12 @@ function NewVesselPage() {
             <div>
               <p className="font-medium">{created.name}</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                {created.imoNumber ? `IMO ${created.imoNumber}` : "Sem IMO informado"} ·{" "}
                 {created.clientName ?? "Sem cliente vinculado"}
               </p>
             </div>
           </div>
           <div className="mt-6 flex gap-2">
-            <Button asChild>
-              <Link to="/vessels">Voltar para embarcações</Link>
-            </Button>
+            <Button asChild>{returnLink}</Button>
             <Button
               variant="outline"
               onClick={() => {
@@ -77,12 +103,29 @@ function NewVesselPage() {
       />
       <VesselForm
         key={formKey}
-        initialValues={EMPTY_VESSEL_FORM}
+        initialValues={initialValues}
         submitLabel="Cadastrar embarcação"
         submittingLabel="Salvando..."
-        cancelTo={<Link to="/vessels">Cancelar</Link>}
-        onSubmit={async (values) => {
-          setCreated(await createVessel(values));
+        cancelTo={
+          documentCompanyId ? (
+            <Link to="/documents/$companyId" params={{ companyId: documentCompanyId }}>
+              Cancelar
+            </Link>
+          ) : (
+            <Link to="/vessels">Cancelar</Link>
+          )
+        }
+        onSubmit={async (values, extras) => {
+          const vessel = await createVessel(values);
+          try {
+            if (extras.keyDpPersonnelUserIds.length > 0) {
+              await replaceVesselKeyDpPersonnel(vessel.id, extras.keyDpPersonnelUserIds);
+            }
+          } catch (error) {
+            await softDeleteVessel(vessel.id).catch(() => undefined);
+            throw error;
+          }
+          setCreated(vessel);
         }}
       />
     </div>

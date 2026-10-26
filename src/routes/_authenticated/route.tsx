@@ -12,7 +12,7 @@ import { emitEvent, reportError, sanitize } from "@/lib/observability";
 import { supabase } from "@/lib/supabase";
 
 /**
- * DP Suite — pathless authenticated layout (TT-005 + TT-006).
+ * Atino DP Suite — pathless authenticated layout (TT-005 + TT-006).
  *
  * Any route under `src/routes/_authenticated/` is gated by this layout and
  * wrapped in the responsive `AppShell` (sidebar + header + breadcrumb).
@@ -94,7 +94,8 @@ function AuthenticatedErrorBoundary({ error, reset }: ErrorComponentProps) {
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight">Algo deu errado</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Não foi possível carregar esta área do DP Suite. Tente novamente em alguns instantes.
+          Não foi possível carregar esta área do Atino DP Suite. Tente novamente em alguns
+          instantes.
         </p>
         <div className="mt-6 flex justify-center gap-2">
           <button

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bell, BellOff, Check, CheckCheck, ExternalLink } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -27,9 +27,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/notifications")({
   head: () => ({
     meta: [
-      { title: "Notificações · DP Suite" },
+      { title: "Notificações · Atino DP Suite" },
       { name: "description", content: "Central de notificações do usuário." },
-      { property: "og:title", content: "Notificações · DP Suite" },
+      { property: "og:title", content: "Notificações · Atino DP Suite" },
       { property: "og:description", content: "Central de notificações do usuário." },
     ],
   }),
@@ -43,8 +43,9 @@ function NotificationsPage() {
   const [busyIds, setBusyIds] = useState<ReadonlySet<string>>(new Set());
   const [busyAll, setBusyAll] = useState(false);
 
-  useEffect(() => {
+  const refresh = useCallback((showLoading = false) => {
     let active = true;
+    if (showLoading) setLoading(true);
     listNotifications()
       .then((rows) => {
         if (active) setItems(rows);
@@ -62,6 +63,20 @@ function NotificationsPage() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    const cancelInitial = refresh(true);
+    const interval = window.setInterval(() => refresh(), 15_000);
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      cancelInitial();
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [refresh]);
 
   const unreadCount = countUnread(items);
 
@@ -173,6 +188,14 @@ function NotificationsPage() {
                     </div>
                     {notification.body ? (
                       <p className="mt-1 text-sm text-muted-foreground">{notification.body}</p>
+                    ) : null}
+                    {notification.actorUserId ? (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Executada por:{" "}
+                        <span className="font-medium text-foreground">
+                          {notification.actorName ?? "Usuário não disponível"}
+                        </span>
+                      </p>
                     ) : null}
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       {notification.target ? (
